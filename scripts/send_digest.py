@@ -9,16 +9,16 @@ from email.mime.text import MIMEText
 
 today = datetime.now().strftime("%Y년 %m월 %d일")
 
-# 1. 환경 변수 체크 (디버깅용)
+# 1. 환경 변수 체크
 api_key = os.environ.get("GEMINI_API_KEY")
 send_to = os.environ.get("SEND_TO")
 smtp_pw = os.environ.get("SMTP_PASSWORD")
 
 if not api_key:
-    print("❌ 에러: GEMINI_API_KEY 환경 변수가 없습니다. GitHub Secrets를 확인하세요.")
+    print("❌ 에러: GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
     exit(1)
 
-# 2. URL 구성 (v1으로 고정)
+# 2. API 설정 (v1 및 gemini-1.5-flash로 404 에러 방지)
 model_name = "gemini-1.5-flash"
 url = f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent?key={api_key}"
 
@@ -33,7 +33,7 @@ data = json.dumps({
 
 html_content = None
 
-# 3. API 호출
+# 3. API 호출 시도
 for attempt in range(3):
     try:
         req = urllib.request.Request(
@@ -44,7 +44,7 @@ for attempt in range(3):
         with urllib.request.urlopen(req) as res:
             result = json.loads(res.read())
         
-        # HTML 추출 및 정제
+        # HTML 추출 및 마크다운 제거
         raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
         html_content = raw_text.replace("```html", "").replace("```", "").strip()
         print(f"✅ API 호출 성공 (시도 {attempt + 1}회)")
@@ -52,9 +52,10 @@ for attempt in range(3):
     except Exception as e:
         print(f"⚠️ 시도 {attempt + 1} 실패: {e}")
         if attempt < 2:
-            time.sleep(5)
+            time.sleep(10)
         else:
-            raise
+            print("❌ 모든 API 호출 시도가 실패했습니다.")
+            exit(1)
 
 # 4. 메일 발송
 if html_content:
@@ -65,4 +66,10 @@ if html_content:
     msg["To"] = send_to
     msg.attach(MIMEText(html_content, "html"))
 
-    with smtplib.SMTP_
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL, smtp_pw)
+            server.send_message(msg)
+        print("🚀 메일 발송 성공!")
+    except Exception as e:
+        print(f"❌ 메일 발송 중 에러 발생: {e}")
