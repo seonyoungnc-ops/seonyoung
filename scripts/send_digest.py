@@ -7,33 +7,30 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-today = datetime.now().strftime("%Y년 %m월 %d일")
-
-# 1. 환경 변수 체크
-api_key = os.environ.get("GEMINI_API_KEY")
-send_to = os.environ.get("SEND_TO")
-smtp_pw = os.environ.get("SMTP_PASSWORD")
+# 1. 환경 변수 로드 (직접 확인)
+api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+smtp_pw = os.environ.get("SMTP_PASSWORD", "").strip()
+send_to = os.environ.get("SEND_TO", "seonyoung@ncsoft.com").strip()
 
 if not api_key:
-    print("❌ 에러: GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+    print("❌ 에러: GEMINI_API_KEY가 비어있습니다. GitHub Secrets를 확인하세요.")
     exit(1)
 
-# 2. API 설정 (v1 및 gemini-1.5-flash로 404 에러 방지)
-model_name = "gemini-1.5-flash"
-url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+# 2. API 설정 (가장 안전한 v1beta 엔드포인트)
+# f-string 대신 직접 더하기 방식으로 주소 오염 방지
+url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + api_key
 
-prompt = "오늘은 " + today + """입니다. IT 업계 플랫폼 기획자를 위한 전날 발행된 최신 기사를 아래 4개 카테고리별로 각 5개씩 정리해줘.
-카테고리: 국내 게임 시장 / 글로벌 게임 시장 / IT 업계 / AI
-결과는 인라인 CSS 포함한 깔끔한 White Tone HTML 뉴스레터로 출력해줘."""
+today = datetime.now().strftime("%Y년 %m월 %d일")
+prompt = f"오늘은 {today}입니다. IT 업계 플랫폼 기획자를 위한 최신 기사를 카테고리별로 정리해서 HTML 뉴스레터로 만들어줘."
 
 data = json.dumps({
     "contents": [{"parts": [{"text": prompt}]}],
-    "generationConfig": {"maxOutputTokens": 8000}
+    "generationConfig": {"maxOutputTokens": 4096}
 }).encode("utf-8")
 
 html_content = None
 
-# 3. API 호출 시도
+# 3. API 호출
 for attempt in range(3):
     try:
         req = urllib.request.Request(
@@ -43,19 +40,15 @@ for attempt in range(3):
         )
         with urllib.request.urlopen(req) as res:
             result = json.loads(res.read())
-        
-        # HTML 추출 및 마크다운 제거
-        raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
-        html_content = raw_text.replace("```html", "").replace("```", "").strip()
-        print(f"✅ API 호출 성공 (시도 {attempt + 1}회)")
-        break
+            # 안전하게 데이터 추출
+            if "candidates" in result:
+                raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
+                html_content = raw_text.replace("```html", "").replace("```", "").strip()
+                print(f"✅ API 호출 성공 (시도 {attempt + 1})")
+                break
     except Exception as e:
         print(f"⚠️ 시도 {attempt + 1} 실패: {e}")
-        if attempt < 2:
-            time.sleep(10)
-        else:
-            print("❌ 모든 API 호출 시도가 실패했습니다.")
-            exit(1)
+        time.sleep(5)
 
 # 4. 메일 발송
 if html_content:
@@ -66,10 +59,10 @@ if html_content:
     msg["To"] = send_to
     msg.attach(MIMEText(html_content, "html"))
 
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(GMAIL, smtp_pw)
-            server.send_message(msg)
-        print("🚀 메일 발송 성공!")
-    except Exception as e:
-        print(f"❌ 메일 발송 중 에러 발생: {e}")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(GMAIL, smtp_pw)
+        server.send_message(msg)
+    print("🚀 메일 발송 완료!")
+else:
+    print("❌ 최종 실패: 생성된 내용이 없습니다.")
+    exit(1)
