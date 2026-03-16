@@ -17,8 +17,10 @@ jobs:
           python-version: '3.11'
           
       - name: Run Python Script
-        run: python scripts/send_digest.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SEND_TO: "seonyoung@ncsoft.com"
+        run: |
+          pip install requests
+          python scripts/send_digest.py
