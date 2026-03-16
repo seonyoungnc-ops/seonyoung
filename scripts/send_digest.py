@@ -20,7 +20,7 @@ if not api_key:
 
 # 2. API 설정 (v1 및 gemini-1.5-flash로 404 에러 방지)
 model_name = "gemini-1.5-flash"
-url = f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent?key={api_key}"
+url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
 
 prompt = "오늘은 " + today + """입니다. IT 업계 플랫폼 기획자를 위한 전날 발행된 최신 기사를 아래 4개 카테고리별로 각 5개씩 정리해줘.
 카테고리: 국내 게임 시장 / 글로벌 게임 시장 / IT 업계 / AI
