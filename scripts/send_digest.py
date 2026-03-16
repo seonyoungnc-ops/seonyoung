@@ -1,68 +1,62 @@
 import smtplib
 import os
-import urllib.request
+import requests
 import json
-import time
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-# 1. 환경 변수 로드 (직접 확인)
+# 1. 환경 변수 확인 및 출력 (보안을 위해 일부 마스킹)
 api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 smtp_pw = os.environ.get("SMTP_PASSWORD", "").strip()
-send_to = os.environ.get("SEND_TO", "seonyoung@ncsoft.com").strip()
+send_to = os.environ.get("SEND_TO", "").strip()
 
 if not api_key:
-    print("❌ 에러: GEMINI_API_KEY가 비어있습니다. GitHub Secrets를 확인하세요.")
+    print("❌ 에러: GEMINI_API_KEY가 없습니다.")
     exit(1)
 
-# 2. API 설정 (가장 안전한 v1beta 엔드포인트)
-# f-string 대신 직접 더하기 방식으로 주소 오염 방지
-url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + api_key
+print(f"DEBUG: API Key가 로드되었습니다. (앞 4자리: {api_key[:4]}...)")
+
+# 2. API 설정 (가장 표준적인 경로)
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
 today = datetime.now().strftime("%Y년 %m월 %d일")
-prompt = f"오늘은 {today}입니다. IT 업계 플랫폼 기획자를 위한 최신 기사를 카테고리별로 정리해서 HTML 뉴스레터로 만들어줘."
+prompt = f"오늘은 {today}입니다. IT 플랫폼 기획자를 위한 뉴스레터를 HTML로 작성해줘."
 
-data = json.dumps({
+payload = {
     "contents": [{"parts": [{"text": prompt}]}],
-    "generationConfig": {"maxOutputTokens": 4096}
-}).encode("utf-8")
-
-html_content = None
+    "generationConfig": {"maxOutputTokens": 2048}
+}
 
 # 3. API 호출
-for attempt in range(3):
-    try:
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={"Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req) as res:
-            result = json.loads(res.read())
-            # 안전하게 데이터 추출
-            if "candidates" in result:
-                raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
-                html_content = raw_text.replace("```html", "").replace("```", "").strip()
-                print(f"✅ API 호출 성공 (시도 {attempt + 1})")
-                break
-    except Exception as e:
-        print(f"⚠️ 시도 {attempt + 1} 실패: {e}")
-        time.sleep(5)
+try:
+    response = requests.post(url, json=payload, timeout=30)
+    
+    if response.status_code == 200:
+        result = response.json()
+        html_content = result["candidates"][0]["content"]["parts"][0]["text"]
+        html_content = html_content.replace("```html", "").replace("```", "").strip()
+        print("✅ API 호출 성공!")
+    else:
+        # 여기가 핵심입니다. 구글이 왜 404를 내는지 이유를 로그에 찍습니다.
+        print(f"❌ API 에러 발생! 상태 코드: {response.status_code}")
+        print(f"에러 내용: {response.text}")
+        exit(1)
+
+except Exception as e:
+    print(f"❌ 통신 에러: {e}")
+    exit(1)
 
 # 4. 메일 발송
-if html_content:
-    GMAIL = "seonyoung.ncsoft@gmail.com"
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"[Daily IT Digest] {today} 오늘의 IT 뉴스"
-    msg["From"] = GMAIL
-    msg["To"] = send_to
-    msg.attach(MIMEText(html_content, "html"))
+GMAIL = "seonyoung.ncsoft@gmail.com"
+msg = MIMEMultipart("alternative")
+msg["Subject"] = f"[Daily IT Digest] {today} 오늘의 뉴스"
+msg["From"] = GMAIL
+msg["To"] = send_to
+msg.attach(MIMEText(html_content, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(GMAIL, smtp_pw)
-        server.send_message(msg)
-    print("🚀 메일 발송 완료!")
-else:
-    print("❌ 최종 실패: 생성된 내용이 없습니다.")
-    exit(1)
+with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    server.login(GMAIL, smtp_pw)
+    server.send_message(msg)
+
+print("🚀 메일 발송 완료!")
