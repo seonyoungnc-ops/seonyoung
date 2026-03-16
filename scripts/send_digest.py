@@ -1,11 +1,10 @@
-import smtplib, os, urllib.request, json
+import smtplib, os, urllib.request, json, time
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 today = datetime.now().strftime("%Y년 %m월 %d일")
 
-# Gemini API 호출
 prompt = f"""오늘은 {today}입니다. IT 업계 플랫폼 기획자를 위한 전날 발행된 최신 기사를 아래 4개 카테고리별로 각 5개씩 정리해줘.
 
 카테고리: 국내 게임 시장 / 글로벌 게임 시장 / IT 업계 / AI
@@ -27,14 +26,31 @@ data = json.dumps({
     "generationConfig": {"maxOutputTokens": 8000}
 }).encode("utf-8")
 
-req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
-with urllib.request.urlopen(req) as res:
-    result = json.loads(res.read())
+# 최대 3번 재시도
+html_content = None
+for attempt in range(3):
+    try:
+        req = urllib.request.Request(
+            url, data=data,
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req) as res:
+            result = json.loads(res.read())
+        html_content = result["candidates"][0]["content"]["parts"][0]["text"]
+        print(f"✅ API 호출 성공 (시도 {attempt + 1}회)")
+        break
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            print(f"⏳ 429 Too Many Requests - 60초 후 재시도 ({attempt + 1}/3)")
+            time.sleep(60)
+        else:
+            raise
 
-html_content = result["candidates"][0]["content"]["parts"][0]["text"]
+if not html_content:
+    raise Exception("❌ API 호출 3회 모두 실패")
 
 # Gmail로 발송
-GMAIL = "seonyoung@ncsoft.com"  # ← 수정
+GMAIL = "여기에본인Gmail주소@gmail.com"  # ← 수정
 
 msg = MIMEMultipart("alternative")
 msg["Subject"] = f"[Daily IT Digest] {today} 오늘의 IT 뉴스"
@@ -46,4 +62,4 @@ with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
     server.login(GMAIL, os.environ["SMTP_PASSWORD"])
     server.send_message(msg)
 
-print("✅ 발송 완료!")
+print("📧 메일 발송 완료!")
