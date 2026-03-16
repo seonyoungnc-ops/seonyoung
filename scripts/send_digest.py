@@ -50,7 +50,7 @@ if not html_content:
     raise Exception("❌ API 호출 3회 모두 실패")
 
 # Gmail로 발송
-GMAIL = "여기에본인Gmail주소@gmail.com"  # ← 수정
+GMAIL = "seonyoung.ncsoft@gmail.com"  # ← 수정
 
 msg = MIMEMultipart("alternative")
 msg["Subject"] = f"[Daily IT Digest] {today} 오늘의 IT 뉴스"
