@@ -1,0 +1,21 @@
+name: Daily IT Digest
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5'  # 평일 오전 9시 KST (UTC 0시)
+  workflow_dispatch:         # 수동 실행 버튼도 활성화
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install anthropic requests
+      - run: python scripts/send_digest.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SEND_TO: seonyoung@ncsoft.com
