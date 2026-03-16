@@ -18,7 +18,7 @@ if not api_key:
 print(f"DEBUG: API Key가 로드되었습니다. (앞 4자리: {api_key[:4]}...)")
 
 # 2. API 설정 (가장 표준적인 경로)
-url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
 
 today = datetime.now().strftime("%Y년 %m월 %d일")
 prompt = f"오늘은 {today}입니다. IT 플랫폼 기획자를 위한 뉴스레터를 HTML로 작성해줘."
