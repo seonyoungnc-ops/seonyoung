@@ -19,7 +19,7 @@ prompt = f"""오늘은 {today}입니다. IT 업계 플랫폼 기획자를 위한
 결과는 인라인 CSS 포함한 깔끔한 White Tone HTML 뉴스레터로 출력해줘."""
 
 api_key = os.environ["GEMINI_API_KEY"]
-url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
 data = json.dumps({
     "contents": [{"parts": [{"text": prompt}]}],
