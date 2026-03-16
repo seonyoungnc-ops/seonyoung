@@ -15,6 +15,8 @@ jobs:
           python-version: '3.11'
       - run: python scripts/send_digest.py
         env:
+        
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SEND_TO: seonyoung@ncsoft.com
