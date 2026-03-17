@@ -20,7 +20,7 @@ def send_digest():
 
     # 2. 오늘의 날짜 및 분야 설정
     today = datetime.now().strftime("%Y년 %m월 %d일")
-    
+
     # 3. 프롬프트 구성 (분야 지정 및 5개씩 추출 요청)
     prompt = f"""
     오늘은 {today}입니다. 아래 4가지 분야에 대해 각각 '최신 뉴스 5개씩'을 선정하여 
@@ -40,9 +40,9 @@ def send_digest():
     - 응답에 마크다운 코드 블록 기호(```html 또는 ```)를 절대 포함하지 마. 오직 HTML 태그로만 시작하고 끝내줘.
     """
 
-    # 4. Gemma API 호출 (12b 모델 사용 및 타임아웃 120초)
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemma-3-12b-it:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemma-3-12b-it:generateContent?key=){api_key}"
-    
+    # 4. Gemini API 호출 (gemma-3-12b-it 모델, 타임아웃 120초)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-12b-it:generateContent?key={api_key}"
+
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
@@ -52,10 +52,45 @@ def send_digest():
     try:
         print(f"🚀 {today} 뉴스레터 생성 중 (Gemma-3-12b-it)...")
         response = requests.post(url, json=payload, timeout=120)
-        
+
         if response.status_code == 200:
             result = response.json()
             raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
-            
-            # 🧹 HTML 찌꺼기 제거 (정규식 사용)
-            clean_html = re.sub(r'
+
+            # 🧹 HTML 찌꺼기 제거 (마크다운 코드 블록 기호 제거)
+            clean_html = re.sub(r'```(?:html)?', '', raw_text).strip()
+            clean_html = re.sub(r'```$', '', clean_html).strip()
+
+            print("✅ 뉴스레터 HTML 생성 완료!")
+        else:
+            print(f"❌ API 오류: {response.status_code} - {response.text}")
+            return
+
+    except requests.exceptions.Timeout:
+        print("❌ API 요청 타임아웃 (120초 초과)")
+        return
+    except Exception as e:
+        print(f"❌ API 호출 실패: {e}")
+        return
+
+    # 5. 이메일 발송
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"📰 {today} IT/게임/AI 뉴스 다이제스트"
+        msg["From"] = smtp_email
+        msg["To"] = target_email
+
+        part = MIMEText(clean_html, "html", "utf-8")
+        msg.attach(part)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(smtp_email, smtp_password)
+            server.sendmail(smtp_email, target_email, msg.as_string())
+
+        print(f"✅ 이메일 발송 완료 → {target_email}")
+
+    except Exception as e:
+        print(f"❌ 이메일 발송 실패: {e}")
+
+if __name__ == "__main__":
+    send_digest()
