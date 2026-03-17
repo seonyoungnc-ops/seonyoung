@@ -26,7 +26,7 @@ def send_digest():
     # 2. 오늘의 날짜 설정
     today = datetime.now().strftime("%Y년 %m월 %d일")
     
-    # 3. 프롬프트 구성 (분야 지정 및 5개씩 추출 요청)
+    # 3. 프롬프트 구성
     prompt = f"""
     오늘은 {today}입니다. 아래 4가지 분야에 대해 각각 '최신 뉴스 5개씩'을 선정하여 
     IT 플랫폼 기획자를 위한 전문적인 HTML 뉴스레터를 작성해줘.
@@ -38,18 +38,14 @@ def send_digest():
     4. AI 변화 (LLM 신기술, 생성형 AI 산업 적용 사례, 신규 툴 출시)
 
     [작성 가이드라인]
-    - 각 분야별로 중요도가 높은 뉴스를 반드시 '5개씩' 엄선할 것. (총 20개 내외)
-    - 각 항목은 [제목], [1~2문장의 핵심 요약], [관련 링크(실제 또는 예시)]를 포함할 것.
-    - 디자인: 
-        * 배경색: #f4f4f4
-        * 본문 카드: #ffffff (둥근 모서리 적용)
-        * 강조색(제목): #003366 (Deep Blue - NC소프트 느낌)
+    - 각 분야별로 중요도가 높은 뉴스를 반드시 '5개씩' 엄선할 것.
+    - 각 항목은 [제목], [1~2문장의 핵심 요약], [관련 링크]를 포함할 것.
+    - 디자인: 배경색 #f4f4f4, 본문 카드 #ffffff, 제목 강조색 #003366.
     - 반드시 <html><body> 태그를 포함한 '완전한 HTML 구조'로만 응답할 것.
-    - 응답에 마크다운 코드 블록 기호(```html 또는 ```)를 절대 포함하지 마. 
-    - 텍스트 중간에 마크다운 기호를 섞지 말고 순수 HTML 태그로만 구성해줘.
+    - 응답에 마크다운 코드 블록 기호(```html 또는 ```)를 절대 포함하지 마.
     """
 
-    # 4. Gemma API 호출 (안정적인 12b 모델 사용)
+    # 4. Gemma API 호출 (깔끔하게 정리된 URL)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-12b-it:generateContent?key={api_key}"
     
     payload = {
@@ -59,14 +55,36 @@ def send_digest():
     }
 
     try:
-        print(f"🚀 {today} 뉴스레터 생성 시작 (모델: gemma-3-12b-it)...")
-        # 응답 생성을 위해 넉넉하게 120초 타임아웃 설정
+        print(f"🚀 {today} 뉴스레터 생성 시작 (gemma-3-12b-it)...")
         response = requests.post(url, json=payload, timeout=120)
         
         if response.status_code == 200:
             result = response.json()
             raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
             
-            # 🧹 HTML 찌꺼기 제거 및 정제 로직
-            # 1. 시작 부분의 ```html 또는 ``` 제거
-            clean_html = re.sub(r'^
+            # 🧹 HTML 찌꺼기 완벽 제거 로직 (여기서부터 완성본)
+            clean_html = re.sub(r'```html|```', '', raw_text).strip()
+            
+            # 5. 이메일 객체 생성
+            msg = MIMEMultipart()
+            msg['From'] = smtp_email
+            msg['To'] = target_email
+            msg['Subject'] = f"[Daily Digest] {today} IT/게임 산업 동향 리포트"
+
+            # HTML 본문 추가
+            msg.attach(MIMEText(clean_html, 'html'))
+
+            # 6. SMTP 서버를 통한 발송 (Gmail 기준)
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(smtp_email, smtp_password)
+                server.sendmail(smtp_email, target_email, msg.as_string())
+            
+            print(f"✅ 뉴스레터 발송 성공! ({target_email})")
+        else:
+            print(f"❌ API 호출 실패: {response.status_code} - {response.text}")
+
+    except Exception as e:
+        print(f"⚠️ 실행 중 오류 발생: {str(e)}")
+
+if __name__ == "__main__":
+    send_digest()
