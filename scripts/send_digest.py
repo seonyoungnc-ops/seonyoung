@@ -12,7 +12,7 @@ smtp_pw = os.environ.get("SMTP_PASSWORD", "").strip()
 send_to = os.environ.get("SEND_TO", "seonyoung@ncsoft.com").strip()
 
 # 2. API 설정 (리스트에서 확인된 gemini-2.0-flash 사용)
-url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={api_key}"
 
 today = datetime.now().strftime("%Y년 %m월 %d일")
 prompt = f"오늘은 {today}입니다. IT 플랫폼 기획자를 위한 오늘의 주요 기술 뉴스들을 카테고리별로 요약해서 깔끔한 HTML 뉴스레터 형식으로 작성해줘."
