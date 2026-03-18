@@ -46,7 +46,7 @@ def send_digest():
     """
 
     # 4. Gemma API 호출 (깔끔하게 정리된 URL)
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-it:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-12b-it:generateContent?key={api_key}"
     
     payload = {
         "contents": [{
