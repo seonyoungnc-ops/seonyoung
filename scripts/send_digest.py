@@ -4,78 +4,81 @@ import json
 import smtplib
 import re
 import time
+import schedule
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 
-def send_newsletter():
-    # 1. 새 환경 변수 로드 (반드시 새 키를 적용해주세요)
+def task():
+    """뉴스레터 생성 및 발송 핵심 로직"""
     api_key = os.environ.get("GEMINI_API_KEY")
     smtp_email = os.environ.get("SMTP_EMAIL")
     smtp_password = os.environ.get("SMTP_PASSWORD")
     target_email = "seonyoung@ncsoft.com"
 
-    if not api_key:
-        print("❌ 오류: GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
-        return
-
-    # 2. 날짜 설정 (24시간 이내 최신성 확보)
     now = datetime.now()
-    today_str = now.strftime("%Y년 %m월 %d일")
-    time_limit = (now - timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
+    today_str = now.strftime("%Y-%m-%d")
+    limit_time = (now - timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
 
-    # 3. [기획자 요구사항] 상세 프롬프트 (20건 큐레이션)
+    # [기획자 요구사항] 4개 분야 x 5개씩 = 총 20개
     prompt = f"""
-    당신은 IT/게임 전문 전략 기획자입니다. 오늘은 {today_str}입니다.
-    반드시 {time_limit} 이후 최근 24시간 내 발생한 뉴스만 엄선하여 아래 4분야별 각 5개씩(총 20개) HTML 뉴스레터를 만드세요.
-    1.국내게임시장 2.국외게임시장 3.IT시장 4.AI변화
-    - 항목별 구성: [제목], [1~2문장의 전문적인 핵심 요약], [관련 기사 링크]
-    - 디자인: 배경 #f4f4f4, 카드 #ffffff, 제목 강조색 #003366 (가독성 높은 리포트 스타일)
-    - 반드시 <html> 태그로 시작하는 순수 HTML만 응답하세요. (마크다운 기호 금지)
+    당신은 IT/게임 전략 기획자입니다. {limit_time} 이후 24시간 내 뉴스를 큐레이션하세요.
+    - 분야별 5개씩(총 20개): 1.국내게임 2.국외게임 3.IT시장 4.AI변화
+    - 항목: [제목], [1~2문장 요약], [링크]
+    - 디자인: #f4f4f4 배경, #ffffff 카드형 HTML (순수 HTML로만 응답)
     """
 
-    # 4. 주소 기호 오류 원천 차단 (리스트 결합 방식)
-    # 에디터가 자동으로 하이퍼링크를 입히지 못하도록 주소를 조각내어 합칩니다.
-    url_parts = ["h","t","t","p","s",":","/","/","g","e","n","e","r","a","t","i","v","e","l","a","n","g","u","a","g","e",".","g","o","o","g","l","e","a","p","i","s",".","c","o","m","/","v","1","b","e","t","a","/","m","o","d","e","l","s","/","g","e","m","i","n","i","-","2",".","0","-","f","l","a","s","h",":","g","e","n","e","r","a","t","e","C","o","n","t","e","n","t"]
-    endpoint = "".join(url_parts)
+    # 주소 오염 방지 조립
+    u = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+    
+    print(f"🚀 [{datetime.now().strftime('%H:%M:%S')}] 뉴스레터 생성 시작...")
 
-    print(f"🚀 {today_str} 뉴스레터 생성 시작 (분야별 5건, 총 20건)...")
+    raw_text = None
+    # 429 에러 발생 시 최대 3번 재시도 (각 2분 간격)
+    for i in range(3):
+        try:
+            res = requests.post(u, params={'key': api_key}, 
+                                json={"contents": [{"parts": [{"text": prompt}]}]}, 
+                                timeout=120)
+            if res.status_code == 200:
+                raw_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+                break
+            elif res.status_code == 429:
+                print(f"⏳ 할당량 초과. 120초 후 재시도... ({i+1}/3)")
+                time.sleep(120)
+            else:
+                print(f"❌ API 오류: {res.status_code}")
+                break
+        except Exception as e:
+            print(f"⚠️ 연결 오류: {e}")
+            time.sleep(10)
 
-    # 5. API 실행 (params 방식을 사용하여 URL 오염 방지)
-    try:
-        # 429 에러 방지를 위해 5초 대기 후 실행
-        time.sleep(5)
-        response = requests.post(
-            endpoint, 
-            params={'key': api_key}, 
-            json={"contents": [{"parts": [{"text": prompt}]}]}, 
-            timeout=120
-        )
-        
-        if response.status_code == 200:
-            raw_text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-            print("✅ 뉴스레터 본문 생성 성공!")
-            
-            # 6. 이메일 발송
+    if raw_text:
+        try:
             clean_html = re.sub(r'```html|```', '', raw_text).strip()
             msg = MIMEMultipart()
             msg['From'] = smtp_email
             msg['To'] = target_email
-            msg['Subject'] = f"[Daily Digest] {today_str} IT/게임 산업 동향 리포트 (20건)"
+            msg['Subject'] = f"[Daily Digest] {today_str} IT/게임 최신 동향 (20건)"
             msg.attach(MIMEText(clean_html, 'html'))
 
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
                 server.login(smtp_email, smtp_password)
                 server.sendmail(smtp_email, target_email, msg.as_string())
-            print(f"✅ 발송 완료! ({target_email})")
-            
-        elif response.status_code == 429:
-            print("⏳ 할당량 초과(429). 새 API 키가 맞는지 확인하시고 1분 뒤 다시 시도해주세요.")
-        else:
-            print(f"❌ 실패 ({response.status_code}): {response.text}")
-            
-    except Exception as e:
-        print(f"⚠️ 에러 발생: {e}")
+            print(f"✅ 발송 성공! ({target_email})")
+        except Exception as e:
+            print(f"⚠️ 발송 실패: {e}")
+    else:
+        print("❌ 본문 생성 실패로 발송을 건너뜁니다.")
 
-if __name__ == "__main__":
-    send_newsletter()
+# --- 스케줄러 설정 ---
+# 매일 오전 09:00에 실행되도록 설정
+schedule.every().day.at("09:00").do(task)
+
+print("📅 뉴스레터 자동 발송 시스템 가동 중... (매일 오전 9시)")
+# 테스트를 위해 즉시 한 번 실행하려면 아래 줄의 주석을 해제하세요.
+# task() 
+
+while True:
+    schedule.run_pending()
+    time.sleep(60) # 1분마다 체크
