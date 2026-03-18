@@ -1,30 +1,11 @@
 import os
 import requests
-import json
 import smtplib
 import re
 import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
-
-def get_news_segment(api_key, fields, limit_time):
-    """분야를 나눠서 요청하여 할당량 에러 방지"""
-    prompt = f"""
-    IT/게임 전략 기획자용 뉴스레터를 작성하세요. 기준: {limit_time} 이후 24시간 내 소식.
-    대상 분야: {fields} (각 5개씩 총 10개)
-    형식: [제목], [1문장 요약], [링크] 포함한 HTML 카드 형태.
-    순수 HTML로만 응답하세요.
-    """
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-    
-    for _ in range(3):
-        res = requests.post(url, params={'key': api_key}, 
-                            json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
-        if res.status_code == 200:
-            return res.json()["candidates"][0]["content"]["parts"][0]["text"]
-        time.sleep(60) # 실패 시 1분 대기
-    return ""
+from datetime import datetime
 
 def send_newsletter():
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -32,31 +13,40 @@ def send_newsletter():
     smtp_password = os.environ.get("SMTP_PASSWORD")
     target_email = "seonyoung@ncsoft.com"
 
-    limit_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
-
-    print("🚀 1차 뉴스 생성 중 (국내/국외 게임)...")
-    part1 = get_news_segment(api_key, "1.국내게임시장, 2.국외게임시장", limit_time)
+    # 분야별 1개씩 총 4개만 요청 (부하 최소화)
+    prompt = "오늘의 IT, 게임 최신 뉴스 4개만 제목과 링크 위주로 깔끔하게 HTML로 정리해줘."
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
     
-    print("⏳ 서버 부하 방지를 위해 30초 휴식...")
-    time.sleep(30)
-    
-    print("🚀 2차 뉴스 생성 중 (IT시장/AI변화)...")
-    part2 = get_news_segment(api_key, "3.IT시장, 4.AI변화", limit_time)
+    print("🚀 초경량 모드로 뉴스 생성 시도 중...")
 
-    if part1 and part2:
-        full_html = part1 + "<hr>" + part2
-        clean_html = re.sub(r'```html|```', '', full_html).strip()
+    try:
+        # 요청 전 강제 휴식 (중요!)
+        time.sleep(10)
+        res = requests.post(url, params={'key': api_key}, 
+                            json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
         
-        msg = MIMEMultipart()
-        msg['From'] = smtp_email
-        msg['To'] = target_email
-        msg['Subject'] = f"[Daily Digest] {datetime.now().strftime('%Y-%m-%d')} IT/게임 동향 (20건)"
-        msg.attach(MIMEText(clean_html, 'html'))
+        if res.status_code == 200:
+            raw_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+            print("✅ [성공] 드디어 본문이 생성되었습니다!")
+            
+            # 발송 로직
+            clean_html = re.sub(r'```html|```', '', raw_text).strip()
+            msg = MIMEMultipart()
+            msg['From'] = smtp_email
+            msg['To'] = target_email
+            msg['Subject'] = f"[Daily Digest] {datetime.now().strftime('%Y-%m-%d')} 뉴스 테스트"
+            msg.attach(MIMEText(clean_html, 'html'))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(smtp_email, smtp_password)
-            server.sendmail(smtp_email, target_email, msg.as_string())
-        print("✅ 전체 발송 성공!")
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(smtp_email, smtp_password)
+                server.sendmail(smtp_email, target_email, msg.as_string())
+            print("✅ [성공] 메일함으로 발송 완료!")
+        else:
+            print(f"❌ [실패] 구글 서버 응답: {res.status_code}")
+            print("💡 팁: API 키가 지쳤습니다. 1시간 뒤에 다시 시도해 주세요.")
+
+    except Exception as e:
+        print(f"⚠️ 오류 발생: {e}")
 
 if __name__ == "__main__":
     send_newsletter()
