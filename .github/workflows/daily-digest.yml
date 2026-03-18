@@ -19,6 +19,7 @@ jobs:
       - name: Run Python Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SEND_TO: "seonyoung@ncsoft.com"
         run: |
