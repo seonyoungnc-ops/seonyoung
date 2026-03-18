@@ -7,16 +7,13 @@ import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
-from dotenv import load_dotenv # 추가: .env 파일 로드를 위해 필요
 
 def send_digest():
     """
     IT 플랫폼 기획자를 위한 일일 뉴스레터 자동 발송 스크립트
-    모델: Gemini 3 Flash (최신 모델로 변경)
+    분야: 한국 게임, 글로벌 게임, IT 시장, AI 변화 (각 5개씩)
     """
-    # 1. 환경 변수 로드 (.env 파일이 있다면 읽어옵니다)
-    load_dotenv()
-    
+    # 1. 환경 변수 로드 (시스템 설정값을 직접 읽음)
     api_key = os.environ.get("GEMINI_API_KEY")
     smtp_email = os.environ.get("SMTP_EMAIL")
     smtp_password = os.environ.get("SMTP_PASSWORD")
@@ -49,8 +46,7 @@ def send_digest():
     - 응답에 마크다운 코드 블록 기호(```html 또는 ```)를 절대 포함하지 마.
     """
 
-    # 4. Gemini API 호출 (모델명을 gemini-3-flash로 변경)
-    # v1beta 모델 경로 업데이트
+    # 4. Gemini API 호출 (안정적인 gemini-3-flash 모델 사용)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key={api_key}"
     
     payload = {
@@ -62,23 +58,21 @@ def send_digest():
     try:
         print(f"🚀 {today} 뉴스레터 생성 시작 (Gemini 3 Flash)...")
         
-        # 503 에러 대비 최대 3번 재시도 로직
+        # 503 에러 대비 재시도 로직
         response = None
         for attempt in range(3):
             response = requests.post(url, json=payload, timeout=120)
             if response.status_code == 200:
                 break
             elif response.status_code == 503:
-                print(f"🔄 서버 부하로 인해 재시도 중... ({attempt + 1}/3)")
+                print(f"🔄 서버 부하로 재시도 중... ({attempt + 1}/3)")
                 time.sleep(5)
-            else:
-                break
-
+        
         if response and response.status_code == 200:
             result = response.json()
             raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
             
-            # HTML 태그 외 불필요한 마크다운 제거
+            # HTML 찌꺼기 제거
             clean_html = re.sub(r'```html|```', '', raw_text).strip()
             
             # 5. 이메일 객체 생성
@@ -96,9 +90,8 @@ def send_digest():
             
             print(f"✅ 뉴스레터 발송 성공! ({target_email})")
         else:
-            status_code = response.status_code if response else "Unknown"
-            error_text = response.text if response else "No response"
-            print(f"❌ API 호출 실패: {status_code} - {error_text}")
+            status_code = response.status_code if response else "N/A"
+            print(f"❌ API 호출 실패: {status_code} - {response.text if response else '응답 없음'}")
 
     except Exception as e:
         print(f"⚠️ 실행 중 오류 발생: {str(e)}")
