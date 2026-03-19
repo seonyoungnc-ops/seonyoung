@@ -2,30 +2,39 @@ name: 📬 Platform Planner Daily Brief
 
 on:
   schedule:
-    # 매일 00:00 UTC = 09:00 KST
-    - cron: '0 0 * * *'
-  workflow_dispatch:   # 수동 실행 허용
+    # 매일 09:00 KST = 00:00 UTC
+    - cron: "0 0 * * *"
+  workflow_dispatch: # 수동 실행 허용
 
 jobs:
-  send-newsletter:
+  send-brief:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Python 설정
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      # pip install 불필요 — 표준 라이브러리만 사용
-
-      - name: Run newsletter script
+      # 외부 라이브러리 불필요 — 표준 라이브러리만 사용
+      - name: 데일리 브리프 실행
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          SMTP_EMAIL:     ${{ secrets.SMTP_EMAIL }}
-          SMTP_PASSWORD:  ${{ secrets.SMTP_PASSWORD }}
-          TARGET_EMAIL:   seonyoung@ncsoft.com
-        run: python newsletter/send_newsletter.py
+          NAVER_CLIENT_ID:     ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          SMTP_EMAIL:          ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD:       ${{ secrets.SMTP_PASSWORD }}
+          TO_EMAIL:            ${{ secrets.TO_EMAIL }}
+        run: python daily_brief.py
+
+      - name: HTML 미리보기 아티팩트 저장
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brief-preview-${{ github.run_number }}
+          path: brief_preview.html
+          retention-days: 7
