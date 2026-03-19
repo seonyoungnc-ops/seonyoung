@@ -35,55 +35,60 @@ TODAY_WEEKDAY = ["월", "화", "수", "목", "금", "토", "일"][datetime.now(K
 
 CATEGORY_RULES = {
     "domestic_game": {
-        "include": "국내(한국) 게임사 신작·업데이트·매출·유저 반응·정책·규제",
-        "exclude": "해외 게임사 단독, 반도체·GPU, AI 기술 자체, 글로벌 콘솔 하드웨어, 주식·투자",
+        "include": "국내 게임사(넥슨·넷마블·크래프톤·펄어비스·엔씨소프트 등) 신작 출시·업데이트·매출·유저 반응·정책",
+        "exclude": "해외 게임사 단독 뉴스, 반도체·주식·투자, AI 기술 자체, 붉은사막 등 이미 다른 카테고리에 포함된 주제",
     },
     "global_game": {
-        "include": "해외 게임사(닌텐도·소니·MS·EA·유비소프트·에픽 등) 신작·서비스·인수합병, 글로벌 게임 트렌드, e스포츠",
-        "exclude": "국내 게임사 단독, 반도체·GPU, AI 기술 자체, 주식·투자",
+        "include": "닌텐도·소니·MS·EA·유비소프트·에픽게임즈 등 해외 게임사 신작·서비스·M&A, 글로벌 콘솔·PC 게임 트렌드",
+        "exclude": "국내 게임사(넥슨·넷마블·크래프톤·펄어비스 등) 단독 뉴스, 붉은사막 관련 기사 전부 제외(국내 카테고리 담당), 반도체·주식",
     },
     "it": {
-        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 신제품·서비스·정책·실적, 클라우드, 반도체, 플랫폼 전략",
-        "exclude": "게임 단독, AI 모델·LLM 기술(AI 카테고리), 주식·투자·증권 단독",
+        "include": "구글·애플·MS·메타·아마존 등 글로벌 빅테크의 신제품·서비스 발표·정책·플랫폼 전략·클라우드·OS",
+        "exclude": "게임 관련 기사, AI 모델·LLM 자체(AI 카테고리 담당), 국내 반도체 주식·증권 시황, 박람회·전시회 단순 참가 소식",
     },
     "ai": {
-        "include": "LLM·생성형AI 모델 출시·성능, AI 스타트업·빅테크 AI 전략, AI 규제·정책, AI 서비스 글로벌 트렌드",
-        "exclude": "게임 단독, 반도체 하드웨어 단독, 주식·투자 단독",
+        "include": "오픈AI·구글·앤트로픽·MS 등 빅테크의 AI 모델·서비스 출시·업데이트, LLM 성능 비교, AI 비즈니스 전략·투자·규제",
+        "exclude": "게임 관련 기사, 의료·보안·로봇·제조 등 단순 AI 적용 사례(빅테크 AI 전략과 무관한 것), 박람회·전시회 단순 참가 소식, 주식·증권",
     },
 }
 
 # ─────────────────────────────────────────────────────────────────
-# 수집 소스 정의 — 전 카테고리 네이버 API 통일
-#  네이버 sort=sim(관련도순): 품질·클릭수 반영, 영세매체 낚시성 기사 자연 필터링
+# 수집 쿼리 — 카테고리별 핵심 키워드 중심, 노이즈 최소화
 # ─────────────────────────────────────────────────────────────────
 
+# 카테고리 간 키워드 중복 방지 원칙:
+# - 국내게임: 국내 게임사명만 사용
+# - 글로벌게임: 해외 게임사명만 사용, 국내사명 절대 포함 금지
+# - IT: 빅테크 서비스/제품 중심, 게임/AI 키워드 배제
+# - AI: 모델명/서비스명 중심, IT 인프라/게임 키워드 배제
 NAVER_QUERIES = {
     "domestic_game": [
-        "국내 모바일게임 신작 출시",
-        "넥슨 넷마블 크래프톤 펄어비스 게임",
-        "국내 온라인게임 콘솔게임 업데이트",
-        "한국 게임업계 매출 서비스",
+        "넥슨 게임 출시",
+        "넷마블 신작",
+        "크래프톤 게임",
+        "펄어비스 엔씨소프트 게임",
+        "카카오게임즈 위메이드 신작",
     ],
     "global_game": [
-        "닌텐도 소니 플레이스테이션 신작",
-        "Xbox 마이크로소프트 게임 서비스",
-        "글로벌 게임사 신작 출시 해외",
-        "에픽게임즈 EA 유비소프트 블리자드",
-        "스팀 콘솔 게임 글로벌 출시",
+        "닌텐도 신작",
+        "플레이스테이션 PS5 게임",
+        "Xbox 게임패스",
+        "EA 유비소프트 신작",
+        "스팀 글로벌 게임",
     ],
     "it": [
-        "구글 애플 마이크로소프트 서비스 발표",
-        "메타 아마존 빅테크 플랫폼 전략",
-        "반도체 엔비디아 퀄컴 TSMC",
-        "애플 안드로이드 모바일 OS 정책",
-        "글로벌 IT 업계 인수합병 실적",
+        "애플 신제품 발표",
+        "구글 서비스 업데이트",
+        "메타 플랫폼 전략",
+        "아마존 마이크로소프트 클라우드",
+        "빅테크 정책 발표",
     ],
     "ai": [
-        "오픈AI GPT 생성형AI 신모델",
-        "구글 제미나이 앤트로픽 AI 출시",
-        "AI 서비스 글로벌 트렌드 정책",
-        "LLM 인공지능 빅테크 전략",
-        "AI 규제 산업 적용 사례",
+        "오픈AI 챗GPT 출시",
+        "구글 제미나이 업데이트",
+        "앤트로픽 클로드 모델",
+        "AI 모델 서비스 출시",
+        "LLM 생성형AI 발표",
     ],
 }
 
@@ -101,12 +106,22 @@ def clean_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text or "").replace("&quot;",'"').replace("&amp;","&").replace("&#39;","'").strip()
 
 def normalize_title(title: str) -> str:
-    """특수문자·공백 제거 후 소문자화 — 중복 판별용"""
+    """특수문자·공백 제거 후 소문자화"""
     return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
 
-def title_key(title: str) -> str:
-    """앞 15자 기준 핵심 키워드 추출 — 동일 주제 중복 탐지용"""
-    return normalize_title(title)[:15]
+def extract_keywords(title: str) -> set[str]:
+    """
+    제목에서 2자 이상 의미 단어를 추출 — 동일 주제 탐지용
+    예: '붉은사막 출시' → {'붉은사막', '출시'}
+    """
+    norm = normalize_title(title)
+    # 한글 2자+ 또는 영문 3자+ 단어 추출
+    words = set(re.findall(r"[가-힣]{2,}|[a-zA-Z]{3,}", norm))
+    # 너무 일반적인 단어 제거
+    stopwords = {"출시","업데이트","신작","게임","뉴스","발표","서비스","기사",
+                 "분석","전략","시장","글로벌","국내","해외","관련","공식","최신",
+                 "the","and","for","with","that","this"}
+    return words - stopwords
 
 def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
     encoded = urllib.parse.quote(query)
@@ -151,23 +166,34 @@ def fetch_rss(url: str, max_items: int = 15) -> list[dict]:
         print(f"    [WARN] RSS 오류 {url[:55]}: {e}")
         return []
 
-def dedup(articles: list[dict], seen_links: set, seen_titles: set) -> list[dict]:
-    """URL 중복 + 제목 정규화 중복 + 핵심 키 15자 중복 3중 필터"""
+def dedup(articles: list[dict], seen_links: set, seen_titles: set,
+          seen_kw: set | None = None) -> list[dict]:
+    """
+    4중 중복 필터:
+    1. URL 동일
+    2. 정규화 제목 동일
+    3. 핵심 키워드 2개 이상 겹침 (동일 주제 다른 기사 차단)
+    seen_kw: 카테고리 내/간 공유되는 키워드 세트 (호출 간 누적)
+    """
+    if seen_kw is None:
+        seen_kw = set()
     result = []
-    seen_keys = {title_key(t) for t in seen_titles}  # 기존 타이틀에서 키 추출
     for a in articles:
         link = a["link"]
         norm = normalize_title(a["title"])
-        key  = title_key(a["title"])
+        kws  = extract_keywords(a["title"])
+
         if not link or link in seen_links:
             continue
         if norm in seen_titles:
             continue
-        if key and key in seen_keys:
+        # 핵심 키워드 2개 이상 겹치면 동일 주제로 판단 → 제외
+        if len(kws & seen_kw) >= 2:
             continue
+
         seen_links.add(link)
         seen_titles.add(norm)
-        seen_keys.add(key)
+        seen_kw.update(kws)   # 누적 (참조 전달이므로 외부에서도 반영됨)
         result.append(a)
     return result
 
@@ -200,18 +226,20 @@ def collect_articles_for_category(
     target: int = 10,
     global_seen_links: set | None = None,
     global_seen_titles: set | None = None,
+    global_seen_kw: set | None = None,
 ) -> list[dict]:
     """
-    전 카테고리 네이버 API — 24h 필터 적용
+    전 카테고리 네이버 API — 24h 필터 + 4중 중복 제거
+    - seen_links / seen_titles / seen_kw 를 카테고리 간 공유 → 교차 중복 차단
     - 부족 시 48h 자동 확장
-    - global_seen_* 로 카테고리 간 중복 제거
     """
     seen_links  = global_seen_links  if global_seen_links  is not None else set()
     seen_titles = global_seen_titles if global_seen_titles is not None else set()
+    seen_kw     = global_seen_kw     if global_seen_kw     is not None else set()
     articles = []
     cat_id = cat["id"]
 
-    for hours in (24, 48):          # 24h 부족 시 48h 로 자동 확장
+    for hours in (24, 48):
         if len(articles) >= target:
             break
         for query in NAVER_QUERIES.get(cat_id, []):
@@ -222,7 +250,7 @@ def collect_articles_for_category(
                 naver_to_article(i) for i in raw_items
                 if is_within_hours(i.get("pubDate", ""), hours)
             ]
-            articles += dedup(candidates, seen_links, seen_titles)
+            articles += dedup(candidates, seen_links, seen_titles, seen_kw)
         if len(articles) >= target:
             print(f"    수집 완료: {len(articles)}개 ({hours}h 이내)")
         elif hours == 24:
@@ -255,8 +283,8 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
             else:
                 raise
 
-def _build_prompt(batch: list[dict]) -> str:
-    """배치(2개 카테고리)용 Gemini 프롬프트 생성"""
+def _build_prompt(batch: list[dict], used_titles: set | None = None) -> str:
+    """카테고리별 Gemini 프롬프트 생성 (used_titles: 이미 다른 카테고리에 사용된 키워드)"""
     rules_text = ""
     sections = []
     for entry in batch:
@@ -265,16 +293,46 @@ def _build_prompt(batch: list[dict]) -> str:
         cid = cat["id"]
         r = CATEGORY_RULES[cid]
         rules_text += f"- {cat['label']}: 포함={r['include']} / 제외={r['exclude']}\n"
-        global_note = " (글로벌 관점 중심)" if cid in ("it", "ai") else ""
         art_text = "\n".join([
             f"  {i+1}. {a['title'].replace(chr(34), chr(39))} | {a['link']}"
             for i, a in enumerate(articles)
         ])
-        sections.append(f"[{cat['label']}{global_note}]\n{art_text}")
+        sections.append(f"[{cat['label']}]\n{art_text}")
     combined = "\n\n".join(sections)
     cat_ids = " / ".join(e["cat"]["id"] for e in batch)
 
+    # 이미 다른 카테고리에 사용된 키워드 목록
+    used_note = ""
+    if used_titles:
+        used_list = ", ".join(f"'{t}'" for t in sorted(used_titles)[:20])
+        used_note = f"\n⚠️ 아래 키워드는 이미 다른 카테고리에서 다뤘으므로 이 카테고리에서 절대 포함 금지:\n{used_list}\n"
+
+    cat_id = batch[0]["cat"]["id"]
+
+    # 카테고리별 강화 지시
+    extra = ""
+    if cat_id == "global_game":
+        extra = """
+⚠️ 글로벌 게임 카테고리 특별 규칙:
+- 펄어비스·넥슨·넷마블·크래프톤·엔씨소프트 등 국내 게임사 기사는 단 1개도 포함 금지.
+- '붉은사막' 관련 기사는 제목에 언급만 있어도 전부 제외.
+- 반드시 해외 게임사(닌텐도·소니·MS·EA·유비소프트 등)의 기사만 선정."""
+    elif cat_id == "it":
+        extra = """
+⚠️ IT 업계 카테고리 특별 규칙:
+- 구글·애플·MS·메타·아마존 등 글로벌 빅테크의 제품·서비스·정책 기사만 선정.
+- 국내 반도체 주식 시황, 증권 관련, 박람회 단순 참가 기사는 전부 제외.
+- AI 모델·LLM 기술 기사도 제외 (AI 카테고리 담당).
+- summary와 reason은 반드시 실제 내용으로 채워야 함. 절대 빈 문자열 금지."""
+    elif cat_id == "ai":
+        extra = """
+⚠️ AI 카테고리 특별 규칙:
+- 오픈AI·구글·앤트로픽·MS·메타 등 빅테크의 AI 모델·서비스·전략 기사만 선정.
+- 의료·보안·로봇·제조 분야 단순 AI 적용 사례, 박람회·전시회 참가 기사는 전부 제외.
+- IT 플랫폼 기획자가 직접 참고할 수 있는 AI 서비스·모델 기사 우선."""
+
     return f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
+{extra}{used_note}
 
 [선정 기준]
 {rules_text}
@@ -282,25 +340,25 @@ def _build_prompt(batch: list[dict]) -> str:
 {combined}
 
 [지시사항]
-1. 각 카테고리에서 선정 기준에 적합한 기사를 가능한 5개 선정. 부적합 기사는 제외.
-   - 동일 게임·주제·이슈를 다룬 기사가 여러 개면 가장 핵심적인 1개만 선택. 절대 중복 금지.
-   - 5개가 안 되면 있는 기사만 포함. 억지로 채우지 말 것.
-   - 화제성·파급력 높은 기사 우선.
-2. title 필드: 영문 제목은 반드시 자연스러운 한국어로 번역. 국문 제목은 그대로.
-3. URL은 절대 새로 생성 금지. 반드시 입력된 URL만 사용.
+1. 선정 기준에 정확히 맞는 기사만 최대 5개 선정. 기준 벗어난 기사는 과감히 제외.
+2. 동일 게임·이슈·주제 기사가 여러 개면 가장 대표적인 1개만 선택. 중복 절대 금지.
+3. summary: 기사 핵심 내용 2~3줄. 반드시 내용 있게 작성. 빈 문자열 금지.
+4. reason: 플랫폼 기획자가 주목해야 할 이유 1~2줄. 반드시 작성. 빈 문자열 금지.
+5. title: 영문이면 자연스러운 한국어로 번역. 국문이면 원본 그대로.
+6. URL: 절대 새로 생성 금지. 입력된 URL만 사용.
 
-JSON 배열만 출력하세요 (다른 텍스트 금지):
+JSON 배열만 출력 (다른 텍스트 금지):
 [
   {{
-    "category_id": "{cat_ids} 중 하나",
-    "category_insight": "핵심 흐름 1~2문장.",
+    "category_id": "{cat_ids}",
+    "category_insight": "이 카테고리 오늘의 핵심 흐름 1~2문장.",
     "articles": [
       {{
-        "title": "한국어 제목 (영문이면 번역, 국문이면 원본 그대로)",
-        "link": "원본 URL 그대로 (절대 변경 금지)",
-        "summary": "3줄 이내 핵심 요약. 숫자·고유명사 포함.",
+        "title": "한국어 제목",
+        "link": "원본 URL 그대로",
+        "summary": "기사 핵심 내용 2~3줄 요약 (절대 비우지 말 것)",
         "keywords": ["키워드1", "키워드2", "키워드3"],
-        "reason": "기획자가 주목할 이유 2줄 이내."
+        "reason": "기획자가 주목해야 할 이유 1~2줄 (절대 비우지 말 것)"
       }}
     ]
   }}
@@ -490,6 +548,7 @@ def main():
     # 전역 seen 세트로 카테고리 간 중복 완전 차단
     global_seen_links  = set()
     global_seen_titles = set()
+    global_seen_kw     = set()   # 카테고리 간 키워드 공유 — 동일 주제 교차 중복 차단
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
@@ -497,6 +556,7 @@ def main():
             cat, target=10,
             global_seen_links=global_seen_links,
             global_seen_titles=global_seen_titles,
+            global_seen_kw=global_seen_kw,
         )
         all_data.append({"cat": cat, "articles": articles})
 
