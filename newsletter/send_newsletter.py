@@ -18,7 +18,8 @@ from datetime import datetime, timezone, timedelta
 # ──────────────────────────────────────────────
 # 환경변수
 # ──────────────────────────────────────────────
-# NAVER API 더 이상 사용 안 함 (RSS로 대체)
+NAVER_CLIENT_ID     = os.environ["NAVER_CLIENT_ID"]
+NAVER_CLIENT_SECRET = os.environ["NAVER_CLIENT_SECRET"]
 GEMINI_API_KEY      = os.environ["GEMINI_API_KEY"]
 SMTP_EMAIL          = os.environ["SMTP_EMAIL"]
 SMTP_PASSWORD       = os.environ["SMTP_PASSWORD"]
@@ -29,10 +30,9 @@ TODAY = datetime.now(KST).strftime("%Y년 %m월 %d일")
 TODAY_WEEKDAY = ["월", "화", "수", "목", "금", "토", "일"][datetime.now(KST).weekday()]
 
 # ──────────────────────────────────────────────
-# 카테고리 정의 (RSS 기반 신뢰 매체 고정)
+# 카테고리 정의
 # ──────────────────────────────────────────────
 
-# 카테고리별 포함/제외 규칙 (Gemini 필터링용)
 CATEGORY_RULES = {
     "domestic_game": {
         "include": "국내(한국) 게임사 신작·업데이트·매출·유저 반응·정책·규제",
@@ -43,117 +43,159 @@ CATEGORY_RULES = {
         "exclude": "국내 게임사 단독, 반도체·GPU, AI 기술 자체, 주식·투자",
     },
     "it": {
-        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 신제품·서비스·정책·실적, 클라우드, 반도체, 모바일 OS, 플랫폼 전략",
-        "exclude": "게임 단독, AI 모델·LLM 기술(AI 카테고리), 주식·투자·증권 단독 기사",
+        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 신제품·서비스·정책·실적, 클라우드, 반도체, 플랫폼 전략",
+        "exclude": "게임 단독, AI 모델·LLM 기술(AI 카테고리), 주식·투자·증권 단독",
     },
     "ai": {
         "include": "LLM·생성형AI 모델 출시·성능, AI 스타트업·빅테크 AI 전략, AI 규제·정책, AI 서비스 글로벌 트렌드",
-        "exclude": "게임 단독, 반도체 하드웨어 단독, 주식·투자 단독 기사",
+        "exclude": "게임 단독, 반도체 하드웨어 단독, 주식·투자 단독",
     },
 }
 
-# RSS 피드 — 카테고리별 신뢰 매체 고정
+# 국내 게임: 네이버 API (한국어 콘텐츠 최적)
+# 글로벌/IT/AI: RSS 고정 매체
 RSS_SOURCES = {
-    "domestic_game": [
-        "https://www.gamemeca.com/rss/news.php",          # 게임메카
-        "https://www.inven.co.kr/rss/news.php",           # 인벤
-        "https://bbs.ruliweb.com/news/board/1003?view=rss",# 루리웹
-        "https://www.thisisgame.com/webzine/rss/news.xml", # 디스이즈게임
-    ],
     "global_game": [
-        "https://www.ign.com/feeds/all.xml",              # IGN
-        "https://feeds.feedburner.com/ign/all",
-        "https://www.gamespot.com/feeds/mashup/",         # GameSpot
-        "https://kotaku.com/rss",                         # Kotaku
-        "https://www.eurogamer.net/?format=rss",          # Eurogamer
+        "https://www.ign.com/feeds/all.xml",
+        "https://www.gamespot.com/feeds/mashup/",
+        "https://kotaku.com/rss",
+        "https://www.eurogamer.net/?format=rss",
+        "https://www.rockpapershotgun.com/feed",
     ],
     "it": [
-        "https://techcrunch.com/feed/",                   # TechCrunch
-        "https://www.theverge.com/rss/index.xml",         # The Verge
-        "https://feeds.arstechnica.com/arstechnica/index",# Ars Technica
-        "https://www.wired.com/feed/rss",                 # Wired
+        "https://techcrunch.com/feed/",
+        "https://www.theverge.com/rss/index.xml",
+        "https://feeds.arstechnica.com/arstechnica/index",
+        "https://www.wired.com/feed/rss",
     ],
     "ai": [
         "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "https://venturebeat.com/category/ai/feed/",      # VentureBeat AI
+        "https://venturebeat.com/category/ai/feed/",
         "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
         "https://feeds.arstechnica.com/arstechnica/ai",
+    ],
+}
+
+# 국내 게임 네이버 쿼리
+NAVER_QUERIES = {
+    "domestic_game": [
+        "국내 모바일게임 신작 출시",
+        "넥슨 넷마블 크래프톤 게임",
+        "국내 게임 업데이트 이벤트",
+        "한국 게임업계 매출 흥행",
+        "국내 PC게임 콘솔게임",
     ],
 }
 
 CATEGORIES = [
     {"id": "domestic_game", "label": "🎮 국내 게임 시장", "color": "#c84b31"},
     {"id": "global_game",   "label": "🌐 글로벌 게임 시장", "color": "#2563b0"},
-    {"id": "it",            "label": "💻 IT 업계",         "color": "#7c3aed"},
-    {"id": "ai",            "label": "🤖 AI",              "color": "#0891b2"},
+    {"id": "it",            "label": "💻 IT 업계",          "color": "#7c3aed"},
+    {"id": "ai",            "label": "🤖 AI",               "color": "#0891b2"},
 ]
 
 # ──────────────────────────────────────────────
-# 1단계: RSS 수집
+# 1단계: 기사 수집 (국내=네이버API / 글로벌·IT·AI=RSS)
 # ──────────────────────────────────────────────
-def fetch_rss(url: str, max_items: int = 10) -> list[dict]:
-    """RSS 피드 파싱 → [{title, link, description, pubDate}]"""
-    import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET
+
+def clean_html(text: str) -> str:
+    return re.sub(r"<[^>]+>", "", text or "").replace("&quot;",'"').replace("&amp;","&").replace("&#39;","'").strip()
+
+def normalize_title(title: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
+
+def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
+    encoded = urllib.parse.quote(query)
+    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
+    req = urllib.request.Request(url)
+    req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
+    req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("items", [])
+    except Exception as e:
+        print(f"    [WARN] Naver API 오류 '{query}': {e}")
+        return []
+
+def fetch_rss(url: str, max_items: int = 15) -> list[dict]:
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
             raw = resp.read()
         root = ET.fromstring(raw)
-        ns = {"atom": "http://www.w3.org/2005/Atom"}
         items = []
-
         # RSS 2.0
         for item in root.findall(".//item")[:max_items]:
             title = (item.findtext("title") or "").strip()
             link  = (item.findtext("link") or "").strip()
-            desc  = re.sub(r"<[^>]+>", "", item.findtext("description") or "").strip()
-            pub   = (item.findtext("pubDate") or "").strip()
+            desc  = clean_html(item.findtext("description") or "")[:120]
             if title and link:
-                items.append({"title": title, "link": link, "description": desc[:120], "pubDate": pub})
-
-        # Atom
+                items.append({"title": title, "link": link, "description": desc})
+        # Atom fallback
         if not items:
-            for entry in root.findall(".//atom:entry", ns)[:max_items]:
-                title = (entry.findtext("atom:title", namespaces=ns) or
-                         entry.findtext("title") or "").strip()
-                link_el = entry.find("atom:link", ns) or entry.find("link")
-                link = (link_el.get("href", "") if link_el is not None else "").strip()
-                desc = re.sub(r"<[^>]+>", "",
-                    (entry.findtext("atom:summary", namespaces=ns) or
-                     entry.findtext("summary") or "")).strip()
+            ns = {"a": "http://www.w3.org/2005/Atom"}
+            for entry in root.findall(".//a:entry", ns)[:max_items]:
+                title = (entry.findtext("a:title", namespaces=ns) or "").strip()
+                link_el = entry.find("a:link", ns)
+                link = (link_el.get("href","") if link_el is not None else "").strip()
+                desc = clean_html(entry.findtext("a:summary", namespaces=ns) or "")[:120]
                 if title and link:
-                    items.append({"title": title, "link": link,
-                                  "description": desc[:120], "pubDate": ""})
+                    items.append({"title": title, "link": link, "description": desc})
         return items
     except Exception as e:
-        print(f"    [WARN] RSS 오류 {url[:60]}: {e}")
+        print(f"    [WARN] RSS 오류 {url[:55]}: {e}")
         return []
 
-def normalize_title(title: str) -> str:
-    return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
+def dedup(articles: list[dict], seen_links: set, seen_titles: set) -> list[dict]:
+    result = []
+    for a in articles:
+        link = a["link"]
+        norm = normalize_title(a["title"])
+        if not link or link in seen_links:
+            continue
+        if norm and norm in seen_titles:
+            continue
+        if norm[:20] and any(s.startswith(norm[:20]) for s in seen_titles):
+            continue
+        seen_links.add(link)
+        seen_titles.add(norm)
+        result.append(a)
+    return result
 
 def collect_articles_for_category(cat: dict, target: int = 8) -> list[dict]:
-    """카테고리 RSS 피드에서 기사 수집 + 중복 제거"""
+    """
+    국내 게임: 네이버 API
+    글로벌·IT·AI: RSS 고정 매체
+    target개 이상 수집 후 Gemini가 최적 5개 선별
+    """
     seen_links, seen_titles = set(), set()
     articles = []
-    for feed_url in RSS_SOURCES[cat["id"]]:
-        if len(articles) >= target:
-            break
-        items = fetch_rss(feed_url, max_items=15)
-        for item in items:
+    cat_id = cat["id"]
+
+    if cat_id == "domestic_game":
+        # 네이버 API
+        for query in NAVER_QUERIES["domestic_game"]:
             if len(articles) >= target:
                 break
-            link = item["link"]
-            norm = normalize_title(item["title"])
-            if not link or link in seen_links:
-                continue
-            if norm and (norm in seen_titles or
-               any(norm[:20] and s.startswith(norm[:20]) for s in seen_titles)):
-                continue
-            seen_links.add(link)
-            seen_titles.add(norm)
-            articles.append(item)
-    return articles
+            items = fetch_naver_news(query, display=15)
+            candidates = []
+            for item in items:
+                link  = item.get("originallink") or item.get("link", "")
+                title = clean_html(item.get("title", ""))
+                desc  = clean_html(item.get("description", ""))[:120]
+                candidates.append({"title": title, "link": link, "description": desc})
+            articles += dedup(candidates, seen_links, seen_titles)
+    else:
+        # RSS
+        for feed_url in RSS_SOURCES.get(cat_id, []):
+            if len(articles) >= target:
+                break
+            items = fetch_rss(feed_url, max_items=15)
+            articles += dedup(items, seen_links, seen_titles)
+
+    return articles[:target]
 
 # ──────────────────────────────────────────────
 # 2단계: Gemini로 요약/인사이트 생성
@@ -205,8 +247,10 @@ def _build_prompt(batch: list[dict]) -> str:
 {combined}
 
 [지시사항]
-1. 각 카테고리에서 선정 기준에 적합한 기사 최대 5개 선정. 부적합 기사는 제외.
-2. 주목도 높은 기사(화제성·파급력) 우선. 5개 미만이어도 됨.
+1. 각 카테고리에서 선정 기준에 적합한 기사를 가능한 5개 선정. 부적합 기사는 제외.
+   - 5개가 안 되면 있는 기사 전부 포함. 억지로 늘리지는 말 것.
+   - 주목도 높은 기사(화제성·파급력) 우선.
+2. title 필드: 영문 제목은 반드시 한국어로 번역. 국문 제목은 그대로.
 3. URL은 절대 새로 생성 금지. 입력된 URL 그대로 사용.
 
 JSON 배열만 출력하세요 (다른 텍스트 금지):
@@ -216,8 +260,8 @@ JSON 배열만 출력하세요 (다른 텍스트 금지):
     "category_insight": "핵심 흐름 1~2문장.",
     "articles": [
       {{
-        "title": "원본 제목 그대로",
-        "link": "원본 URL 그대로",
+        "title": "한국어 제목 (영문이면 번역, 국문이면 원본 그대로)",
+        "link": "원본 URL 그대로 (절대 변경 금지)",
         "summary": "3줄 이내 핵심 요약. 숫자·고유명사 포함.",
         "keywords": ["키워드1", "키워드2", "키워드3"],
         "reason": "기획자가 주목할 이유 2줄 이내."
@@ -264,15 +308,15 @@ def analyze_all_categories(all_data: list[dict]) -> dict:
         for r in results_list:
             result_map[r["category_id"]] = r
 
-    # URL·제목 원본 강제 보존
+    # URL만 원본으로 보존 (제목은 Gemini 번역본 사용)
     for entry in all_data:
         cat_id = entry["cat"]["id"]
         articles = entry["articles"]
         if cat_id in result_map:
             for i, art in enumerate(result_map[cat_id].get("articles", [])):
                 if i < len(articles):
-                    art["link"] = articles[i]["link"]
-                    art["title"] = articles[i]["title"]
+                    art["link"] = articles[i]["link"]  # URL 원본 강제 보존
+                    # title은 Gemini 번역본 유지 (영문→한국어)
 
     return result_map
 
