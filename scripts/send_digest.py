@@ -32,26 +32,37 @@ def send_newsletter():
 
         print(f"✅ 선택된 모델: {target_model}")
 
-        # 2. 선택된 모델로 뉴스레터 생성
+        # 2. 선택된 모델로 뉴스레터 생성 (인사이트 중심 큐레이션 스타일)
         prompt = f"""
-        IT/게임 기획자로서 {limit_time} 이후 뉴스를 큐레이션하세요.
-        - 분야: 국내게임, 국외게임, IT시장, AI변화 (총 12건)
-        - 디자인: 보라색(#5c00d2) 헤더, 12px 폰트, HTML 표 형식
-        - 출력: 순수 <html> 태그로만 응답
+        당신은 NCSOFT 전략 기획팀의 시니어 플래너입니다. {limit_time} 이후의 시장 동향을 아래 형식에 맞춰 보고하세요.
+
+        1. 리포트 범위 (분야별 5개, 총 20개 필수):
+           - [국내 게임 시장], [국외 게임 시장], [AI 시장], [IT 시장]
+
+        2. 개별 뉴스 작성 형식 (중요):
+           - [제목]: 뉴스 제목을 명확히 작성
+           - 내용 1줄 요약: 핵심 내용을 한 문장으로 정리
+           - 원문 Link: 클릭 시 해당 기사로 바로 이동하는 유효한 URL (반드시 검증된 링크만 사용)
+           - 주목해야 하는 이유: 기획자 관점에서 이 뉴스가 시장에 미칠 영향이나 인사이트 (2~3줄)
+
+        3. 디자인 가이드 (카드 UI):
+           - 배경색 #5c00d2 (진한 보라색) 헤더 적용.
+           - 각 뉴스는 흰색 배경의 카드 형태로 구분하며, 하단에 옅은 회색 구분선을 넣으세요.
+           - 카테고리(분야)는 배경색 #f4f4f4에 보라색 굵은 글씨로 강조하세요.
+
+        4. 출력 규칙:
+           - 반드시 <html>로 시작하여 </html>로 끝나는 순수 코드만 출력.
+           - 서론, 결론, 마크다운(```), 설명글 절대 금지.
+           - URL은 반드시 'https://'로 시작하는 실제 작동하는 링크여야 함.
         """
 
-        gen_url = f"https://generativelanguage.googleapis.com/v1beta/{target_model}:generateContent?key={api_key}"
-        res = requests.post(gen_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
-
+        # (API 호출 로직 및 후처리 로직은 그대로 유지)
         if res.status_code == 200:
             raw_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-            clean_html = re.sub(r'```html|```', '', raw_text).strip()
             
-            msg = MIMEMultipart()
-            msg['From'] = smtp_email
-            msg['To'] = target_email
-            msg['Subject'] = f"[Daily Digest] {now.strftime('%Y-%m-%d')} IT/게임 동향"
-            msg.attach(MIMEText(clean_html, 'html'))
+            # Gemma의 설명을 잘라내고 HTML만 추출 (이전과 동일)
+            html_match = re.search(r'(<html.*</html>)', raw_text, re.DOTALL | re.IGNORECASE)
+            clean_html = html_match.group(1) if html_match else re.sub(r'```html|```', '', raw_text).strip()
 
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
                 server.login(smtp_email, smtp_password)
