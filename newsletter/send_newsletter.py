@@ -32,30 +32,78 @@ TODAY_WEEKDAY = ["월", "화", "수", "목", "금", "토", "일"][datetime.now(K
 # ──────────────────────────────────────────────
 # 카테고리 정의
 # ──────────────────────────────────────────────
+# 카테고리별 적합 주제 / 부적합 주제 정의 (Gemini 필터링에 활용)
+CATEGORY_RULES = {
+    "domestic_game": {
+        "include": "국내(한국) 게임사의 신작 출시, 업데이트, 매출, 유저 반응, 국내 게임 시장 정책·규제",
+        "exclude": "해외 게임사 단독 뉴스, 반도체·GPU·IT 인프라, AI 기술 자체, 글로벌 콘솔 하드웨어",
+    },
+    "global_game": {
+        "include": "해외 게임사(닌텐도·소니·MS·EA·유비소프트·에픽 등) 신작·서비스·인수합병, 글로벌 게임 시장 트렌드, e스포츠",
+        "exclude": "국내 게임사 단독 뉴스, 반도체·GPU, AI 기술 자체, 국내 규제",
+    },
+    "it": {
+        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 서비스·전략·실적, 플랫폼 정책, 클라우드, 반도체, 모바일 OS",
+        "exclude": "게임 단독 뉴스, AI 모델·LLM 기술 자체(AI 카테고리로 분류), 국내 IT 기업 단독 소식",
+    },
+    "ai": {
+        "include": "LLM·생성형AI 모델 출시·성능, AI 스타트업·빅테크 AI 전략, AI 규제·정책, AI 서비스 글로벌 트렌드",
+        "exclude": "게임 단독 뉴스, 반도체 하드웨어 단독(AI 칩 연관 제외), 국내 IT 기업 단독 소식",
+    },
+}
+
 CATEGORIES = [
     {
         "id": "domestic_game",
         "label": "🎮 국내 게임 시장",
         "color": "#c84b31",
-        "queries": ["국내 게임 시장", "한국 게임 신작", "국내 게임사 동향", "넥슨 넷마블 크래프톤"],
+        # 국내 게임에만 집중, 더 많이 수집해서 필터링 여유분 확보
+        "queries": [
+            "넥슨 신작 게임 출시",
+            "넷마블 크래프톤 게임 업데이트",
+            "국내 모바일게임 PC게임 흥행",
+            "한국 게임 서비스 이용자",
+            "국내 게임업계 실적 매출",
+        ],
     },
     {
         "id": "global_game",
         "label": "🌐 글로벌 게임 시장",
         "color": "#2563b0",
-        "queries": ["글로벌 게임 시장", "해외 게임 출시", "닌텐도 소니 마이크로소프트 게임", "스팀 게임 신작"],
+        # 해외 게임사·플랫폼 중심, 국내 기사와 겹치지 않도록 영문사명 포함
+        "queries": [
+            "닌텐도 소니 플레이스테이션 신작",
+            "Xbox 마이크로소프트 게임 서비스",
+            "스팀 에픽게임즈 PC게임 출시",
+            "EA 유비소프트 액티비전 블리자드",
+            "글로벌 게임 시장 매출 순위",
+        ],
     },
     {
         "id": "it",
         "label": "💻 IT 업계",
         "color": "#7c3aed",
-        "queries": ["글로벌 빅테크 동향", "구글 애플 마이크로소프트 메타 아마존", "실리콘밸리 테크 뉴스", "글로벌 플랫폼 IT 전략"],
+        # 빅테크·플랫폼·반도체 중심
+        "queries": [
+            "구글 애플 신제품 서비스 발표",
+            "메타 아마존 마이크로소프트 전략",
+            "반도체 엔비디아 TSMC 퀄컴",
+            "애플 iOS 안드로이드 플랫폼 정책",
+            "빅테크 실적 투자 인수합병",
+        ],
     },
     {
         "id": "ai",
         "label": "🤖 AI",
         "color": "#0891b2",
-        "queries": ["글로벌 AI 최신 동향", "오픈AI 앤트로픽 구글 AI", "생성형 AI 글로벌 트렌드", "AI 모델 기술 발표"],
+        # AI 모델·서비스·정책 중심
+        "queries": [
+            "OpenAI GPT 챗GPT 신규 모델",
+            "구글 제미나이 앤트로픽 클로드 AI",
+            "생성형 AI 서비스 출시 업데이트",
+            "AI 규제 정책 글로벌",
+            "AI 스타트업 투자 빅테크 전략",
+        ],
     },
 ]
 
@@ -168,30 +216,48 @@ def analyze_all_categories(all_data: list[dict]) -> list[dict]:
 
     combined = "\n\n".join(sections)
 
-    prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
-아래 4개 카테고리의 뉴스 기사를 분석하세요.
+    # 카테고리 규칙 텍스트 조립
+    rules_text = ""
+    for entry in all_data:
+        cid = entry["cat"]["id"]
+        r = CATEGORY_RULES[cid]
+        rules_text += f"- {entry['cat']['label']}: 포함={r['include']} / 제외={r['exclude']}\n"
 
+    prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
+
+[카테고리별 선정 기준]
+{rules_text}
+
+[수집된 기사 목록]
 {combined}
 
-다음 JSON 배열 형식으로만 응답하세요. URL은 절대 새로 생성하지 말고 입력된 URL 그대로 사용하세요.
+[지시사항]
+1. 각 카테고리에서 위 선정 기준에 "적합한" 기사만 골라 최대 5개 선정하세요.
+   - 부적합한 기사(카테고리 주제와 무관, 다른 카테고리 내용)는 과감히 제외하세요.
+   - 국내/글로벌 게임 카테고리 간 동일 기사 또는 유사 내용 중복 불가.
+   - 주목도가 높은 기사(이슈·화제성·업계 파급력) 우선 선정.
+2. 선정 기사가 5개 미만이어도 괜찮습니다. 억지로 채우지 마세요.
+3. URL은 절대 새로 생성하지 말고 입력된 URL 그대로 사용하세요.
+
+다음 JSON 배열 형식으로만 응답하세요.
 
 [
   {{
-    "category_id": "카테고리 id (domestic_game / global_game / it / ai)",
-    "category_insight": "카테고리 전체 핵심 인사이트 2문장 이내",
+    "category_id": "domestic_game 또는 global_game 또는 it 또는 ai",
+    "category_insight": "카테고리 핵심 흐름 1~2문장. 짧고 임팩트 있게.",
     "articles": [
       {{
         "title": "원본 기사 제목 그대로",
         "link": "입력된 URL 그대로 (절대 변경 금지)",
-        "summary": "기사 핵심 내용 1문장",
+        "summary": "기사 핵심 내용을 3줄 이내로 명확하게 요약. 숫자·고유명사 포함 권장.",
         "keywords": ["키워드1", "키워드2", "키워드3"],
-        "reason": "플랫폼 기획자가 주목해야 할 이유 1문장"
+        "reason": "플랫폼 기획자가 주목해야 할 이유. 2줄 이내로 구체적으로."
       }}
     ]
   }}
 ]
 
-4개 카테고리 모두 포함, 각 카테고리 기사 수 유지, JSON 외 다른 텍스트 출력 금지."""
+4개 카테고리 모두 포함, JSON 외 다른 텍스트 출력 금지."""
 
     raw = call_gemini(prompt)
     raw = raw.strip()
@@ -242,6 +308,21 @@ def build_html(category_results: list[dict]) -> str:
             f'color:#3d3d3a;text-transform:uppercase;letter-spacing:0.4px;">{text}</span>'
         )
 
+    # 외부 링크 SVG 아이콘 (이메일 호환용 인라인 SVG)
+    LINK_ICON = (
+        '<a href="{url}" target="_blank" rel="noopener noreferrer" '
+        'style="display:inline-block;vertical-align:middle;margin-left:6px;flex-shrink:0;text-decoration:none;">'
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" '
+        'xmlns="http://www.w3.org/2000/svg" style="display:block;">'
+        '<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" '
+        'stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        '<polyline points="15 3 21 3 21 9" stroke="{color}" stroke-width="2" '
+        'stroke-linecap="round" stroke-linejoin="round"/>'
+        '<line x1="10" y1="14" x2="21" y2="3" stroke="{color}" stroke-width="2" '
+        'stroke-linecap="round" stroke-linejoin="round"/>'
+        '</svg></a>'
+    )
+
     cards_html = ""
     for cr in category_results:
         cat = cr["cat"]
@@ -251,11 +332,14 @@ def build_html(category_results: list[dict]) -> str:
         article_items = ""
         for art in analyzed.get("articles", []):
             kw_chips = "".join(chip(kw, color) for kw in art.get("keywords", []))
+            link_icon = LINK_ICON.format(url=art["link"], color=color)
             article_items += f"""
             <div style="border:1px solid #e8e6e0;border-radius:10px;background:#ffffff;
                         padding:16px 18px;margin-bottom:10px;">
-              <div style="font-size:15px;font-weight:600;color:#1a1a18;line-height:1.5;
-                          margin-bottom:10px;font-family:{BASE_FONT};">{art['title']}</div>
+              <div style="display:flex;align-items:flex-start;margin-bottom:10px;">
+                <span style="font-size:15px;font-weight:600;color:#1a1a18;line-height:1.5;
+                             font-family:{BASE_FONT};">{art['title']}</span>{link_icon}
+              </div>
               <div style="margin-bottom:10px;line-height:1.8;">{kw_chips}</div>
               <table style="width:100%;border-collapse:collapse;">
                 <tr style="vertical-align:top;">
@@ -265,14 +349,6 @@ def build_html(category_results: list[dict]) -> str:
                 <tr style="vertical-align:top;">
                   <td style="width:52px;padding:3px 0;">{label('주목')}</td>
                   <td style="padding:3px 0;font-size:13px;color:#4a4a47;font-family:{BASE_FONT};line-height:1.6;">{art.get('reason','')}</td>
-                </tr>
-                <tr style="vertical-align:top;">
-                  <td style="width:52px;padding:3px 0;">{label('링크')}</td>
-                  <td style="padding:3px 0;">
-                    <a href="{art['link']}" style="font-size:13px;color:{color};
-                       text-decoration:none;font-family:{BASE_FONT};line-height:1.6;
-                       word-break:break-all;">{art['title']}</a>
-                  </td>
                 </tr>
               </table>
             </div>"""
@@ -313,11 +389,8 @@ def build_html(category_results: list[dict]) -> str:
               padding:24px 28px;margin-bottom:24px;">
     <div style="font-size:11px;font-weight:600;color:#888884;font-family:'Noto Sans KR',Arial,sans-serif;
                 letter-spacing:1px;margin-bottom:6px;">PLATFORM PLANNER DAILY BRIEF</div>
-    <div style="font-size:22px;font-weight:700;color:#1a1a18;font-family:'Noto Sans KR',Arial,sans-serif;margin-bottom:4px;">
+    <div style="font-size:22px;font-weight:700;color:#1a1a18;font-family:'Noto Sans KR',Arial,sans-serif;">
       {TODAY} ({TODAY_WEEKDAY}) 데일리 브리프
-    </div>
-    <div style="font-size:13px;color:#888884;font-family:'Noto Sans KR',Arial,sans-serif;">
-      국내게임 · 글로벌게임 · IT업계 · AI &mdash; 각 카테고리 5개 기사 · 총 20개
     </div>
   </div>
 
@@ -353,7 +426,7 @@ def main():
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
-        articles = collect_articles_for_category(cat, target=5)
+        articles = collect_articles_for_category(cat, target=10)  # 필터링 여유분
         print(f"    수집 완료: {len(articles)}개")
         all_data.append({"cat": cat, "articles": articles})
 
