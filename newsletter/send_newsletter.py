@@ -170,13 +170,13 @@ def parse_pubdate(pub: str) -> datetime | None:
     except Exception:
         return None
 
-def is_within_24h(pub: str) -> bool:
-    """발행일이 현재 기준 24시간 이내인지 확인"""
+def is_within_hours(pub: str, hours: int = 24) -> bool:
+    """발행일이 현재 기준 hours 시간 이내인지 확인"""
     dt = parse_pubdate(pub)
     if dt is None:
-        return True  # 날짜 파싱 실패 시 통과 (누락 방지)
+        return True  # 날짜 파싱 실패 시 통과
     now = datetime.now(timezone.utc)
-    return (now - dt).total_seconds() <= 86400  # 24h = 86400s
+    return (now - dt).total_seconds() <= hours * 3600
 
 def naver_to_article(item: dict) -> dict:
     return {
@@ -186,28 +186,41 @@ def naver_to_article(item: dict) -> dict:
         "pubDate":     item.get("pubDate", ""),
     }
 
-def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
+def collect_articles_for_category(
+    cat: dict,
+    target: int = 10,
+    global_seen_links: set | None = None,
+    global_seen_titles: set | None = None,
+) -> list[dict]:
     """
-    국내 게임 / IT / AI : 네이버 API (한국어)
-    글로벌 게임          : 국내 매체 RSS (한국어 번역 기사)
-    target개 수집 → Gemini가 최적 5개 선별
+    전 카테고리 네이버 API — 24h 필터 적용
+    - 부족 시 48h 자동 확장
+    - global_seen_* 로 카테고리 간 중복 제거
     """
-    seen_links, seen_titles = set(), set()
+    seen_links  = global_seen_links  if global_seen_links  is not None else set()
+    seen_titles = global_seen_titles if global_seen_titles is not None else set()
     articles = []
     cat_id = cat["id"]
 
-    # 전 카테고리 네이버 API — 24시간 이내 기사만 수집
-    for query in NAVER_QUERIES.get(cat_id, []):
+    for hours in (24, 48):          # 24h 부족 시 48h 로 자동 확장
         if len(articles) >= target:
             break
-        raw_items = fetch_naver_news(query, display=20)
-        candidates = [
-            naver_to_article(i) for i in raw_items
-            if is_within_24h(i.get("pubDate", ""))
-        ]
-        articles += dedup(candidates, seen_links, seen_titles)
+        for query in NAVER_QUERIES.get(cat_id, []):
+            if len(articles) >= target:
+                break
+            raw_items = fetch_naver_news(query, display=20)
+            candidates = [
+                naver_to_article(i) for i in raw_items
+                if is_within_hours(i.get("pubDate", ""), hours)
+            ]
+            articles += dedup(candidates, seen_links, seen_titles)
+        if len(articles) >= target:
+            print(f"    수집 완료: {len(articles)}개 ({hours}h 이내)")
+        elif hours == 24:
+            print(f"    24h 기사 {len(articles)}개 → 48h로 확장 시도")
 
-    print(f"    수집 완료: {len(articles)}개 (24h 필터 적용, 목표 {target}개)")
+    if len(articles) < target:
+        print(f"    [WARN] 최종 {len(articles)}개 수집 (목표 {target}개 미달)")
     return articles[:target]
 
 # ──────────────────────────────────────────────
@@ -463,11 +476,17 @@ def main():
     print(f"[{TODAY}] 데일리 브리프 생성 시작")
 
     # 1단계: 전체 카테고리 기사 수집
+    # 전역 seen 세트로 카테고리 간 중복 완전 차단
+    global_seen_links  = set()
+    global_seen_titles = set()
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
-        articles = collect_articles_for_category(cat, target=7)  # 필터링 여유분
-        print(f"    수집 완료: {len(articles)}개")
+        articles = collect_articles_for_category(
+            cat, target=10,
+            global_seen_links=global_seen_links,
+            global_seen_titles=global_seen_titles,
+        )
         all_data.append({"cat": cat, "articles": articles})
 
     # 2단계: Gemini 단일 호출로 전체 분석 (API 호출 1회)
