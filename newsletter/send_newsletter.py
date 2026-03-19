@@ -454,4 +454,4 @@ def main():
     print("[완료] 데일리 브리프 발송 성공!")
 
 if __name__ == "__main__":
-    main()ㄹ
+    main()
