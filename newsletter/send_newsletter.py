@@ -52,38 +52,44 @@ CATEGORY_RULES = {
     },
 }
 
-# 국내 게임: 네이버 API (한국어 콘텐츠 최적)
-# 글로벌/IT/AI: RSS 고정 매체
+# ─────────────────────────────────────────────────────────────────
+# 수집 소스 정의
+#  - 국내 게임     : 네이버 API (한국어 기사 최적)
+#  - 글로벌 게임   : 국내 매체의 해외게임 섹션 RSS (한국어 번역 기사)
+#  - IT / AI       : 네이버 API (글로벌 빅테크·AI 한국어 보도)
+# ─────────────────────────────────────────────────────────────────
+
+# 글로벌 게임 전용 RSS — 한국 매체가 번역·보도하는 해외게임 섹션
 RSS_SOURCES = {
     "global_game": [
-        "https://www.ign.com/feeds/all.xml",
-        "https://www.gamespot.com/feeds/mashup/",
-        "https://kotaku.com/rss",
-        "https://www.eurogamer.net/?format=rss",
-        "https://www.rockpapershotgun.com/feed",
-    ],
-    "it": [
-        "https://techcrunch.com/feed/",
-        "https://www.theverge.com/rss/index.xml",
-        "https://feeds.arstechnica.com/arstechnica/index",
-        "https://www.wired.com/feed/rss",
-    ],
-    "ai": [
-        "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "https://venturebeat.com/category/ai/feed/",
-        "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
-        "https://feeds.arstechnica.com/arstechnica/ai",
+        "https://www.gamemeca.com/rss/news.php",         # 게임메카 (해외 게임 포함)
+        "https://www.thisisgame.com/webzine/rss/news.xml",# 디스이즈게임
+        "https://www.inven.co.kr/rss/news.php",           # 인벤 (해외 포함)
+        "https://bbs.ruliweb.com/news/board/1003?view=rss",# 루리웹
     ],
 }
 
-# 국내 게임 네이버 쿼리
+# 네이버 API 쿼리 — 카테고리별
 NAVER_QUERIES = {
     "domestic_game": [
         "국내 모바일게임 신작 출시",
-        "넥슨 넷마블 크래프톤 게임",
-        "국내 게임 업데이트 이벤트",
-        "한국 게임업계 매출 흥행",
-        "국내 PC게임 콘솔게임",
+        "넥슨 넷마블 크래프톤 펄어비스",
+        "국내 온라인게임 콘솔게임 업데이트",
+        "한국 게임업계 매출 서비스",
+    ],
+    "it": [
+        "구글 애플 마이크로소프트 서비스 발표",
+        "메타 아마존 빅테크 플랫폼 전략",
+        "반도체 엔비디아 퀄컴 TSMC",
+        "애플 안드로이드 모바일 OS 정책",
+        "글로벌 IT 업계 인수합병 실적",
+    ],
+    "ai": [
+        "오픈AI GPT 생성형AI 신모델",
+        "구글 제미나이 앤트로픽 AI 출시",
+        "AI 서비스 글로벌 트렌드 정책",
+        "LLM 인공지능 빅테크 전략",
+        "AI 규제 산업 적용 사례",
     ],
 }
 
@@ -107,7 +113,7 @@ def normalize_title(title: str) -> str:
 
 def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
     encoded = urllib.parse.quote(query)
-    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
+    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=sim"
     req = urllib.request.Request(url)
     req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
     req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
@@ -164,37 +170,40 @@ def dedup(articles: list[dict], seen_links: set, seen_titles: set) -> list[dict]
         result.append(a)
     return result
 
-def collect_articles_for_category(cat: dict, target: int = 8) -> list[dict]:
+def naver_to_article(item: dict) -> dict:
+    return {
+        "title": clean_html(item.get("title", "")),
+        "link":  item.get("originallink") or item.get("link", ""),
+        "description": clean_html(item.get("description", ""))[:120],
+    }
+
+def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
     """
-    국내 게임: 네이버 API
-    글로벌·IT·AI: RSS 고정 매체
-    target개 이상 수집 후 Gemini가 최적 5개 선별
+    국내 게임 / IT / AI : 네이버 API (한국어)
+    글로벌 게임          : 국내 매체 RSS (한국어 번역 기사)
+    target개 수집 → Gemini가 최적 5개 선별
     """
     seen_links, seen_titles = set(), set()
     articles = []
     cat_id = cat["id"]
 
-    if cat_id == "domestic_game":
-        # 네이버 API
-        for query in NAVER_QUERIES["domestic_game"]:
+    if cat_id == "global_game":
+        # RSS (국내 매체 해외게임 섹션)
+        for feed_url in RSS_SOURCES["global_game"]:
             if len(articles) >= target:
                 break
-            items = fetch_naver_news(query, display=15)
-            candidates = []
-            for item in items:
-                link  = item.get("originallink") or item.get("link", "")
-                title = clean_html(item.get("title", ""))
-                desc  = clean_html(item.get("description", ""))[:120]
-                candidates.append({"title": title, "link": link, "description": desc})
-            articles += dedup(candidates, seen_links, seen_titles)
-    else:
-        # RSS
-        for feed_url in RSS_SOURCES.get(cat_id, []):
-            if len(articles) >= target:
-                break
-            items = fetch_rss(feed_url, max_items=15)
+            items = fetch_rss(feed_url, max_items=20)
             articles += dedup(items, seen_links, seen_titles)
+    else:
+        # 네이버 API
+        for query in NAVER_QUERIES.get(cat_id, []):
+            if len(articles) >= target:
+                break
+            raw_items = fetch_naver_news(query, display=15)
+            candidates = [naver_to_article(i) for i in raw_items]
+            articles += dedup(candidates, seen_links, seen_titles)
 
+    print(f"    수집 완료: {len(articles)}개 (목표 {target}개)")
     return articles[:target]
 
 # ──────────────────────────────────────────────
@@ -248,10 +257,11 @@ def _build_prompt(batch: list[dict]) -> str:
 
 [지시사항]
 1. 각 카테고리에서 선정 기준에 적합한 기사를 가능한 5개 선정. 부적합 기사는 제외.
-   - 5개가 안 되면 있는 기사 전부 포함. 억지로 늘리지는 말 것.
-   - 주목도 높은 기사(화제성·파급력) 우선.
-2. title 필드: 영문 제목은 반드시 한국어로 번역. 국문 제목은 그대로.
-3. URL은 절대 새로 생성 금지. 입력된 URL 그대로 사용.
+   - 동일 게임·주제·이슈를 다룬 기사가 여러 개면 가장 핵심적인 1개만 선택. 절대 중복 금지.
+   - 5개가 안 되면 있는 기사만 포함. 억지로 채우지 말 것.
+   - 화제성·파급력 높은 기사 우선.
+2. title 필드: 영문 제목은 반드시 자연스러운 한국어로 번역. 국문 제목은 그대로.
+3. URL은 절대 새로 생성 금지. 반드시 입력된 URL만 사용.
 
 JSON 배열만 출력하세요 (다른 텍스트 금지):
 [
