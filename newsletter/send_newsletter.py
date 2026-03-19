@@ -142,44 +142,56 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
                 data = json.loads(resp.read().decode("utf-8"))
             return data["candidates"][0]["content"]["parts"][0]["text"]
         except Exception as e:
-            wait = 15 * (attempt + 1)  # 15s, 30s, 45s, 60s
+            wait = 30 * (2 ** attempt)  # 30s, 60s, 120s, 240s
             print(f"    [WARN] Gemini 오류 (시도 {attempt+1}/{retries}): {e} → {wait}초 후 재시도")
             if attempt < retries - 1:
                 time.sleep(wait)
             else:
                 raise
 
-def analyze_category(cat: dict, articles: list[dict]) -> dict:
-    articles_text = "\n\n".join([
-        f"[기사 {i+1}]\n제목: {a['title']}\nURL: {a['link']}\n설명: {a['description']}"
-        for i, a in enumerate(articles)
-    ])
+def analyze_all_categories(all_data: list[dict]) -> list[dict]:
+    """
+    4개 카테고리를 단일 Gemini 호출로 처리 → API 호출 4번 → 1번으로 감소
+    """
+    sections = []
+    for entry in all_data:
+        cat = entry["cat"]
+        articles = entry["articles"]
+        global_note = ""
+        if cat["id"] in ("it", "ai"):
+            global_note = " (글로벌 관점 중심, 특정 국가 한정 금지)"
+        art_text = "\n".join([
+            f"  {i+1}. 제목: {a['title']} | URL: {a['link']} | 설명: {a['description']}"
+            for i, a in enumerate(articles)
+        ])
+        sections.append(f"[카테고리: {cat['label']}{global_note}]\n{art_text}")
 
-    global_note = ""
-    if cat["id"] in ("it", "ai"):
-        global_note = "\n※ 이 카테고리는 글로벌 관점에서 분석하세요. 특정 국가에 한정하지 말고 전 세계 트렌드와 빅테크 흐름을 중심으로 인사이트를 작성하세요."
+    combined = "\n\n".join(sections)
 
     prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
-아래는 '{cat['label']}' 카테고리의 오늘 뉴스 기사 목록입니다.{global_note}
+아래 4개 카테고리의 뉴스 기사를 분석하세요.
 
-{articles_text}
+{combined}
 
-다음 JSON 형식으로만 응답하세요. URL은 절대 새로 만들지 말고 입력된 URL을 그대로 사용하세요.
+다음 JSON 배열 형식으로만 응답하세요. URL은 절대 새로 생성하지 말고 입력된 URL 그대로 사용하세요.
 
-{{
-  "category_insight": "카테고리 전체를 아우르는 핵심 인사이트. 반드시 2문장 이내로 간결하게 작성.",
-  "articles": [
-    {{
-      "title": "원본 기사 제목 그대로",
-      "link": "입력된 URL 그대로 (변경 금지)",
-      "summary": "기사 핵심 내용 1문장 요약",
-      "keywords": ["키워드1", "키워드2", "키워드3"],
-      "reason": "플랫폼 기획자가 주목해야 할 이유 1문장"
-    }}
-  ]
-}}
+[
+  {{
+    "category_id": "카테고리 id (domestic_game / global_game / it / ai)",
+    "category_insight": "카테고리 전체 핵심 인사이트 2문장 이내",
+    "articles": [
+      {{
+        "title": "원본 기사 제목 그대로",
+        "link": "입력된 URL 그대로 (절대 변경 금지)",
+        "summary": "기사 핵심 내용 1문장",
+        "keywords": ["키워드1", "키워드2", "키워드3"],
+        "reason": "플랫폼 기획자가 주목해야 할 이유 1문장"
+      }}
+    ]
+  }}
+]
 
-반드시 {len(articles)}개 기사 모두 포함하고, JSON 외 다른 텍스트는 출력하지 마세요."""
+4개 카테고리 모두 포함, 각 카테고리 기사 수 유지, JSON 외 다른 텍스트 출력 금지."""
 
     raw = call_gemini(prompt)
     raw = raw.strip()
@@ -187,14 +199,22 @@ def analyze_category(cat: dict, articles: list[dict]) -> dict:
         raw = raw.split("```")[1]
         if raw.startswith("json"):
             raw = raw[4:]
-    result = json.loads(raw.strip())
+    results_list = json.loads(raw.strip())
+
+    # category_id → dict 로 인덱싱
+    result_map = {r["category_id"]: r for r in results_list}
 
     # URL·제목 원본 강제 보존
-    for i, art in enumerate(result.get("articles", [])):
-        if i < len(articles):
-            art["link"] = articles[i]["link"]
-            art["title"] = articles[i]["title"]
-    return result
+    for entry in all_data:
+        cat_id = entry["cat"]["id"]
+        articles = entry["articles"]
+        if cat_id in result_map:
+            for i, art in enumerate(result_map[cat_id].get("articles", [])):
+                if i < len(articles):
+                    art["link"] = articles[i]["link"]
+                    art["title"] = articles[i]["title"]
+
+    return result_map
 
 # ──────────────────────────────────────────────
 # HTML 생성
@@ -324,18 +344,26 @@ def send_email(html_content: str):
 # ──────────────────────────────────────────────
 def main():
     print(f"[{TODAY}] 데일리 브리프 생성 시작")
-    category_results = []
 
+    # 1단계: 전체 카테고리 기사 수집
+    all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
         articles = collect_articles_for_category(cat, target=5)
         print(f"    수집 완료: {len(articles)}개")
+        all_data.append({"cat": cat, "articles": articles})
 
-        print(f"  ▶ {cat['label']} Gemini 분석 중...")
-        analyzed = analyze_category(cat, articles)
-        category_results.append({"cat": cat, "analyzed": analyzed})
-        print(f"    분석 완료")
-        time.sleep(10)  # 카테고리 간 rate limit 방지
+    # 2단계: Gemini 단일 호출로 전체 분석 (API 호출 1회)
+    print("  ▶ Gemini 전체 분석 중 (단일 호출)...")
+    result_map = analyze_all_categories(all_data)
+    print("    분석 완료")
+
+    # 3단계: build_html용 category_results 조립
+    category_results = []
+    for entry in all_data:
+        cat_id = entry["cat"]["id"]
+        analyzed = result_map.get(cat_id, {"category_insight": "", "articles": entry["articles"]})
+        category_results.append({"cat": entry["cat"], "analyzed": analyzed})
 
     print("  ▶ HTML 생성 중...")
     html = build_html(category_results)
