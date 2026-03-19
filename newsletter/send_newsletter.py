@@ -1,212 +1,320 @@
+#!/usr/bin/env python3
 """
-Platform Planner Daily Brief — v6
-1단계: Google Search 그라운딩으로 실제 기사 목록 수집 (텍스트)
-2단계: 수집된 목록으로 HTML 뉴스레터 생성 (그라운딩 없이)
-→ URL 깨짐 문제 + 빈 메일 문제 동시 해결
+플랫폼 기획자 데일리 브리프 자동 발송
+Naver News API → Gemini 2.5 Flash → Gmail
 """
-import os, re, smtplib, sys, json
-from datetime import datetime, timedelta, timezone
+
+import os
+import json
+import smtplib
+import urllib.request
+import urllib.parse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import urllib.request
+from datetime import datetime, timezone, timedelta
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-SMTP_EMAIL     = os.environ.get("SMTP_EMAIL", "")
-SMTP_PASSWORD  = os.environ.get("SMTP_PASSWORD", "")
-TARGET_EMAIL   = os.environ.get("TARGET_EMAIL", "seonyoung@ncsoft.com")
-KST            = timezone(timedelta(hours=9))
-MODEL          = "gemini-2.5-flash"
+# ──────────────────────────────────────────────
+# 환경변수
+# ──────────────────────────────────────────────
+NAVER_CLIENT_ID     = os.environ["NAVER_CLIENT_ID"]
+NAVER_CLIENT_SECRET = os.environ["NAVER_CLIENT_SECRET"]
+GEMINI_API_KEY      = os.environ["GEMINI_API_KEY"]
+SMTP_EMAIL          = os.environ["SMTP_EMAIL"]
+SMTP_PASSWORD       = os.environ["SMTP_PASSWORD"]
+TO_EMAIL            = os.environ.get("TO_EMAIL", SMTP_EMAIL)
 
+KST = timezone(timedelta(hours=9))
+TODAY = datetime.now(KST).strftime("%Y년 %m월 %d일")
+TODAY_WEEKDAY = ["월", "화", "수", "목", "금", "토", "일"][datetime.now(KST).weekday()]
 
-# ─── 공통 API 호출 헬퍼 ────────────────────
-def call_gemini(system: str, user: str, max_tokens: int, use_search: bool) -> str:
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{MODEL}:generateContent?key={GEMINI_API_KEY}"
-    )
-    body = {
-        "system_instruction": {"parts": [{"text": system}]},
-        "contents": [{"parts": [{"text": user}]}],
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.3},
-    }
-    if use_search:
-        body["tools"] = [{"google_search": {}}]
+# ──────────────────────────────────────────────
+# 카테고리 정의
+# ──────────────────────────────────────────────
+CATEGORIES = [
+    {
+        "id": "domestic_game",
+        "label": "🎮 국내 게임 시장",
+        "color": "#c84b31",
+        "queries": ["국내 게임 시장", "한국 게임 신작", "국내 게임사"],
+    },
+    {
+        "id": "global_game",
+        "label": "🌐 글로벌 게임 시장",
+        "color": "#2563b0",
+        "queries": ["글로벌 게임 시장", "해외 게임 출시", "게임 글로벌"],
+    },
+    {
+        "id": "it",
+        "label": "💻 IT 업계",
+        "color": "#7c3aed",
+        "queries": ["IT 업계 동향", "빅테크 뉴스", "플랫폼 IT"],
+    },
+    {
+        "id": "ai",
+        "label": "🤖 AI",
+        "color": "#0891b2",
+        "queries": ["AI 인공지능 최신", "생성형 AI 뉴스", "AI 서비스 출시"],
+    },
+]
 
-    payload = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    with urllib.request.urlopen(req, timeout=180) as res:
-        data = json.loads(res.read().decode("utf-8"))
+# ──────────────────────────────────────────────
+# 1단계: 네이버 뉴스 API 수집
+# ──────────────────────────────────────────────
+def fetch_naver_news(query: str, display: int = 10) -> list[dict]:
+    """네이버 뉴스 API 호출 → [{title, originallink, link, description, pubDate}]"""
+    encoded = urllib.parse.quote(query)
+    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
+    req = urllib.request.Request(url)
+    req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
+    req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("items", [])
+    except Exception as e:
+        print(f"[WARN] Naver API error for '{query}': {e}")
+        return []
 
-    # 모든 text 파트 합치기 (그라운딩 응답은 파트가 여럿일 수 있음)
-    text = ""
-    for part in data["candidates"][0]["content"]["parts"]:
-        if "text" in part:
-            text += part["text"]
-    return text
+def clean_html(text: str) -> str:
+    """네이버 API 결과의 HTML 태그 제거"""
+    import re
+    return re.sub(r"<[^>]+>", "", text).replace("&quot;", '"').replace("&amp;", "&").replace("&#39;", "'")
 
+def collect_articles_for_category(cat: dict, target: int = 5) -> list[dict]:
+    """카테고리별 기사 target개 수집 (중복 URL 제거)"""
+    seen_links = set()
+    articles = []
+    for query in cat["queries"]:
+        if len(articles) >= target:
+            break
+        items = fetch_naver_news(query, display=10)
+        for item in items:
+            link = item.get("originallink") or item.get("link", "")
+            if not link or link in seen_links:
+                continue
+            seen_links.add(link)
+            articles.append({
+                "title": clean_html(item.get("title", "")),
+                "link": link,
+                "description": clean_html(item.get("description", "")),
+                "pubDate": item.get("pubDate", ""),
+            })
+            if len(articles) >= target:
+                break
+    return articles[:target]
 
-# ─── 1단계: 실제 기사 목록 수집 (그라운딩 ON) ─
-def fetch_articles(today: str, yesterday: str) -> str:
-    system = """당신은 뉴스 리서처입니다.
-Google 검색으로 실제 존재하는 기사만 수집하십시오.
-URL은 반드시 검색으로 확인된 실제 링크만 사용하십시오.
-출력 형식: 순수 텍스트 목록만. HTML 금지."""
+# ──────────────────────────────────────────────
+# 2단계: Gemini로 요약/인사이트 생성
+# ──────────────────────────────────────────────
+def call_gemini(prompt: str) -> str:
+    """Gemini 2.5 Flash API 호출"""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={GEMINI_API_KEY}"
+    body = json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
-    user = f"""아래 4개 카테고리에서 각 5개씩, 총 20개 기사를 검색하십시오.
-기사 범위: {yesterday} 00:00 ~ {today} 09:00 (24시간 이내)
+def analyze_category(cat: dict, articles: list[dict]) -> dict:
+    """
+    Gemini에 기사 목록 전달 → 각 기사별 요약/키워드/주목사유 + 카테고리 인사이트 반환
+    URL은 절대 생성하지 말고 입력된 데이터만 사용하도록 프롬프트에 명시
+    """
+    articles_text = "\n\n".join([
+        f"[기사 {i+1}]\n제목: {a['title']}\nURL: {a['link']}\n설명: {a['description']}"
+        for i, a in enumerate(articles)
+    ])
 
-[카테고리 1] 국내 게임 시장 (게임메카, 인벤, 루리웹 등 국내 매체)
-[카테고리 2] 글로벌 게임 시장 (IGN, TechCrunch, Polygon 등)
-[카테고리 3] IT 업계 (전자신문, ZDNet, The Verge 등)
-[카테고리 4] AI (VentureBeat, Wired, MIT Tech Review 등)
+    prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
+아래는 '{cat['label']}' 카테고리의 오늘 뉴스 기사 목록입니다.
 
-각 기사를 아래 형식으로 출력하십시오:
-[카테고리명]
-제목: (기사 제목)
-URL: (실제 원문 URL)
-요약: (핵심 내용 1-2줄)
----"""
+{articles_text}
 
-    print("📡 1단계: Google Search로 기사 수집 중...")
-    result = call_gemini(system, user, max_tokens=4000, use_search=True)
-    print("✅ 1단계 완료 — 기사 목록 수집됨")
+다음 JSON 형식으로만 응답하세요. URL은 절대 새로 만들지 말고 입력된 URL을 그대로 사용하세요.
+
+{{
+  "category_insight": "카테고리 전체를 아우르는 오늘의 핵심 인사이트 2-3문장",
+  "articles": [
+    {{
+      "title": "원본 기사 제목 그대로",
+      "link": "입력된 URL 그대로 (변경 금지)",
+      "summary": "기사 핵심 내용 1-2문장 요약",
+      "keywords": ["키워드1", "키워드2", "키워드3"],
+      "reason": "플랫폼 기획자가 주목해야 할 이유 1문장"
+    }}
+  ]
+}}
+
+반드시 {len(articles)}개 기사 모두 포함하고, JSON 외 다른 텍스트는 출력하지 마세요."""
+
+    raw = call_gemini(prompt)
+    # JSON 파싱
+    raw = raw.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    result = json.loads(raw.strip())
+    # URL 보존: Gemini가 URL을 바꿨을 경우 원본으로 복원
+    for i, art in enumerate(result.get("articles", [])):
+        if i < len(articles):
+            art["link"] = articles[i]["link"]
+            art["title"] = articles[i]["title"]  # 원본 제목도 보존
     return result
 
+# ──────────────────────────────────────────────
+# HTML 생성
+# ──────────────────────────────────────────────
+def build_html(category_results: list[dict]) -> str:
+    """최종 HTML 이메일 생성"""
 
-# ─── 2단계: HTML 뉴스레터 생성 (그라운딩 OFF) ─
-def generate_html(today: str, articles: str) -> str:
-    system = """당신은 IT 업계 10년 차 플랫폼 기획 전문가입니다.
-주어진 기사 목록을 바탕으로 HTML 뉴스레터를 생성합니다.
-URL은 반드시 제공된 목록의 URL 그대로 사용. 절대 변경 금지.
-반드시 <html>로 시작해 </html>로 끝나는 순수 HTML만 출력."""
+    def chip(keyword: str, color: str) -> str:
+        return (
+            f'<span style="display:inline-block;background:{color}18;color:{color};'
+            f'border:1px solid {color}40;border-radius:4px;padding:2px 8px;'
+            f'font-size:11px;font-family:monospace;font-weight:600;margin:2px 3px 2px 0;">'
+            f'{keyword}</span>'
+        )
 
-    user = f"""아래 기사 목록을 HTML 뉴스레터로 변환하십시오.
-오늘 날짜: {today}
+    def label(text: str) -> str:
+        return (
+            f'<span style="font-size:10px;font-weight:700;font-family:monospace;'
+            f'color:#3d3d3a;text-transform:uppercase;letter-spacing:0.5px;">{text}</span>'
+        )
 
-=== 수집된 기사 목록 ===
-{articles}
-========================
+    cards_html = ""
+    for cr in category_results:
+        cat = cr["cat"]
+        analyzed = cr["analyzed"]
+        color = cat["color"]
 
-[HTML 디자인 스펙]
-Google Fonts:
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+        article_items = ""
+        for art in analyzed.get("articles", []):
+            kw_chips = "".join(chip(kw, color) for kw in art.get("keywords", []))
+            article_items += f"""
+            <div style="border:1px solid #e8e6e0;border-radius:10px;background:#ffffff;
+                        padding:16px 18px;margin-bottom:12px;">
+              <div style="font-size:15px;font-weight:600;color:#1a1a18;line-height:1.45;
+                          margin-bottom:8px;">{art['title']}</div>
+              <div style="margin-bottom:8px;">{kw_chips}</div>
+              <div style="margin-bottom:6px;">
+                {label('내용')}
+                <span style="font-size:13px;color:#4a4a47;margin-left:6px;">{art.get('summary','')}</span>
+              </div>
+              <div style="margin-bottom:6px;">
+                {label('주목사유')}
+                <span style="font-size:13px;color:#4a4a47;margin-left:6px;">{art.get('reason','')}</span>
+              </div>
+              <div>
+                {label('링크')}
+                <a href="{art['link']}" style="font-size:13px;color:{color};margin-left:6px;
+                   text-decoration:none;word-break:break-all;">{art['title']}</a>
+              </div>
+            </div>"""
 
-전체 wrapper:
-  max-width:680px; margin:0 auto; padding:20px;
-  background:#fafaf8; font-family:'Noto Sans KR',sans-serif;
+        insight_box = ""
+        if analyzed.get("category_insight"):
+            insight_box = f"""
+            <div style="background:{color}0d;border-left:3px solid {color};border-radius:0 8px 8px 0;
+                        padding:12px 16px;margin-bottom:14px;">
+              <div style="margin-bottom:4px;">{label('오늘의 인사이트')}</div>
+              <div style="font-size:13px;color:#2a2a27;line-height:1.6;">{analyzed['category_insight']}</div>
+            </div>"""
 
-헤더:
-  h1: font-size:18px; font-weight:700; color:#1a1a18; margin-bottom:4px;
-  날짜 부제: font-size:11px; color:#a0a095; font-family:monospace;
+        cards_html += f"""
+        <div style="margin-bottom:28px;">
+          <div style="display:flex;align-items:center;margin-bottom:12px;">
+            <div style="width:4px;height:22px;background:{color};border-radius:2px;margin-right:10px;"></div>
+            <span style="font-size:16px;font-weight:700;color:{color};">{cat['label']}</span>
+          </div>
+          {insight_box}
+          {article_items}
+        </div>"""
 
-카테고리 섹션 헤더 (pill 형태):
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;
-  국내게임  → background:#fef2ee; color:#c84b31;
-  글로벌게임 → background:#eff6ff; color:#2563b0;
-  IT업계    → background:#f5f3ff; color:#7c3aed;
-  AI        → background:#ecfeff; color:#0891b2;
-  섹션 구분선: border-bottom:2px solid (카테고리 컬러); margin-bottom:16px;
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>플랫폼 기획자 데일리 브리프 {TODAY}</title>
+</head>
+<body style="margin:0;padding:0;background:#fafaf8;font-family:'Noto Sans KR',sans-serif;">
+<div style="max-width:680px;margin:0 auto;padding:24px 16px 40px;">
 
-기사 카드:
-  border:1px solid #e8e6e0; border-radius:10px;
-  padding:16px 18px; margin-bottom:10px; background:#ffffff;
+  <!-- 헤더 -->
+  <div style="background:#ffffff;border:1px solid #e8e6e0;border-radius:10px;
+              padding:24px 28px;margin-bottom:24px;">
+    <div style="font-size:11px;font-family:monospace;font-weight:600;color:#888884;
+                letter-spacing:1px;margin-bottom:6px;">PLATFORM PLANNER DAILY BRIEF</div>
+    <div style="font-size:22px;font-weight:700;color:#1a1a18;margin-bottom:4px;">
+      {TODAY} ({TODAY_WEEKDAY}) 데일리 브리프
+    </div>
+    <div style="font-size:13px;color:#888884;">
+      국내게임 · 글로벌게임 · IT업계 · AI — 각 카테고리 5개 기사 · 총 20개
+    </div>
+  </div>
 
-기사 제목:
-  font-size:13px; font-weight:700; color:#1a1a18;
-  margin-bottom:6px; line-height:1.4;
+  <!-- 카테고리 카드들 -->
+  {cards_html}
 
-키워드 chip (제목 바로 아래 한 줄, 가로 나열):
-  display:flex; flex-direction:row; flex-wrap:wrap; gap:4px; margin-bottom:10px;
-  각 chip → font-size:10px; font-weight:600; padding:3px 8px;
-             border-radius:20px; white-space:nowrap;
-  국내게임 chip  → background:#fef2ee; color:#c84b31;
-  글로벌게임 chip → background:#eff6ff; color:#2563b0;
-  IT chip        → background:#f5f3ff; color:#7c3aed;
-  AI chip        → background:#ecfeff; color:#0891b2;
+  <!-- 푸터 -->
+  <div style="text-align:center;padding-top:16px;border-top:1px solid #e8e6e0;">
+    <div style="font-size:11px;font-family:monospace;color:#aaa9a5;">
+      자동 생성 · Naver News API + Gemini 2.5 Flash · {TODAY} KST
+    </div>
+  </div>
 
-내용/요약/주목사유/링크 row:
-  display:grid; grid-template-columns:52px 1fr; gap:6px;
-  margin-bottom:8px; align-items:baseline;
+</div>
+</body>
+</html>"""
 
-  라벨(내용/요약/주목사유/링크):
-    font-size:10px; font-weight:700; color:#3d3d3a;
-    font-family:monospace; letter-spacing:0.06em;
-    text-transform:uppercase; padding-top:2px;
+# ──────────────────────────────────────────────
+# 3단계: Gmail 발송
+# ──────────────────────────────────────────────
+def send_email(html_content: str):
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"[데일리브리프] {TODAY} ({TODAY_WEEKDAY}) 플랫폼 기획자 뉴스"
+    msg["From"] = SMTP_EMAIL
+    msg["To"] = TO_EMAIL
+    msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-  내용/요약/주목사유 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.sendmail(SMTP_EMAIL, TO_EMAIL.split(","), msg.as_string())
+    print(f"[OK] 이메일 발송 완료 → {TO_EMAIL}")
 
-  링크: <a href="수집된 목록의 URL 그대로"
-           style="font-size:12px; color:#2563b0; text-decoration:underline;
-                  text-underline-offset:2px; font-weight:500;">
-          기사 원문 제목 그대로
-        </a>
-
-위 스펙 그대로 완전한 HTML 문서 출력. 수집된 20개 기사 모두 포함 필수."""
-
-    print("📡 2단계: HTML 뉴스레터 생성 중...")
-    result = call_gemini(system, user, max_tokens=16000, use_search=False)
-    print("✅ 2단계 완료 — HTML 생성됨")
-    return result
-
-
-# ─── HTML 정제 ──────────────────────────────
-def extract_html(raw: str) -> str:
-    raw = re.sub(r"```html\s*|```\s*", "", raw, flags=re.IGNORECASE)
-    m   = re.search(r"(<html[\s\S]*?</html>)", raw, re.IGNORECASE)
-    return m.group(1).strip() if m else (
-        "<!DOCTYPE html><html lang='ko'><head><meta charset='UTF-8'></head>"
-        "<body style='background:#fafaf8;padding:20px;max-width:680px;"
-        "margin:auto;font-family:Noto Sans KR,sans-serif'>"
-        f"{raw}</body></html>"
-    )
-
-
-# ─── Gmail 발송 ─────────────────────────────
-def send_email(html: str, subject: str):
-    msg             = MIMEMultipart("alternative")
-    msg["From"]    = SMTP_EMAIL
-    msg["To"]      = TARGET_EMAIL
-    msg["Subject"] = subject
-    msg.attach(MIMEText("HTML 지원 클라이언트에서 확인하세요.", "plain", "utf-8"))
-    msg.attach(MIMEText(html, "html", "utf-8"))
-    print(f"📧 발송 → {TARGET_EMAIL}")
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-        s.login(SMTP_EMAIL, SMTP_PASSWORD)
-        s.sendmail(SMTP_EMAIL, TARGET_EMAIL, msg.as_string())
-    print("✅ 발송 완료!")
-
-
-# ─── 메인 ───────────────────────────────────
+# ──────────────────────────────────────────────
+# 메인
+# ──────────────────────────────────────────────
 def main():
-    now   = datetime.now(KST)
-    today = now.strftime("%Y년 %m월 %d일")
-    yest  = (now - timedelta(days=1)).strftime("%Y년 %m월 %d일")
-    code  = now.strftime("%m%d")
+    print(f"[{TODAY}] 데일리 브리프 생성 시작")
+    category_results = []
 
-    print(f"\n🗓  {today} 데일리 브리프 시작\n{'─'*48}")
-    for v, n in [(GEMINI_API_KEY, "GEMINI_API_KEY"),
-                  (SMTP_EMAIL,     "SMTP_EMAIL"),
-                  (SMTP_PASSWORD,  "SMTP_PASSWORD")]:
-        if not v:
-            print(f"❌ 미설정: {n}"); sys.exit(1)
+    for cat in CATEGORIES:
+        print(f"  ▶ {cat['label']} 기사 수집 중...")
+        articles = collect_articles_for_category(cat, target=5)
+        print(f"    수집 완료: {len(articles)}개")
 
-    # 1단계: 실제 기사 목록 수집
-    articles = fetch_articles(today, yest)
+        print(f"  ▶ {cat['label']} Gemini 분석 중...")
+        analyzed = analyze_category(cat, articles)
+        category_results.append({"cat": cat, "analyzed": analyzed})
+        print(f"    분석 완료")
 
-    # 2단계: HTML 뉴스레터 생성
-    raw_html = generate_html(today, articles)
-    html     = extract_html(raw_html)
+    print("  ▶ HTML 생성 중...")
+    html = build_html(category_results)
 
-    # 발송
-    subject = f"[{code}] 플랫폼 기획자 데일리 브리프 | {today}"
-    send_email(html, subject)
-    print(f"\n🎉 완료: {subject}\n")
+    # 로컬 디버그용 저장
+    with open("brief_preview.html", "w", encoding="utf-8") as f:
+        f.write(html)
+    print("  ▶ brief_preview.html 저장 완료")
 
+    print("  ▶ 이메일 발송 중...")
+    send_email(html)
+    print("[완료] 데일리 브리프 발송 성공!")
 
 if __name__ == "__main__":
     main()
