@@ -29,12 +29,12 @@ jobs:
           SMTP_EMAIL:          ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD:       ${{ secrets.SMTP_PASSWORD }}
           TO_EMAIL:            ${{ secrets.TO_EMAIL }}
-        run: python daily_brief.py
+        run: python newsletter/send_newsletter.py
 
       - name: HTML 미리보기 아티팩트 저장
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: brief-preview-${{ github.run_number }}
-          path: brief_preview.html
+          path: newsletter/brief_preview.html
           retention-days: 7
