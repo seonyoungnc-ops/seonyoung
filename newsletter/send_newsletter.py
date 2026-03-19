@@ -181,7 +181,7 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 8192},
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 16384},
     }).encode("utf-8")
     for attempt in range(retries):
         try:
@@ -209,7 +209,7 @@ def _build_prompt(batch: list[dict]) -> str:
         rules_text += f"- {cat['label']}: 포함={r['include']} / 제외={r['exclude']}\n"
         global_note = " (글로벌 관점 중심)" if cid in ("it", "ai") else ""
         art_text = "\n".join([
-            f"  {i+1}. 제목: {a['title']} | URL: {a['link']} | 설명: {a['description'][:80]}"
+            f"  {i+1}. {a['title'].replace(chr(34), chr(39))} | {a['link']}"
             for i, a in enumerate(articles)
         ])
         sections.append(f"[{cat['label']}{global_note}]\n{art_text}")
@@ -255,7 +255,13 @@ def _parse_gemini_json(raw: str) -> list:
     end = raw.rfind("]")
     if start != -1 and end != -1:
         raw = raw[start:end+1]
-    return json.loads(raw)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"    [ERROR] JSON 파싱 실패: {e}")
+        print(f"    [DEBUG] 응답 앞 500자: {raw[:500]}")
+        print(f"    [DEBUG] 오류 위치 주변: {raw[max(0,e.pos-50):e.pos+50]}")
+        raise
 
 
 def analyze_all_categories(all_data: list[dict]) -> dict:
@@ -429,7 +435,7 @@ def main():
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
-        articles = collect_articles_for_category(cat, target=10)  # 필터링 여유분
+        articles = collect_articles_for_category(cat, target=7)  # 필터링 여유분
         print(f"    수집 완료: {len(articles)}개")
         all_data.append({"cat": cat, "articles": articles})
 
