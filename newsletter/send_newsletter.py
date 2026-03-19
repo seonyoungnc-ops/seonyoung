@@ -12,6 +12,7 @@ import urllib.request
 import urllib.parse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import time
 from datetime import datetime, timezone, timedelta
 
 # ──────────────────────────────────────────────
@@ -48,13 +49,13 @@ CATEGORIES = [
         "id": "it",
         "label": "💻 IT 업계",
         "color": "#7c3aed",
-        "queries": ["IT 업계 동향", "빅테크 뉴스", "카카오 네이버 IT", "메타 구글 애플 뉴스"],
+        "queries": ["글로벌 빅테크 동향", "구글 애플 마이크로소프트 메타 아마존", "실리콘밸리 테크 뉴스", "글로벌 플랫폼 IT 전략"],
     },
     {
         "id": "ai",
         "label": "🤖 AI",
         "color": "#0891b2",
-        "queries": ["AI 인공지능 최신", "생성형 AI 뉴스", "챗GPT 클로드 AI", "AI 서비스 출시"],
+        "queries": ["글로벌 AI 최신 동향", "오픈AI 앤트로픽 구글 AI", "생성형 AI 글로벌 트렌드", "AI 모델 기술 발표"],
     },
 ]
 
@@ -128,16 +129,25 @@ def collect_articles_for_category(cat: dict, target: int = 5) -> list[dict]:
 # ──────────────────────────────────────────────
 # 2단계: Gemini로 요약/인사이트 생성
 # ──────────────────────────────────────────────
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt: str, retries: int = 4) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
     }).encode("utf-8")
-    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as e:
+            wait = 15 * (attempt + 1)  # 15s, 30s, 45s, 60s
+            print(f"    [WARN] Gemini 오류 (시도 {attempt+1}/{retries}): {e} → {wait}초 후 재시도")
+            if attempt < retries - 1:
+                time.sleep(wait)
+            else:
+                raise
 
 def analyze_category(cat: dict, articles: list[dict]) -> dict:
     articles_text = "\n\n".join([
@@ -145,8 +155,12 @@ def analyze_category(cat: dict, articles: list[dict]) -> dict:
         for i, a in enumerate(articles)
     ])
 
+    global_note = ""
+    if cat["id"] in ("it", "ai"):
+        global_note = "\n※ 이 카테고리는 글로벌 관점에서 분석하세요. 특정 국가에 한정하지 말고 전 세계 트렌드와 빅테크 흐름을 중심으로 인사이트를 작성하세요."
+
     prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
-아래는 '{cat['label']}' 카테고리의 오늘 뉴스 기사 목록입니다.
+아래는 '{cat['label']}' 카테고리의 오늘 뉴스 기사 목록입니다.{global_note}
 
 {articles_text}
 
@@ -321,6 +335,7 @@ def main():
         analyzed = analyze_category(cat, articles)
         category_results.append({"cat": cat, "analyzed": analyzed})
         print(f"    분석 완료")
+        time.sleep(10)  # 카테고리 간 rate limit 방지
 
     print("  ▶ HTML 생성 중...")
     html = build_html(category_results)
