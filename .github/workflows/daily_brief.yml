@@ -20,13 +20,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install anthropic
+      # pip install 불필요 — 표준 라이브러리만 사용
 
       - name: Run newsletter script
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SMTP_EMAIL:        ${{ secrets.SMTP_EMAIL }}
-          SMTP_PASSWORD:     ${{ secrets.SMTP_PASSWORD }}
-          TARGET_EMAIL:      seonyoung@ncsoft.com
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SMTP_EMAIL:     ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD:  ${{ secrets.SMTP_PASSWORD }}
+          TARGET_EMAIL:   seonyoung@ncsoft.com
         run: python newsletter/send_newsletter.py
