@@ -1,6 +1,8 @@
 """
-Platform Planner Daily Brief
-Gemini 2.5 Flash (무료) · Gmail 자동 발송 · 09:00 KST
+Platform Planner Daily Brief — v6
+1단계: Google Search 그라운딩으로 실제 기사 목록 수집 (텍스트)
+2단계: 수집된 목록으로 HTML 뉴스레터 생성 (그라운딩 없이)
+→ URL 깨짐 문제 + 빈 메일 문제 동시 해결
 """
 import os, re, smtplib, sys, json
 from datetime import datetime, timedelta, timezone
@@ -15,29 +17,79 @@ TARGET_EMAIL   = os.environ.get("TARGET_EMAIL", "seonyoung@ncsoft.com")
 KST            = timezone(timedelta(hours=9))
 MODEL          = "gemini-2.5-flash"
 
-SYSTEM_PROMPT = """당신은 IT 업계 10년 차 플랫폼 기획 전문가입니다.
-반드시 실제 존재하는 신뢰할 수 있는 매체의 기사만 사용하십시오.
-(게임메카, 인벤, 루리웹, 이코리아, 전자신문, ZDNet, TechCrunch, Wired 등)
-존재하지 않거나 확신이 없는 기사는 절대 사용 금지.
+
+# ─── 공통 API 호출 헬퍼 ────────────────────
+def call_gemini(system: str, user: str, max_tokens: int, use_search: bool) -> str:
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{MODEL}:generateContent?key={GEMINI_API_KEY}"
+    )
+    body = {
+        "system_instruction": {"parts": [{"text": system}]},
+        "contents": [{"parts": [{"text": user}]}],
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.3},
+    }
+    if use_search:
+        body["tools"] = [{"google_search": {}}]
+
+    payload = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=180) as res:
+        data = json.loads(res.read().decode("utf-8"))
+
+    # 모든 text 파트 합치기 (그라운딩 응답은 파트가 여럿일 수 있음)
+    text = ""
+    for part in data["candidates"][0]["content"]["parts"]:
+        if "text" in part:
+            text += part["text"]
+    return text
+
+
+# ─── 1단계: 실제 기사 목록 수집 (그라운딩 ON) ─
+def fetch_articles(today: str, yesterday: str) -> str:
+    system = """당신은 뉴스 리서처입니다.
+Google 검색으로 실제 존재하는 기사만 수집하십시오.
+URL은 반드시 검색으로 확인된 실제 링크만 사용하십시오.
+출력 형식: 순수 텍스트 목록만. HTML 금지."""
+
+    user = f"""아래 4개 카테고리에서 각 5개씩, 총 20개 기사를 검색하십시오.
+기사 범위: {yesterday} 00:00 ~ {today} 09:00 (24시간 이내)
+
+[카테고리 1] 국내 게임 시장 (게임메카, 인벤, 루리웹 등 국내 매체)
+[카테고리 2] 글로벌 게임 시장 (IGN, TechCrunch, Polygon 등)
+[카테고리 3] IT 업계 (전자신문, ZDNet, The Verge 등)
+[카테고리 4] AI (VentureBeat, Wired, MIT Tech Review 등)
+
+각 기사를 아래 형식으로 출력하십시오:
+[카테고리명]
+제목: (기사 제목)
+URL: (실제 원문 URL)
+요약: (핵심 내용 1-2줄)
+---"""
+
+    print("📡 1단계: Google Search로 기사 수집 중...")
+    result = call_gemini(system, user, max_tokens=4000, use_search=True)
+    print("✅ 1단계 완료 — 기사 목록 수집됨")
+    return result
+
+
+# ─── 2단계: HTML 뉴스레터 생성 (그라운딩 OFF) ─
+def generate_html(today: str, articles: str) -> str:
+    system = """당신은 IT 업계 10년 차 플랫폼 기획 전문가입니다.
+주어진 기사 목록을 바탕으로 HTML 뉴스레터를 생성합니다.
+URL은 반드시 제공된 목록의 URL 그대로 사용. 절대 변경 금지.
 반드시 <html>로 시작해 </html>로 끝나는 순수 HTML만 출력."""
 
+    user = f"""아래 기사 목록을 HTML 뉴스레터로 변환하십시오.
+오늘 날짜: {today}
 
-def build_prompt(today: str, yesterday: str) -> str:
-    return f"""오늘: {today} (KST) / 기사 범위: {yesterday} 00:00 ~ {today} 09:00
-
-[출력 조건 — 절대 준수]
-아래 4개 카테고리를 순서대로 빠짐없이 작성. 각 카테고리 정확히 5개씩.
-앞 카테고리 내용이 길어도 뒤 카테고리 절대 생략 금지.
-
-  [카테고리 1] 🎮 국내 게임 시장  → 반드시 5개
-  [카테고리 2] 🌐 글로벌 게임 시장 → 반드시 5개
-  [카테고리 3] 💻 IT 업계          → 반드시 5개
-  [카테고리 4] 🤖 AI               → 반드시 5개
-  총합 = 정확히 20개. 미달 시 재출력 필요.
-
-각 기사마다 포함할 항목:
-  제목 / 키워드태그 3개 / 내용(2-3문장) / 요약(1줄) / 주목사유(2-3문장)
-  원문링크: 실제 URL + 기사 제목 텍스트
+=== 수집된 기사 목록 ===
+{articles}
+========================
 
 [HTML 디자인 스펙]
 Google Fonts:
@@ -86,47 +138,23 @@ Google Fonts:
     font-family:monospace; letter-spacing:0.06em;
     text-transform:uppercase; padding-top:2px;
 
-  내용 텍스트:     font-size:12px; color:#6b6b62; line-height:1.65;
-  요약 텍스트:     font-size:12px; color:#6b6b62; line-height:1.65;
-  주목사유 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
+  내용/요약/주목사유 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
 
-  링크: <a href="실제 원문 URL"
+  링크: <a href="수집된 목록의 URL 그대로"
            style="font-size:12px; color:#2563b0; text-decoration:underline;
                   text-underline-offset:2px; font-weight:500;">
           기사 원문 제목 그대로
         </a>
 
-위 스펙 그대로 완전한 HTML 문서 출력. 20개 기사 모두 포함 필수."""
+위 스펙 그대로 완전한 HTML 문서 출력. 수집된 20개 기사 모두 포함 필수."""
+
+    print("📡 2단계: HTML 뉴스레터 생성 중...")
+    result = call_gemini(system, user, max_tokens=16000, use_search=False)
+    print("✅ 2단계 완료 — HTML 생성됨")
+    return result
 
 
-def generate_brief(today: str, yesterday: str) -> str:
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{MODEL}:generateContent?key={GEMINI_API_KEY}"
-    )
-    payload = json.dumps({
-        "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-        "contents": [{"parts": [{"text": build_prompt(today, yesterday)}]}],
-        "generationConfig": {
-            "maxOutputTokens": 16000,
-            "temperature": 0.5
-        }
-        # tools 제거 — 그라운딩 시 HTML 빈 상태로 수신되는 문제 방지
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        url, data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    print(f"📡 Gemini ({MODEL}) 호출 중...")
-    with urllib.request.urlopen(req, timeout=180) as res:
-        data = json.loads(res.read().decode("utf-8"))
-    text = data["candidates"][0]["content"]["parts"][0]["text"]
-    print("✅ 생성 완료")
-    return text
-
-
+# ─── HTML 정제 ──────────────────────────────
 def extract_html(raw: str) -> str:
     raw = re.sub(r"```html\s*|```\s*", "", raw, flags=re.IGNORECASE)
     m   = re.search(r"(<html[\s\S]*?</html>)", raw, re.IGNORECASE)
@@ -138,6 +166,7 @@ def extract_html(raw: str) -> str:
     )
 
 
+# ─── Gmail 발송 ─────────────────────────────
 def send_email(html: str, subject: str):
     msg             = MIMEMultipart("alternative")
     msg["From"]    = SMTP_EMAIL
@@ -152,18 +181,28 @@ def send_email(html: str, subject: str):
     print("✅ 발송 완료!")
 
 
+# ─── 메인 ───────────────────────────────────
 def main():
     now   = datetime.now(KST)
     today = now.strftime("%Y년 %m월 %d일")
     yest  = (now - timedelta(days=1)).strftime("%Y년 %m월 %d일")
     code  = now.strftime("%m%d")
+
     print(f"\n🗓  {today} 데일리 브리프 시작\n{'─'*48}")
     for v, n in [(GEMINI_API_KEY, "GEMINI_API_KEY"),
                   (SMTP_EMAIL,     "SMTP_EMAIL"),
                   (SMTP_PASSWORD,  "SMTP_PASSWORD")]:
         if not v:
             print(f"❌ 미설정: {n}"); sys.exit(1)
-    html    = extract_html(generate_brief(today, yest))
+
+    # 1단계: 실제 기사 목록 수집
+    articles = fetch_articles(today, yest)
+
+    # 2단계: HTML 뉴스레터 생성
+    raw_html = generate_html(today, articles)
+    html     = extract_html(raw_html)
+
+    # 발송
     subject = f"[{code}] 플랫폼 기획자 데일리 브리프 | {today}"
     send_email(html, subject)
     print(f"\n🎉 완료: {subject}\n")
