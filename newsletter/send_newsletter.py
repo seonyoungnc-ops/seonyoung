@@ -105,7 +105,7 @@ def normalize_title(title: str) -> str:
 
 def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
     encoded = urllib.parse.quote(query)
-    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=sim"
+    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
     req = urllib.request.Request(url)
     req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
     req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
@@ -162,11 +162,28 @@ def dedup(articles: list[dict], seen_links: set, seen_titles: set) -> list[dict]
         result.append(a)
     return result
 
+def parse_pubdate(pub: str) -> datetime | None:
+    """네이버 API pubDate(RFC 2822) → datetime(UTC)"""
+    from email.utils import parsedate_to_datetime
+    try:
+        return parsedate_to_datetime(pub)
+    except Exception:
+        return None
+
+def is_within_24h(pub: str) -> bool:
+    """발행일이 현재 기준 24시간 이내인지 확인"""
+    dt = parse_pubdate(pub)
+    if dt is None:
+        return True  # 날짜 파싱 실패 시 통과 (누락 방지)
+    now = datetime.now(timezone.utc)
+    return (now - dt).total_seconds() <= 86400  # 24h = 86400s
+
 def naver_to_article(item: dict) -> dict:
     return {
-        "title": clean_html(item.get("title", "")),
-        "link":  item.get("originallink") or item.get("link", ""),
+        "title":       clean_html(item.get("title", "")),
+        "link":        item.get("originallink") or item.get("link", ""),
         "description": clean_html(item.get("description", ""))[:120],
+        "pubDate":     item.get("pubDate", ""),
     }
 
 def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
@@ -179,15 +196,18 @@ def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
     articles = []
     cat_id = cat["id"]
 
-    # 전 카테고리 네이버 API
+    # 전 카테고리 네이버 API — 24시간 이내 기사만 수집
     for query in NAVER_QUERIES.get(cat_id, []):
         if len(articles) >= target:
             break
-        raw_items = fetch_naver_news(query, display=15)
-        candidates = [naver_to_article(i) for i in raw_items]
+        raw_items = fetch_naver_news(query, display=20)
+        candidates = [
+            naver_to_article(i) for i in raw_items
+            if is_within_24h(i.get("pubDate", ""))
+        ]
         articles += dedup(candidates, seen_links, seen_titles)
 
-    print(f"    수집 완료: {len(articles)}개 (목표 {target}개)")
+    print(f"    수집 완료: {len(articles)}개 (24h 필터 적용, 목표 {target}개)")
     return articles[:target]
 
 # ──────────────────────────────────────────────
