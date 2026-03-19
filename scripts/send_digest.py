@@ -33,7 +33,7 @@ def send_newsletter():
        - 스타일은 인라인 CSS(<style> 태그 또는 style="")를 사용하여 이메일에서도 깨지지 않게 작성하세요.
     """
 
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemma-2b-it:generateContent"
     
     print("🚀 뉴스레터 생성 시작...")
     try:
