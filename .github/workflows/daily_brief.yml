@@ -1,0 +1,32 @@
+name: 📬 Platform Planner Daily Brief
+
+on:
+  schedule:
+    # 매일 00:00 UTC = 09:00 KST
+    - cron: '0 0 * * *'
+  workflow_dispatch:   # 수동 실행 허용
+
+jobs:
+  send-newsletter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Run newsletter script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SMTP_EMAIL:        ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD:     ${{ secrets.SMTP_PASSWORD }}
+          TARGET_EMAIL:      seonyoung@ncsoft.com
+        run: python newsletter/send_newsletter.py
