@@ -18,8 +18,7 @@ from datetime import datetime, timezone, timedelta
 # ──────────────────────────────────────────────
 # 환경변수
 # ──────────────────────────────────────────────
-NAVER_CLIENT_ID     = os.environ["NAVER_CLIENT_ID"]
-NAVER_CLIENT_SECRET = os.environ["NAVER_CLIENT_SECRET"]
+# NAVER API 더 이상 사용 안 함 (RSS로 대체)
 GEMINI_API_KEY      = os.environ["GEMINI_API_KEY"]
 SMTP_EMAIL          = os.environ["SMTP_EMAIL"]
 SMTP_PASSWORD       = os.environ["SMTP_PASSWORD"]
@@ -30,149 +29,131 @@ TODAY = datetime.now(KST).strftime("%Y년 %m월 %d일")
 TODAY_WEEKDAY = ["월", "화", "수", "목", "금", "토", "일"][datetime.now(KST).weekday()]
 
 # ──────────────────────────────────────────────
-# 카테고리 정의
+# 카테고리 정의 (RSS 기반 신뢰 매체 고정)
 # ──────────────────────────────────────────────
-# 카테고리별 적합 주제 / 부적합 주제 정의 (Gemini 필터링에 활용)
+
+# 카테고리별 포함/제외 규칙 (Gemini 필터링용)
 CATEGORY_RULES = {
     "domestic_game": {
-        "include": "국내(한국) 게임사의 신작 출시, 업데이트, 매출, 유저 반응, 국내 게임 시장 정책·규제",
-        "exclude": "해외 게임사 단독 뉴스, 반도체·GPU·IT 인프라, AI 기술 자체, 글로벌 콘솔 하드웨어",
+        "include": "국내(한국) 게임사 신작·업데이트·매출·유저 반응·정책·규제",
+        "exclude": "해외 게임사 단독, 반도체·GPU, AI 기술 자체, 글로벌 콘솔 하드웨어, 주식·투자",
     },
     "global_game": {
-        "include": "해외 게임사(닌텐도·소니·MS·EA·유비소프트·에픽 등) 신작·서비스·인수합병, 글로벌 게임 시장 트렌드, e스포츠",
-        "exclude": "국내 게임사 단독 뉴스, 반도체·GPU, AI 기술 자체, 국내 규제",
+        "include": "해외 게임사(닌텐도·소니·MS·EA·유비소프트·에픽 등) 신작·서비스·인수합병, 글로벌 게임 트렌드, e스포츠",
+        "exclude": "국내 게임사 단독, 반도체·GPU, AI 기술 자체, 주식·투자",
     },
     "it": {
-        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 서비스·전략·실적, 플랫폼 정책, 클라우드, 반도체, 모바일 OS",
-        "exclude": "게임 단독 뉴스, AI 모델·LLM 기술 자체(AI 카테고리로 분류), 국내 IT 기업 단독 소식",
+        "include": "글로벌 빅테크(구글·애플·MS·메타·아마존) 신제품·서비스·정책·실적, 클라우드, 반도체, 모바일 OS, 플랫폼 전략",
+        "exclude": "게임 단독, AI 모델·LLM 기술(AI 카테고리), 주식·투자·증권 단독 기사",
     },
     "ai": {
         "include": "LLM·생성형AI 모델 출시·성능, AI 스타트업·빅테크 AI 전략, AI 규제·정책, AI 서비스 글로벌 트렌드",
-        "exclude": "게임 단독 뉴스, 반도체 하드웨어 단독(AI 칩 연관 제외), 국내 IT 기업 단독 소식",
+        "exclude": "게임 단독, 반도체 하드웨어 단독, 주식·투자 단독 기사",
     },
 }
 
+# RSS 피드 — 카테고리별 신뢰 매체 고정
+RSS_SOURCES = {
+    "domestic_game": [
+        "https://www.gamemeca.com/rss/news.php",          # 게임메카
+        "https://www.inven.co.kr/rss/news.php",           # 인벤
+        "https://bbs.ruliweb.com/news/board/1003?view=rss",# 루리웹
+        "https://www.thisisgame.com/webzine/rss/news.xml", # 디스이즈게임
+    ],
+    "global_game": [
+        "https://www.ign.com/feeds/all.xml",              # IGN
+        "https://feeds.feedburner.com/ign/all",
+        "https://www.gamespot.com/feeds/mashup/",         # GameSpot
+        "https://kotaku.com/rss",                         # Kotaku
+        "https://www.eurogamer.net/?format=rss",          # Eurogamer
+    ],
+    "it": [
+        "https://techcrunch.com/feed/",                   # TechCrunch
+        "https://www.theverge.com/rss/index.xml",         # The Verge
+        "https://feeds.arstechnica.com/arstechnica/index",# Ars Technica
+        "https://www.wired.com/feed/rss",                 # Wired
+    ],
+    "ai": [
+        "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "https://venturebeat.com/category/ai/feed/",      # VentureBeat AI
+        "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
+        "https://feeds.arstechnica.com/arstechnica/ai",
+    ],
+}
+
 CATEGORIES = [
-    {
-        "id": "domestic_game",
-        "label": "🎮 국내 게임 시장",
-        "color": "#c84b31",
-        # 국내 게임에만 집중, 더 많이 수집해서 필터링 여유분 확보
-        "queries": [
-            "넥슨 신작 게임 출시",
-            "넷마블 크래프톤 게임 업데이트",
-            "국내 모바일게임 PC게임 흥행",
-            "한국 게임 서비스 이용자",
-            "국내 게임업계 실적 매출",
-        ],
-    },
-    {
-        "id": "global_game",
-        "label": "🌐 글로벌 게임 시장",
-        "color": "#2563b0",
-        # 해외 게임사·플랫폼 중심, 국내 기사와 겹치지 않도록 영문사명 포함
-        "queries": [
-            "닌텐도 소니 플레이스테이션 신작",
-            "Xbox 마이크로소프트 게임 서비스",
-            "스팀 에픽게임즈 PC게임 출시",
-            "EA 유비소프트 액티비전 블리자드",
-            "글로벌 게임 시장 매출 순위",
-        ],
-    },
-    {
-        "id": "it",
-        "label": "💻 IT 업계",
-        "color": "#7c3aed",
-        # 빅테크·플랫폼·반도체 중심
-        "queries": [
-            "구글 애플 신제품 서비스 발표",
-            "메타 아마존 마이크로소프트 전략",
-            "반도체 엔비디아 TSMC 퀄컴",
-            "애플 iOS 안드로이드 플랫폼 정책",
-            "빅테크 실적 투자 인수합병",
-        ],
-    },
-    {
-        "id": "ai",
-        "label": "🤖 AI",
-        "color": "#0891b2",
-        # AI 모델·서비스·정책 중심
-        "queries": [
-            "OpenAI GPT 챗GPT 신규 모델",
-            "구글 제미나이 앤트로픽 클로드 AI",
-            "생성형 AI 서비스 출시 업데이트",
-            "AI 규제 정책 글로벌",
-            "AI 스타트업 투자 빅테크 전략",
-        ],
-    },
+    {"id": "domestic_game", "label": "🎮 국내 게임 시장", "color": "#c84b31"},
+    {"id": "global_game",   "label": "🌐 글로벌 게임 시장", "color": "#2563b0"},
+    {"id": "it",            "label": "💻 IT 업계",         "color": "#7c3aed"},
+    {"id": "ai",            "label": "🤖 AI",              "color": "#0891b2"},
 ]
 
 # ──────────────────────────────────────────────
-# 1단계: 네이버 뉴스 API 수집
+# 1단계: RSS 수집
 # ──────────────────────────────────────────────
-def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
-    encoded = urllib.parse.quote(query)
-    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
-    req = urllib.request.Request(url)
-    req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
-    req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
+def fetch_rss(url: str, max_items: int = 10) -> list[dict]:
+    """RSS 피드 파싱 → [{title, link, description, pubDate}]"""
+    import xml.etree.ElementTree as ET
     try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data.get("items", [])
+            raw = resp.read()
+        root = ET.fromstring(raw)
+        ns = {"atom": "http://www.w3.org/2005/Atom"}
+        items = []
+
+        # RSS 2.0
+        for item in root.findall(".//item")[:max_items]:
+            title = (item.findtext("title") or "").strip()
+            link  = (item.findtext("link") or "").strip()
+            desc  = re.sub(r"<[^>]+>", "", item.findtext("description") or "").strip()
+            pub   = (item.findtext("pubDate") or "").strip()
+            if title and link:
+                items.append({"title": title, "link": link, "description": desc[:120], "pubDate": pub})
+
+        # Atom
+        if not items:
+            for entry in root.findall(".//atom:entry", ns)[:max_items]:
+                title = (entry.findtext("atom:title", namespaces=ns) or
+                         entry.findtext("title") or "").strip()
+                link_el = entry.find("atom:link", ns) or entry.find("link")
+                link = (link_el.get("href", "") if link_el is not None else "").strip()
+                desc = re.sub(r"<[^>]+>", "",
+                    (entry.findtext("atom:summary", namespaces=ns) or
+                     entry.findtext("summary") or "")).strip()
+                if title and link:
+                    items.append({"title": title, "link": link,
+                                  "description": desc[:120], "pubDate": ""})
+        return items
     except Exception as e:
-        print(f"[WARN] Naver API error for '{query}': {e}")
+        print(f"    [WARN] RSS 오류 {url[:60]}: {e}")
         return []
 
-def clean_html(text: str) -> str:
-    return re.sub(r"<[^>]+>", "", text).replace("&quot;", '"').replace("&amp;", "&").replace("&#39;", "'").strip()
-
 def normalize_title(title: str) -> str:
-    """제목에서 특수문자/공백 제거 후 비교용 문자열 반환"""
-    return re.sub(r"[^가-힣a-zA-Z0-9]", "", title).lower()
+    return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
 
-def collect_articles_for_category(cat: dict, target: int = 5) -> list[dict]:
-    """
-    카테고리별 기사 target개 수집
-    - URL 중복 제거
-    - 제목 정규화 후 중복 제거 (같은 기사 다른 URL 방지)
-    """
-    seen_links = set()
-    seen_titles = set()
+def collect_articles_for_category(cat: dict, target: int = 8) -> list[dict]:
+    """카테고리 RSS 피드에서 기사 수집 + 중복 제거"""
+    seen_links, seen_titles = set(), set()
     articles = []
-
-    for query in cat["queries"]:
+    for feed_url in RSS_SOURCES[cat["id"]]:
         if len(articles) >= target:
             break
-        items = fetch_naver_news(query, display=15)
+        items = fetch_rss(feed_url, max_items=15)
         for item in items:
             if len(articles) >= target:
                 break
-
-            link = item.get("originallink") or item.get("link", "")
-            title = clean_html(item.get("title", ""))
-            norm_title = normalize_title(title)
-
-            # URL 중복 or 제목 유사 중복 제거
+            link = item["link"]
+            norm = normalize_title(item["title"])
             if not link or link in seen_links:
                 continue
-            if norm_title and norm_title in seen_titles:
+            if norm and (norm in seen_titles or
+               any(norm[:20] and s.startswith(norm[:20]) for s in seen_titles)):
                 continue
-            # 제목 앞 20자 기준으로도 중복 체크
-            title_prefix = norm_title[:20]
-            if any(title_prefix and s.startswith(title_prefix) for s in seen_titles):
-                continue
-
             seen_links.add(link)
-            seen_titles.add(norm_title)
-            articles.append({
-                "title": title,
-                "link": link,
-                "description": clean_html(item.get("description", "")),
-                "pubDate": item.get("pubDate", ""),
-            })
-
-    return articles[:target]
+            seen_titles.add(norm)
+            articles.append(item)
+    return articles
 
 # ──────────────────────────────────────────────
 # 2단계: Gemini로 요약/인사이트 생성
@@ -317,20 +298,14 @@ def build_html(category_results: list[dict]) -> str:
             f'color:#3d3d3a;text-transform:uppercase;letter-spacing:0.4px;">{text}</span>'
         )
 
-    # 외부 링크 SVG 아이콘 (이메일 호환용 인라인 SVG)
-    LINK_ICON = (
-        '<a href="{url}" target="_blank" rel="noopener noreferrer" '
-        'style="display:inline-block;vertical-align:middle;margin-left:6px;flex-shrink:0;text-decoration:none;">'
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" '
-        'xmlns="http://www.w3.org/2000/svg" style="display:block;">'
-        '<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" '
-        'stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-        '<polyline points="15 3 21 3 21 9" stroke="{color}" stroke-width="2" '
-        'stroke-linecap="round" stroke-linejoin="round"/>'
-        '<line x1="10" y1="14" x2="21" y2="3" stroke="{color}" stroke-width="2" '
-        'stroke-linecap="round" stroke-linejoin="round"/>'
-        '</svg></a>'
-    )
+    # 외부 링크 아이콘 — Gmail은 SVG 차단하므로 텍스트 이모지 사용
+    def link_icon_html(url: str, color: str) -> str:
+        return (
+            f'<a href="{url}" target="_blank" rel="noopener noreferrer" '
+            f'style="display:inline-block;vertical-align:middle;margin-left:7px;'
+            f'font-size:13px;line-height:1;text-decoration:none;color:{color};'
+            f'font-family:Arial,sans-serif;flex-shrink:0;">&#x2197;</a>'
+        )
 
     cards_html = ""
     for cr in category_results:
@@ -341,7 +316,7 @@ def build_html(category_results: list[dict]) -> str:
         article_items = ""
         for art in analyzed.get("articles", []):
             kw_chips = "".join(chip(kw, color) for kw in art.get("keywords", []))
-            link_icon = LINK_ICON.format(url=art["link"], color=color)
+            link_icon = link_icon_html(art["link"], color)
             article_items += f"""
             <div style="border:1px solid #e8e6e0;border-radius:10px;background:#ffffff;
                         padding:16px 18px;margin-bottom:10px;">
