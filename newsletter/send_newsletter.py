@@ -307,29 +307,30 @@ def _build_prompt(batch: list[dict], used_titles: set | None = None) -> str:
         used_list = ", ".join(f"'{t}'" for t in sorted(used_titles)[:20])
         used_note = f"\n⚠️ 아래 키워드는 이미 다른 카테고리에서 다뤘으므로 이 카테고리에서 절대 포함 금지:\n{used_list}\n"
 
-    cat_id = batch[0]["cat"]["id"]
+    cat_ids_set = {e["cat"]["id"] for e in batch}
 
     # 카테고리별 강화 지시
     extra = ""
-    if cat_id == "global_game":
-        extra = """
+    if "global_game" in cat_ids_set:
+        extra += """
 ⚠️ 글로벌 게임 카테고리 특별 규칙:
 - 펄어비스·넥슨·넷마블·크래프톤·엔씨소프트 등 국내 게임사 기사는 단 1개도 포함 금지.
-- '붉은사막' 관련 기사는 제목에 언급만 있어도 전부 제외.
-- 반드시 해외 게임사(닌텐도·소니·MS·EA·유비소프트 등)의 기사만 선정."""
-    elif cat_id == "it":
-        extra = """
+- 국내 게임사 기사가 수집됐더라도 글로벌 카테고리에는 절대 넣지 말 것.
+- 반드시 닌텐도·소니·MS·EA·유비소프트 등 해외 게임사 기사만 선정."""
+    if "it" in cat_ids_set:
+        extra += """
 ⚠️ IT 업계 카테고리 특별 규칙:
 - 구글·애플·MS·메타·아마존 등 글로벌 빅테크의 제품·서비스·정책 기사만 선정.
-- 국내 반도체 주식 시황, 증권 관련, 박람회 단순 참가 기사는 전부 제외.
-- AI 모델·LLM 기술 기사도 제외 (AI 카테고리 담당).
-- summary와 reason은 반드시 실제 내용으로 채워야 함. 절대 빈 문자열 금지."""
-    elif cat_id == "ai":
-        extra = """
+- 주식·증권·시황, 박람회 단순 참가, AI 모델·LLM 기술 기사는 전부 제외.
+- summary와 reason은 반드시 실제 내용으로 채울 것. 빈 문자열 절대 금지."""
+    if "ai" in cat_ids_set:
+        extra += """
 ⚠️ AI 카테고리 특별 규칙:
 - 오픈AI·구글·앤트로픽·MS·메타 등 빅테크의 AI 모델·서비스·전략 기사만 선정.
-- 의료·보안·로봇·제조 분야 단순 AI 적용 사례, 박람회·전시회 참가 기사는 전부 제외.
-- IT 플랫폼 기획자가 직접 참고할 수 있는 AI 서비스·모델 기사 우선."""
+- 의료·보안·로봇·제조 단순 적용 사례, 박람회 참가 기사는 전부 제외.
+- summary와 reason은 반드시 실제 내용으로 채울 것. 빈 문자열 절대 금지."""
+
+    cat_id = batch[0]["cat"]["id"]
 
     return f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
 {extra}{used_note}
@@ -385,33 +386,36 @@ def _parse_gemini_json(raw: str) -> list:
 
 def analyze_all_categories(all_data: list[dict]) -> dict:
     """
-    카테고리별 개별 Gemini 호출 (4회)
-    - 배치 묶음 방식 폐기: IT/AI가 같은 배치면 한쪽이 잘리는 문제 해결
-    - 호출 간 15초 대기로 rate limit 회피
-    - URL 인덱스 매핑으로 Gemini 번역 제목 유지 + URL 원본 보존
+    [국내게임+글로벌게임] / [IT+AI] 2배치로 Gemini 2회 호출
+    - 4회→2회로 줄여 무료 플랜 일일 한도 절약
+    - 배치 간 20초 대기로 429 방지
+    - 각 카테고리 기사 5개씩, maxOutputTokens=16384로 잘림 방지
     """
     result_map = {}
+    batches = [all_data[:2], all_data[2:]]  # [국내+글로벌] / [IT+AI]
 
-    for i, entry in enumerate(all_data):
+    for i, batch in enumerate(batches):
         if i > 0:
-            time.sleep(15)
-        cat = entry["cat"]
-        articles = entry["articles"]
-        print(f"    [{i+1}/4] {cat['label']} 분석 중 ({len(articles)}개 기사)...")
+            time.sleep(20)
 
-        # URL → index 매핑 (Gemini가 URL을 바꿔도 원본 복원용)
-        url_to_idx = {a["link"]: idx for idx, a in enumerate(articles)}
+        labels = " + ".join(e["cat"]["label"] for e in batch)
+        total_articles = sum(len(e["articles"]) for e in batch)
+        print(f"    [{i+1}/2] {labels} 분석 중 (총 {total_articles}개 기사)...")
 
-        prompt = _build_prompt([entry])
+        # URL → 원본 매핑 (배치 전체)
+        url_to_orig = {}
+        for entry in batch:
+            for a in entry["articles"]:
+                url_to_orig[a["link"]] = a["link"]
+
+        prompt = _build_prompt(batch)
         raw = call_gemini(prompt)
         results_list = _parse_gemini_json(raw)
 
         for r in results_list:
-            # URL 원본 강제 보존 (제목은 Gemini 번역본 유지)
             for art in r.get("articles", []):
-                idx = url_to_idx.get(art["link"])
-                if idx is not None:
-                    art["link"] = articles[idx]["link"]
+                if art["link"] in url_to_orig:
+                    art["link"] = url_to_orig[art["link"]]
             result_map[r["category_id"]] = r
 
     return result_map
