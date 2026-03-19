@@ -197,82 +197,85 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
             else:
                 raise
 
-def analyze_all_categories(all_data: list[dict]) -> list[dict]:
-    """
-    4개 카테고리를 단일 Gemini 호출로 처리 → API 호출 4번 → 1번으로 감소
-    """
+def _build_prompt(batch: list[dict]) -> str:
+    """배치(2개 카테고리)용 Gemini 프롬프트 생성"""
+    rules_text = ""
     sections = []
-    for entry in all_data:
+    for entry in batch:
         cat = entry["cat"]
         articles = entry["articles"]
-        global_note = ""
-        if cat["id"] in ("it", "ai"):
-            global_note = " (글로벌 관점 중심, 특정 국가 한정 금지)"
+        cid = cat["id"]
+        r = CATEGORY_RULES[cid]
+        rules_text += f"- {cat['label']}: 포함={r['include']} / 제외={r['exclude']}\n"
+        global_note = " (글로벌 관점 중심)" if cid in ("it", "ai") else ""
         art_text = "\n".join([
-            f"  {i+1}. 제목: {a['title']} | URL: {a['link']} | 설명: {a['description']}"
+            f"  {i+1}. 제목: {a['title']} | URL: {a['link']} | 설명: {a['description'][:80]}"
             for i, a in enumerate(articles)
         ])
-        sections.append(f"[카테고리: {cat['label']}{global_note}]\n{art_text}")
-
+        sections.append(f"[{cat['label']}{global_note}]\n{art_text}")
     combined = "\n\n".join(sections)
+    cat_ids = " / ".join(e["cat"]["id"] for e in batch)
 
-    # 카테고리 규칙 텍스트 조립
-    rules_text = ""
-    for entry in all_data:
-        cid = entry["cat"]["id"]
-        r = CATEGORY_RULES[cid]
-        rules_text += f"- {entry['cat']['label']}: 포함={r['include']} / 제외={r['exclude']}\n"
+    return f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
 
-    prompt = f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
-
-[카테고리별 선정 기준]
+[선정 기준]
 {rules_text}
-
-[수집된 기사 목록]
+[기사 목록]
 {combined}
 
 [지시사항]
-1. 각 카테고리에서 위 선정 기준에 "적합한" 기사만 골라 최대 5개 선정하세요.
-   - 부적합한 기사(카테고리 주제와 무관, 다른 카테고리 내용)는 과감히 제외하세요.
-   - 국내/글로벌 게임 카테고리 간 동일 기사 또는 유사 내용 중복 불가.
-   - 주목도가 높은 기사(이슈·화제성·업계 파급력) 우선 선정.
-2. 선정 기사가 5개 미만이어도 괜찮습니다. 억지로 채우지 마세요.
-3. URL은 절대 새로 생성하지 말고 입력된 URL 그대로 사용하세요.
+1. 각 카테고리에서 선정 기준에 적합한 기사 최대 5개 선정. 부적합 기사는 제외.
+2. 주목도 높은 기사(화제성·파급력) 우선. 5개 미만이어도 됨.
+3. URL은 절대 새로 생성 금지. 입력된 URL 그대로 사용.
 
-다음 JSON 배열 형식으로만 응답하세요.
-
+JSON 배열만 출력하세요 (다른 텍스트 금지):
 [
   {{
-    "category_id": "domestic_game 또는 global_game 또는 it 또는 ai",
-    "category_insight": "카테고리 핵심 흐름 1~2문장. 짧고 임팩트 있게.",
+    "category_id": "{cat_ids} 중 하나",
+    "category_insight": "핵심 흐름 1~2문장.",
     "articles": [
       {{
-        "title": "원본 기사 제목 그대로",
-        "link": "입력된 URL 그대로 (절대 변경 금지)",
-        "summary": "기사 핵심 내용을 3줄 이내로 명확하게 요약. 숫자·고유명사 포함 권장.",
+        "title": "원본 제목 그대로",
+        "link": "원본 URL 그대로",
+        "summary": "3줄 이내 핵심 요약. 숫자·고유명사 포함.",
         "keywords": ["키워드1", "키워드2", "키워드3"],
-        "reason": "플랫폼 기획자가 주목해야 할 이유. 2줄 이내로 구체적으로."
+        "reason": "기획자가 주목할 이유 2줄 이내."
       }}
     ]
   }}
-]
+]"""
 
-4개 카테고리 모두 포함, JSON 외 다른 텍스트 출력 금지."""
 
-    raw = call_gemini(prompt)
+def _parse_gemini_json(raw: str) -> list:
+    """Gemini 응답에서 JSON 배열 파싱 (견고한 버전)"""
     raw = raw.strip()
-    # 코드블록 제거
     if "```" in raw:
         raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
-    # JSON 배열 부분만 추출 (앞뒤 잡음 제거)
     start = raw.find("[")
     end = raw.rfind("]")
     if start != -1 and end != -1:
         raw = raw[start:end+1]
-    results_list = json.loads(raw)
+    return json.loads(raw)
 
-    # category_id → dict 로 인덱싱
-    result_map = {r["category_id"]: r for r in results_list}
+
+def analyze_all_categories(all_data: list[dict]) -> dict:
+    """
+    2개 카테고리씩 나눠 2번 호출 → 응답 길이 절반으로 줄여 JSON 잘림 방지
+    호출 간 15초 대기로 rate limit 회피
+    """
+    result_map = {}
+
+    batches = [all_data[:2], all_data[2:]]  # [게임2개] / [IT+AI]
+    for i, batch in enumerate(batches):
+        if i > 0:
+            time.sleep(15)  # 배치 간 대기
+        cat_labels = " + ".join(e["cat"]["label"] for e in batch)
+        print(f"    배치 {i+1}/2 분석 중: {cat_labels}")
+        prompt = _build_prompt(batch)
+        raw = call_gemini(prompt)
+        results_list = _parse_gemini_json(raw)
+        for r in results_list:
+            result_map[r["category_id"]] = r
 
     # URL·제목 원본 강제 보존
     for entry in all_data:
