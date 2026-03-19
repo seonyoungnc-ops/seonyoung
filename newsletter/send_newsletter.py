@@ -133,7 +133,7 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 8192},
     }).encode("utf-8")
     for attempt in range(retries):
         try:
@@ -195,11 +195,15 @@ def analyze_all_categories(all_data: list[dict]) -> list[dict]:
 
     raw = call_gemini(prompt)
     raw = raw.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    results_list = json.loads(raw.strip())
+    # 코드블록 제거
+    if "```" in raw:
+        raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
+    # JSON 배열 부분만 추출 (앞뒤 잡음 제거)
+    start = raw.find("[")
+    end = raw.rfind("]")
+    if start != -1 and end != -1:
+        raw = raw[start:end+1]
+    results_list = json.loads(raw)
 
     # category_id → dict 로 인덱싱
     result_map = {r["category_id"]: r for r in results_list}
