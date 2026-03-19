@@ -1,6 +1,7 @@
 """
 Platform Planner Daily Brief
-Gemini 2.5 Flash (무료) · Gmail 자동 발송 · 09:00 KST
+Gemini 2.5 Flash + Google Search 그라운딩 (무료)
+Gmail 자동 발송 · 09:00 KST
 """
 import os, re, smtplib, sys, json
 from datetime import datetime, timedelta, timezone
@@ -16,74 +17,90 @@ KST            = timezone(timedelta(hours=9))
 MODEL          = "gemini-2.5-flash"
 
 SYSTEM_PROMPT = """당신은 IT 업계 10년 차 플랫폼 기획 전문가입니다.
-반드시 실제 존재하는 신뢰할 수 있는 매체의 기사만 사용하십시오.
+Google 검색을 통해 실제 존재하는 기사만 사용하십시오.
 (게임메카, 인벤, 루리웹, 이코리아, 전자신문, ZDNet, TechCrunch, Wired 등)
-존재하지 않거나 확신이 없는 기사는 절대 사용 금지.
+검색으로 확인되지 않은 URL은 절대 사용 금지.
 반드시 <html>로 시작해 </html>로 끝나는 순수 HTML만 출력."""
 
 
 def build_prompt(today: str, yesterday: str) -> str:
     return f"""오늘: {today} (KST) / 기사 범위: {yesterday} 00:00 ~ {today} 09:00
 
-[출력 조건 — 반드시 준수]
-- 4개 카테고리 × 각 5개 = 정확히 20개 기사 (누락 절대 금지)
-- 카테고리: 🎮 국내 게임 시장 / 🌐 글로벌 게임 시장 / 💻 IT 업계 / 🤖 AI
-- 각 기사마다: 제목 / 키워드태그(3개) / 내용 / 요약 / 주목사유 / 원문링크(기사제목+URL)
+Google 검색으로 위 시간 범위 내 실제 기사를 찾아 아래 조건대로 작성하십시오.
+
+[출력 조건 — 절대 준수]
+아래 4개 카테고리를 순서대로 빠짐없이 작성. 각 카테고리 정확히 5개씩.
+앞 카테고리 내용이 길어도 뒤 카테고리 절대 생략 금지.
+
+  [카테고리 1] 🎮 국내 게임 시장  → 반드시 5개
+  [카테고리 2] 🌐 글로벌 게임 시장 → 반드시 5개
+  [카테고리 3] 💻 IT 업계          → 반드시 5개
+  [카테고리 4] 🤖 AI               → 반드시 5개
+  총합 = 정확히 20개. 미달 시 재출력 필요.
+
+각 기사마다 포함할 항목:
+  제목 / 키워드태그 3개 / 내용(2-3문장) / 요약(1줄) / 주목사유(2-3문장)
+  원문링크: 검색으로 확인한 실제 URL + 기사 제목 텍스트
 
 [HTML 디자인 스펙]
-Google Fonts: <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-전체 wrapper: max-width:680px; margin:0 auto; padding:20px; background:#fafaf8; font-family:'Noto Sans KR',sans-serif;
+Google Fonts:
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
-[헤더]
-h1: font-size:18px; font-weight:700; color:#1a1a18; margin-bottom:4px;
-날짜 부제: font-size:11px; color:#a0a095; font-family:monospace;
+전체 wrapper:
+  max-width:680px; margin:0 auto; padding:20px;
+  background:#fafaf8; font-family:'Noto Sans KR',sans-serif;
 
-[카테고리 섹션 헤더]
-pill 형태: display:inline-flex; align-items:center; gap:8px;
+헤더:
+  h1: font-size:18px; font-weight:700; color:#1a1a18; margin-bottom:4px;
+  날짜 부제: font-size:11px; color:#a0a095; font-family:monospace;
+
+카테고리 섹션 헤더 (pill 형태):
+  display:inline-flex; align-items:center; gap:8px;
   padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;
-국내게임: background:#fef2ee; color:#c84b31;
-글로벌게임: background:#eff6ff; color:#2563b0;
-IT업계: background:#f5f3ff; color:#7c3aed;
-AI: background:#ecfeff; color:#0891b2;
-섹션 구분선: border-bottom:2px solid (카테고리 컬러); margin-bottom:16px;
+  국내게임  → background:#fef2ee; color:#c84b31;
+  글로벌게임 → background:#eff6ff; color:#2563b0;
+  IT업계    → background:#f5f3ff; color:#7c3aed;
+  AI        → background:#ecfeff; color:#0891b2;
+  섹션 구분선: border-bottom:2px solid (카테고리 컬러); margin-bottom:16px;
 
-[기사 카드]
-border:1px solid #e8e6e0; border-radius:10px; padding:16px 18px;
-margin-bottom:10px; background:#ffffff;
+기사 카드:
+  border:1px solid #e8e6e0; border-radius:10px;
+  padding:16px 18px; margin-bottom:10px; background:#ffffff;
 
-[기사 제목 영역 — 제목과 키워드 chip을 가로로 배치]
-display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;
+기사 제목:
+  font-size:13px; font-weight:700; color:#1a1a18;
+  margin-bottom:6px; line-height:1.4;
 
-  제목(왼쪽):
-    font-size:13px; font-weight:700; color:#1a1a18; line-height:1.4; flex:1;
+키워드 chip (제목 바로 아래 한 줄, 가로 나열):
+  display:flex; flex-direction:row; flex-wrap:wrap; gap:4px; margin-bottom:10px;
+  각 chip → font-size:10px; font-weight:600; padding:3px 8px;
+             border-radius:20px; white-space:nowrap;
+  국내게임 chip  → background:#fef2ee; color:#c84b31;
+  글로벌게임 chip → background:#eff6ff; color:#2563b0;
+  IT chip        → background:#f5f3ff; color:#7c3aed;
+  AI chip        → background:#ecfeff; color:#0891b2;
 
-  키워드 chip 묶음(오른쪽):
-    display:flex; flex-direction:column; gap:4px; flex-shrink:0; align-items:flex-end;
-    각 chip: font-size:10px; font-weight:600; padding:3px 8px; border-radius:20px;
-    white-space:nowrap;
-    국내게임 chip: background:#fef2ee; color:#c84b31;
-    글로벌게임 chip: background:#eff6ff; color:#2563b0;
-    IT chip: background:#f5f3ff; color:#7c3aed;
-    AI chip: background:#ecfeff; color:#0891b2;
-
-[내용/요약/주목사유/링크 row — grid 레이아웃]
-display:grid; grid-template-columns:52px 1fr; gap:6px; margin-bottom:8px; align-items:baseline;
+내용/요약/주목사유/링크 row:
+  display:grid; grid-template-columns:52px 1fr; gap:6px;
+  margin-bottom:8px; align-items:baseline;
 
   라벨(내용/요약/주목사유/링크):
-    font-size:10px; font-weight:700; color:#3d3d3a;  ← 진한 색상
-    font-family:monospace; letter-spacing:0.06em; text-transform:uppercase;
-    padding-top:2px;
+    font-size:10px; font-weight:700; color:#3d3d3a;
+    font-family:monospace; letter-spacing:0.06em;
+    text-transform:uppercase; padding-top:2px;
 
-  내용 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
-  요약 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;  ← 내용과 동일 색상
+  내용 텍스트:     font-size:12px; color:#6b6b62; line-height:1.65;
+  요약 텍스트:     font-size:12px; color:#6b6b62; line-height:1.65;
   주목사유 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
 
-  링크: <a href="원문URL" style="font-size:12px; color:#2563b0; text-decoration:underline;
-    text-underline-offset:2px; font-weight:500;">기사 원문 제목 그대로</a>
-  (링크 텍스트 = 기사 제목 그대로, 클릭 시 원문으로 이동)
+  링크: <a href="검색으로 확인한 실제 원문 URL"
+           style="font-size:12px; color:#2563b0; text-decoration:underline;
+                  text-underline-offset:2px; font-weight:500;">
+          기사 원문 제목 그대로
+        </a>
+  (링크 텍스트 = 기사 제목 그대로. 출처명 단독 사용 금지)
 
-위 스펙 그대로 완전한 HTML 문서를 출력하십시오.
-20개 기사 모두 포함 필수. 누락 시 재출력이 필요합니다."""
+위 스펙 그대로 완전한 HTML 문서 출력. 20개 기사 모두 포함 필수."""
 
 
 def generate_brief(today: str, yesterday: str) -> str:
@@ -97,7 +114,8 @@ def generate_brief(today: str, yesterday: str) -> str:
         "generationConfig": {
             "maxOutputTokens": 16000,
             "temperature": 0.5
-        }
+        },
+        "tools": [{"google_search": {}}]  # Google Search 그라운딩 — 실제 URL 보장
     }).encode("utf-8")
 
     req = urllib.request.Request(
@@ -105,10 +123,16 @@ def generate_brief(today: str, yesterday: str) -> str:
         headers={"Content-Type": "application/json"},
         method="POST"
     )
-    print(f"📡 Gemini ({MODEL}) 호출 중...")
+    print(f"📡 Gemini ({MODEL}) + Google Search 호출 중...")
     with urllib.request.urlopen(req, timeout=180) as res:
         data = json.loads(res.read().decode("utf-8"))
-    text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+    # 후보 중 HTML 포함된 파트 추출
+    text = ""
+    for part in data["candidates"][0]["content"]["parts"]:
+        if "text" in part:
+            text += part["text"]
+
     print("✅ 생성 완료")
     return text
 
