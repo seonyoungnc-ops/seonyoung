@@ -101,7 +101,12 @@ def clean_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text or "").replace("&quot;",'"').replace("&amp;","&").replace("&#39;","'").strip()
 
 def normalize_title(title: str) -> str:
+    """특수문자·공백 제거 후 소문자화 — 중복 판별용"""
     return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
+
+def title_key(title: str) -> str:
+    """앞 15자 기준 핵심 키워드 추출 — 동일 주제 중복 탐지용"""
+    return normalize_title(title)[:15]
 
 def fetch_naver_news(query: str, display: int = 15) -> list[dict]:
     encoded = urllib.parse.quote(query)
@@ -147,18 +152,22 @@ def fetch_rss(url: str, max_items: int = 15) -> list[dict]:
         return []
 
 def dedup(articles: list[dict], seen_links: set, seen_titles: set) -> list[dict]:
+    """URL 중복 + 제목 정규화 중복 + 핵심 키 15자 중복 3중 필터"""
     result = []
+    seen_keys = {title_key(t) for t in seen_titles}  # 기존 타이틀에서 키 추출
     for a in articles:
         link = a["link"]
         norm = normalize_title(a["title"])
+        key  = title_key(a["title"])
         if not link or link in seen_links:
             continue
-        if norm and norm in seen_titles:
+        if norm in seen_titles:
             continue
-        if norm[:20] and any(s.startswith(norm[:20]) for s in seen_titles):
+        if key and key in seen_keys:
             continue
         seen_links.add(link)
         seen_titles.add(norm)
+        seen_keys.add(key)
         result.append(a)
     return result
 
@@ -318,32 +327,34 @@ def _parse_gemini_json(raw: str) -> list:
 
 def analyze_all_categories(all_data: list[dict]) -> dict:
     """
-    2개 카테고리씩 나눠 2번 호출 → 응답 길이 절반으로 줄여 JSON 잘림 방지
-    호출 간 15초 대기로 rate limit 회피
+    카테고리별 개별 Gemini 호출 (4회)
+    - 배치 묶음 방식 폐기: IT/AI가 같은 배치면 한쪽이 잘리는 문제 해결
+    - 호출 간 15초 대기로 rate limit 회피
+    - URL 인덱스 매핑으로 Gemini 번역 제목 유지 + URL 원본 보존
     """
     result_map = {}
 
-    batches = [all_data[:2], all_data[2:]]  # [게임2개] / [IT+AI]
-    for i, batch in enumerate(batches):
+    for i, entry in enumerate(all_data):
         if i > 0:
-            time.sleep(15)  # 배치 간 대기
-        cat_labels = " + ".join(e["cat"]["label"] for e in batch)
-        print(f"    배치 {i+1}/2 분석 중: {cat_labels}")
-        prompt = _build_prompt(batch)
+            time.sleep(15)
+        cat = entry["cat"]
+        articles = entry["articles"]
+        print(f"    [{i+1}/4] {cat['label']} 분석 중 ({len(articles)}개 기사)...")
+
+        # URL → index 매핑 (Gemini가 URL을 바꿔도 원본 복원용)
+        url_to_idx = {a["link"]: idx for idx, a in enumerate(articles)}
+
+        prompt = _build_prompt([entry])
         raw = call_gemini(prompt)
         results_list = _parse_gemini_json(raw)
-        for r in results_list:
-            result_map[r["category_id"]] = r
 
-    # URL만 원본으로 보존 (제목은 Gemini 번역본 사용)
-    for entry in all_data:
-        cat_id = entry["cat"]["id"]
-        articles = entry["articles"]
-        if cat_id in result_map:
-            for i, art in enumerate(result_map[cat_id].get("articles", [])):
-                if i < len(articles):
-                    art["link"] = articles[i]["link"]  # URL 원본 강제 보존
-                    # title은 Gemini 번역본 유지 (영문→한국어)
+        for r in results_list:
+            # URL 원본 강제 보존 (제목은 Gemini 번역본 유지)
+            for art in r.get("articles", []):
+                idx = url_to_idx.get(art["link"])
+                if idx is not None:
+                    art["link"] = articles[idx]["link"]
+            result_map[r["category_id"]] = r
 
     return result_map
 
@@ -443,7 +454,7 @@ def build_html(category_results: list[dict]) -> str:
   <div style="background:#ffffff;border:1px solid #e8e6e0;border-radius:10px;
               padding:24px 28px;margin-bottom:24px;">
     <div style="font-size:22px;font-weight:700;color:#1a1a18;font-family:'Noto Sans KR',Arial,sans-serif;">
-      📬 {TODAY} Platform Planner Daily Brief
+      📬 {TODAY} Daily Brief
     </div>
   </div>
 
@@ -459,7 +470,7 @@ def build_html(category_results: list[dict]) -> str:
 # ──────────────────────────────────────────────
 def send_email(html_content: str):
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"📬 {TODAY} Platform Planner Daily Brief"
+    msg["Subject"] = f"📬 {TODAY} Daily Brief"
     msg["From"] = SMTP_EMAIL
     msg["To"] = TO_EMAIL
     msg.attach(MIMEText(html_content, "html", "utf-8"))
