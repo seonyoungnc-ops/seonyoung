@@ -15,17 +15,20 @@ def send_newsletter():
     now = datetime.now()
     limit_time = (now - timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
 
-    # 1. 모델 리스트 확인 및 모델 선택 (기존 로직 유지)
+    # 1. 모델 리스트 확인
     print("🔍 모델 리스트 확인 중...")
-    list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+    list_url = "https://generativelanguage.googleapis.com/v1beta/models"
     
     try:
-        models_res = requests.get(list_url)
-        model_list = [m['name'] for m in models_res.json().get('models', [])]
+        models_res = requests.get(list_url, params={'key': api_key})
+        model_data = models_res.json()
+        model_list = [m['name'] for m in model_data.get('models', [])]
+        
+        # Gemma 모델 우선 선택 (없으면 Flash)
         target_model = next((m for m in model_list if 'gemma' in m), "models/gemini-1.5-flash")
         print(f"✅ 선택된 모델: {target_model}")
 
-        # 2. 요청하신 [형식 + CSS 테마]가 반영된 프롬프트
+        # 2. 프롬프트 (보라색 테마 + 기획자 맞춤 형식)
         prompt = f"""
         당신은 NCSOFT 전략 기획팀 플래너입니다. 아래 지시를 엄격히 따르십시오.
         
@@ -48,14 +51,23 @@ def send_newsletter():
         - 인사말, 설명, 마크다운(```), 'placeholder' 같은 단어 절대 금지.
         """
 
-        # 3. API 호출
-        gen_url = f"[https://generativelanguage.googleapis.com/v1beta/](https://generativelanguage.googleapis.com/v1beta/){target_model}:generateContent?key={api_key}"
-        res = requests.post(gen_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
+        # 3. API 호출 (주소 에러 방지를 위해 깔끔하게 정리)
+        # f-string 내부에서 주소가 꼬이지 않도록 변수를 조합합니다.
+        base_url = "[https://generativelanguage.googleapis.com/v1beta](https://generativelanguage.googleapis.com/v1beta)"
+        gen_endpoint = f"{base_url}/{target_model}:generateContent"
+        
+        print(f"🚀 생성 요청 중... ({target_model})")
+        res = requests.post(
+            gen_endpoint, 
+            params={'key': api_key},
+            json={"contents": [{"parts": [{"text": prompt}]}]}, 
+            timeout=180
+        )
 
         if res.status_code == 200:
             raw_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
             
-            # ✅ HTML만 정교하게 추출 (지저분한 텍스트 제거)
+            # HTML 추출 (설명 문구 제거)
             html_match = re.search(r'(<html.*</html>)', raw_text, re.DOTALL | re.IGNORECASE)
             if html_match:
                 clean_html = html_match.group(1)
@@ -76,7 +88,7 @@ def send_newsletter():
                 server.sendmail(smtp_email, target_email, msg.as_string())
             print("✅ 메일 발송 완료!")
         else:
-            print(f"❌ 생성 실패: {res.status_code}")
+            print(f"❌ 생성 실패: {res.status_code}, {res.text}")
 
     except Exception as e:
         print(f"⚠️ 시스템 오류: {e}")
