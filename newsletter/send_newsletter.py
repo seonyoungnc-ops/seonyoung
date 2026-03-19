@@ -108,7 +108,7 @@ def collect_articles_for_category(cat: dict, target: int = 5) -> list[dict]:
 # ──────────────────────────────────────────────
 def call_gemini(prompt: str) -> str:
     """Gemini 2.5 Flash API 호출"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
