@@ -28,52 +28,62 @@ def build_prompt(today: str, yesterday: str) -> str:
 [출력 조건 — 반드시 준수]
 - 4개 카테고리 × 각 5개 = 정확히 20개 기사 (누락 절대 금지)
 - 카테고리: 🎮 국내 게임 시장 / 🌐 글로벌 게임 시장 / 💻 IT 업계 / 🤖 AI
-- 각 기사: 제목(키워드 태그) / 내용(2-3문장) / 요약(1줄) / 주목사유(2-3문장) / 원문링크
+- 각 기사마다: 제목 / 키워드태그(3개) / 내용 / 요약 / 주목사유 / 원문링크(기사제목+URL)
 
-[HTML 디자인 스펙 — 아래 CSS를 그대로 사용할 것]
-전체 wrapper: max-width:680px; margin:0 auto; padding:20px; background:#fafaf8;
-font-family: 'Noto Sans KR', sans-serif;
+[HTML 디자인 스펙]
+Google Fonts: <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+전체 wrapper: max-width:680px; margin:0 auto; padding:20px; background:#fafaf8; font-family:'Noto Sans KR',sans-serif;
 
-[헤더 영역]
-h1 (날짜+제목): font-size:18px; font-weight:700; color:#1a1a18;
-  text-align:left; margin-bottom:4px; (한 줄로 표시 — 줄바꿈 없도록 작게)
+[헤더]
+h1: font-size:18px; font-weight:700; color:#1a1a18; margin-bottom:4px;
 날짜 부제: font-size:11px; color:#a0a095; font-family:monospace;
 
 [카테고리 섹션 헤더]
-배경 있는 pill 형태로 표시:
-  display:inline-flex; align-items:center; gap:8px;
+pill 형태: display:inline-flex; align-items:center; gap:8px;
   padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;
 국내게임: background:#fef2ee; color:#c84b31;
 글로벌게임: background:#eff6ff; color:#2563b0;
 IT업계: background:#f5f3ff; color:#7c3aed;
 AI: background:#ecfeff; color:#0891b2;
-섹션 하단 구분선: border-bottom:2px solid (각 카테고리 컬러); margin-bottom:16px;
+섹션 구분선: border-bottom:2px solid (카테고리 컬러); margin-bottom:16px;
 
 [기사 카드]
 border:1px solid #e8e6e0; border-radius:10px; padding:16px 18px;
 margin-bottom:10px; background:#ffffff;
 
-[기사 제목]
-font-size:13px; font-weight:700; color:#1a1a18; margin-bottom:10px;
+[기사 제목 영역 — 제목과 키워드 chip을 가로로 배치]
+display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;
 
-[키워드 태그]
-font-size:10px; padding:2px 7px; border-radius:12px; margin-right:4px;
-(카테고리별 컬러 배경+텍스트)
+  제목(왼쪽):
+    font-size:13px; font-weight:700; color:#1a1a18; line-height:1.4; flex:1;
 
-[row 라벨/내용 그리드]
-display:grid; grid-template-columns:44px 1fr; gap:6px; margin-bottom:6px;
-라벨(내용/요약/주목/링크): font-size:10px; font-weight:700; color:#a0a095;
-  font-family:monospace; letter-spacing:0.06em; text-transform:uppercase; padding-top:1px;
-내용 텍스트: font-size:12px; color:#6b6b62; line-height:1.6;
-요약 텍스트: font-size:12px; color:#1a1a18; font-weight:500; line-height:1.6;
-주목 텍스트: font-size:12px; color:#6b6b62; line-height:1.6;
-링크: font-size:11px; color:#4a7c59; text-decoration:none; font-weight:500;
+  키워드 chip 묶음(오른쪽):
+    display:flex; flex-direction:column; gap:4px; flex-shrink:0; align-items:flex-end;
+    각 chip: font-size:10px; font-weight:600; padding:3px 8px; border-radius:20px;
+    white-space:nowrap;
+    국내게임 chip: background:#fef2ee; color:#c84b31;
+    글로벌게임 chip: background:#eff6ff; color:#2563b0;
+    IT chip: background:#f5f3ff; color:#7c3aed;
+    AI chip: background:#ecfeff; color:#0891b2;
 
-[Google Fonts import — head 안에 포함]
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+[내용/요약/주목사유/링크 row — grid 레이아웃]
+display:grid; grid-template-columns:52px 1fr; gap:6px; margin-bottom:8px; align-items:baseline;
 
-위 스펙을 반영한 완전한 HTML 문서를 출력하십시오.
-20개 기사를 모두 포함해야 합니다. 누락되면 재출력이 필요합니다."""
+  라벨(내용/요약/주목사유/링크):
+    font-size:10px; font-weight:700; color:#3d3d3a;  ← 진한 색상
+    font-family:monospace; letter-spacing:0.06em; text-transform:uppercase;
+    padding-top:2px;
+
+  내용 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
+  요약 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;  ← 내용과 동일 색상
+  주목사유 텍스트: font-size:12px; color:#6b6b62; line-height:1.65;
+
+  링크: <a href="원문URL" style="font-size:12px; color:#2563b0; text-decoration:underline;
+    text-underline-offset:2px; font-weight:500;">기사 원문 제목 그대로</a>
+  (링크 텍스트 = 기사 제목 그대로, 클릭 시 원문으로 이동)
+
+위 스펙 그대로 완전한 HTML 문서를 출력하십시오.
+20개 기사 모두 포함 필수. 누락 시 재출력이 필요합니다."""
 
 
 def generate_brief(today: str, yesterday: str) -> str:
@@ -85,7 +95,7 @@ def generate_brief(today: str, yesterday: str) -> str:
         "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
         "contents": [{"parts": [{"text": build_prompt(today, yesterday)}]}],
         "generationConfig": {
-            "maxOutputTokens": 16000,  # 20개 기사 충분히 커버
+            "maxOutputTokens": 16000,
             "temperature": 0.5
         }
     }).encode("utf-8")
@@ -98,7 +108,6 @@ def generate_brief(today: str, yesterday: str) -> str:
     print(f"📡 Gemini ({MODEL}) 호출 중...")
     with urllib.request.urlopen(req, timeout=180) as res:
         data = json.loads(res.read().decode("utf-8"))
-
     text = data["candidates"][0]["content"]["parts"][0]["text"]
     print("✅ 생성 완료")
     return text
@@ -109,8 +118,8 @@ def extract_html(raw: str) -> str:
     m   = re.search(r"(<html[\s\S]*?</html>)", raw, re.IGNORECASE)
     return m.group(1).strip() if m else (
         "<!DOCTYPE html><html lang='ko'><head><meta charset='UTF-8'></head>"
-        "<body style='background:#fafaf8;padding:20px;max-width:680px;margin:auto;"
-        "font-family:Noto Sans KR,sans-serif'>"
+        "<body style='background:#fafaf8;padding:20px;max-width:680px;"
+        "margin:auto;font-family:Noto Sans KR,sans-serif'>"
         f"{raw}</body></html>"
     )
 
@@ -134,14 +143,12 @@ def main():
     today = now.strftime("%Y년 %m월 %d일")
     yest  = (now - timedelta(days=1)).strftime("%Y년 %m월 %d일")
     code  = now.strftime("%m%d")
-
     print(f"\n🗓  {today} 데일리 브리프 시작\n{'─'*48}")
     for v, n in [(GEMINI_API_KEY, "GEMINI_API_KEY"),
                   (SMTP_EMAIL,     "SMTP_EMAIL"),
                   (SMTP_PASSWORD,  "SMTP_PASSWORD")]:
         if not v:
             print(f"❌ 미설정: {n}"); sys.exit(1)
-
     html    = extract_html(generate_brief(today, yest))
     subject = f"[{code}] 플랫폼 기획자 데일리 브리프 | {today}"
     send_email(html, subject)
