@@ -53,29 +53,23 @@ CATEGORY_RULES = {
 }
 
 # ─────────────────────────────────────────────────────────────────
-# 수집 소스 정의
-#  - 국내 게임     : 네이버 API (한국어 기사 최적)
-#  - 글로벌 게임   : 국내 매체의 해외게임 섹션 RSS (한국어 번역 기사)
-#  - IT / AI       : 네이버 API (글로벌 빅테크·AI 한국어 보도)
+# 수집 소스 정의 — 전 카테고리 네이버 API 통일
+#  네이버 sort=sim(관련도순): 품질·클릭수 반영, 영세매체 낚시성 기사 자연 필터링
 # ─────────────────────────────────────────────────────────────────
 
-# 글로벌 게임 전용 RSS — 한국 매체가 번역·보도하는 해외게임 섹션
-RSS_SOURCES = {
-    "global_game": [
-        "https://www.gamemeca.com/rss/news.php",         # 게임메카 (해외 게임 포함)
-        "https://www.thisisgame.com/webzine/rss/news.xml",# 디스이즈게임
-        "https://www.inven.co.kr/rss/news.php",           # 인벤 (해외 포함)
-        "https://bbs.ruliweb.com/news/board/1003?view=rss",# 루리웹
-    ],
-}
-
-# 네이버 API 쿼리 — 카테고리별
 NAVER_QUERIES = {
     "domestic_game": [
         "국내 모바일게임 신작 출시",
-        "넥슨 넷마블 크래프톤 펄어비스",
+        "넥슨 넷마블 크래프톤 펄어비스 게임",
         "국내 온라인게임 콘솔게임 업데이트",
         "한국 게임업계 매출 서비스",
+    ],
+    "global_game": [
+        "닌텐도 소니 플레이스테이션 신작",
+        "Xbox 마이크로소프트 게임 서비스",
+        "글로벌 게임사 신작 출시 해외",
+        "에픽게임즈 EA 유비소프트 블리자드",
+        "스팀 콘솔 게임 글로벌 출시",
     ],
     "it": [
         "구글 애플 마이크로소프트 서비스 발표",
@@ -103,8 +97,6 @@ CATEGORIES = [
 # ──────────────────────────────────────────────
 # 1단계: 기사 수집 (국내=네이버API / 글로벌·IT·AI=RSS)
 # ──────────────────────────────────────────────
-import xml.etree.ElementTree as ET
-
 def clean_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text or "").replace("&quot;",'"').replace("&amp;","&").replace("&#39;","'").strip()
 
@@ -187,21 +179,13 @@ def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
     articles = []
     cat_id = cat["id"]
 
-    if cat_id == "global_game":
-        # RSS (국내 매체 해외게임 섹션)
-        for feed_url in RSS_SOURCES["global_game"]:
-            if len(articles) >= target:
-                break
-            items = fetch_rss(feed_url, max_items=20)
-            articles += dedup(items, seen_links, seen_titles)
-    else:
-        # 네이버 API
-        for query in NAVER_QUERIES.get(cat_id, []):
-            if len(articles) >= target:
-                break
-            raw_items = fetch_naver_news(query, display=15)
-            candidates = [naver_to_article(i) for i in raw_items]
-            articles += dedup(candidates, seen_links, seen_titles)
+    # 전 카테고리 네이버 API
+    for query in NAVER_QUERIES.get(cat_id, []):
+        if len(articles) >= target:
+            break
+        raw_items = fetch_naver_news(query, display=15)
+        candidates = [naver_to_article(i) for i in raw_items]
+        articles += dedup(candidates, seen_links, seen_titles)
 
     print(f"    수집 완료: {len(articles)}개 (목표 {target}개)")
     return articles[:target]
@@ -425,10 +409,8 @@ def build_html(category_results: list[dict]) -> str:
   <!-- 헤더 -->
   <div style="background:#ffffff;border:1px solid #e8e6e0;border-radius:10px;
               padding:24px 28px;margin-bottom:24px;">
-    <div style="font-size:11px;font-weight:600;color:#888884;font-family:'Noto Sans KR',Arial,sans-serif;
-                letter-spacing:1px;margin-bottom:6px;">PLATFORM PLANNER DAILY BRIEF</div>
     <div style="font-size:22px;font-weight:700;color:#1a1a18;font-family:'Noto Sans KR',Arial,sans-serif;">
-      {TODAY} ({TODAY_WEEKDAY}) 데일리 브리프
+      📬 {TODAY} Platform Planner Daily Brief
     </div>
   </div>
 
@@ -444,7 +426,7 @@ def build_html(category_results: list[dict]) -> str:
 # ──────────────────────────────────────────────
 def send_email(html_content: str):
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"[데일리브리프] {TODAY} ({TODAY_WEEKDAY}) 플랫폼 기획자 뉴스"
+    msg["Subject"] = f"📬 {TODAY} Platform Planner Daily Brief"
     msg["From"] = SMTP_EMAIL
     msg["To"] = TO_EMAIL
     msg.attach(MIMEText(html_content, "html", "utf-8"))
