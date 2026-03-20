@@ -62,16 +62,37 @@ CATEGORIES = [
     {"id": "ai",            "label": "🤖 AI",               "color": "#0891b2"},
 ]
 
-# 카테고리별 고정 기반 쿼리 (항상 검색)
+# 단일 키워드 중심 — 한글+영문 병행으로 수집 커버리지 극대화
 BASE_QUERIES = {
-    "domestic_game": ["넥슨","넷마블","크래프톤","펄어비스","엔씨소프트",
-                      "카카오게임즈","위메이드","컴투스","스마일게이트","시프트업"],
-    "global_game":   ["닌텐도","Nintendo","플레이스테이션","PlayStation",
-                      "Xbox","유비소프트","Ubisoft","블리자드","에픽게임즈","스팀"],
-    "it":            ["애플","Apple","구글","Google","마이크로소프트","Microsoft",
-                      "메타","아마존","삼성전자","빅테크"],
-    "ai":            ["챗GPT","ChatGPT","오픈AI","OpenAI","제미나이","Gemini",
-                      "앤트로픽","클로드","생성형AI","LLM"],
+    # 국내 게임: 국내 게임사명 위주 (한글)
+    "domestic_game": [
+        "넥슨","넷마블","크래프톤","펄어비스","엔씨소프트",
+        "카카오게임즈","위메이드","컴투스","스마일게이트","시프트업",
+        "넥슨게임즈","카카오게임",
+    ],
+    # 글로벌 게임: 한글+영문 병행 (영문으로 검색 시 해외 번역 기사 추가 수집)
+    "global_game": [
+        "닌텐도","Nintendo","플레이스테이션","PlayStation",
+        "Xbox","엑스박스","유비소프트","Ubisoft",
+        "블리자드","Blizzard","에픽게임즈","Epic Games",
+        "스팀","Steam","EA게임","Valve",
+    ],
+    # IT: 한글+영문 병행
+    "it": [
+        "애플","Apple","아이폰","iPhone",
+        "구글","Google","안드로이드","Android",
+        "마이크로소프트","Microsoft","삼성전자","Samsung",
+        "메타","Meta","아마존","Amazon",
+        "빅테크","클라우드",
+    ],
+    # AI: 한글+영문 병행 (모델명은 영문이 더 정확)
+    "ai": [
+        "챗GPT","ChatGPT","GPT-4","오픈AI","OpenAI",
+        "제미나이","Gemini","구글AI","Google AI",
+        "앤트로픽","Anthropic","클로드","Claude",
+        "생성형AI","LLM","AI모델","Llama",
+        "코파일럿","Copilot",
+    ],
 }
 
 # 카테고리별 Google Trends 관련 키워드 필터
@@ -103,7 +124,7 @@ def clean_html(text: str) -> str:
 def normalize_title(title: str) -> str:
     return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
 
-def is_within_hours(pub: str, hours: int = 48) -> bool:
+def is_within_hours(pub: str, hours: int = 24) -> bool:
     try:
         dt = parsedate_to_datetime(pub)
         return (datetime.now(timezone.utc) - dt).total_seconds() <= hours * 3600
@@ -151,7 +172,7 @@ def filter_trends_for_category(trends: list[str], cat_id: str) -> list[str]:
 # ──────────────────────────────────────────────
 def fetch_naver_news(query: str, display: int = 20) -> list[dict]:
     encoded = urllib.parse.quote(query)
-    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=sim"
+    url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
     req = urllib.request.Request(url)
     req.add_header("X-Naver-Client-Id", NAVER_CLIENT_ID)
     req.add_header("X-Naver-Client-Secret", NAVER_CLIENT_SECRET)
@@ -193,63 +214,86 @@ def fetch_rss(url: str, max_items: int = 20) -> list[dict]:
 # ──────────────────────────────────────────────
 # 1-D. 카테고리별 기사 수집
 # ──────────────────────────────────────────────
-def collect_articles_for_category(cat: dict, trends: list[str], target: int = 12) -> list[dict]:
+def collect_articles_for_category(cat: dict, trends: list[str]) -> list[dict]:
     """
     수집 전략:
-    1. Google Trends 매칭 키워드로 네이버 검색 (실제 화제 기사 우선)
-    2. 카테고리 고정 쿼리로 네이버 검색 (기반 커버리지)
-    3. 글로벌 게임은 RSS도 병행
-    sort=sim: 네이버 관련도순 (클릭·반응 반영)
+    - 키워드별 균등 슬롯 2개씩 배분 → 특정 키워드 독점 방지
+    - 충분히 많이 수집(키워드 수 × 2개)한 뒤 Gemini가 Best 5 선별
+    - 24h 부족 시 48h 자동 확장
     """
     seen_links = set()
     seen_norms = set()
-    articles   = []
     cat_id     = cat["id"]
+    PER_QUERY  = 2   # 키워드당 최대 수집 개수
 
-    def add(title, link, desc, pub=""):
+    def try_add(title, link, desc, pub, hours) -> bool:
         norm = normalize_title(title)
         if not link or link in seen_links or norm in seen_norms:
-            return
-        if not is_within_hours(pub, 48):
-            return
+            return False
+        if pub and not is_within_hours(pub, hours):
+            return False
         seen_links.add(link)
         seen_norms.add(norm)
-        articles.append({"title": title, "link": link,
-                         "description": desc, "pubDate": pub})
+        return True
 
-    # 1. Google Trends 매칭 키워드 → 네이버 검색
+    def collect_from_queries(queries, hours) -> list[dict]:
+        """쿼리 목록에서 키워드별 PER_QUERY개씩 균등 수집"""
+        result = []
+        for q in queries:
+            count = 0
+            for item in fetch_naver_news(q, display=20):
+                if count >= PER_QUERY:
+                    break
+                title = clean_html(item.get("title",""))
+                link  = item.get("originallink") or item.get("link","")
+                desc  = clean_html(item.get("description",""))[:120]
+                pub   = item.get("pubDate","")
+                if try_add(title, link, desc, pub, hours):
+                    result.append({"title": title, "link": link,
+                                   "description": desc, "pubDate": pub})
+                    count += 1
+        return result
+
+    def collect_from_rss(hours) -> list[dict]:
+        """RSS에서 피드별 PER_QUERY개씩 균등 수집"""
+        result = []
+        for feed_url in GLOBAL_GAME_RSS:
+            count = 0
+            for item in fetch_rss(feed_url):
+                if count >= PER_QUERY:
+                    break
+                if try_add(item["title"], item["link"], item["description"], "", hours):
+                    result.append(item)
+                    count += 1
+        return result
+
+    # 1차: 24시간 수집
+    articles = []
+
+    # Google Trends 매칭 키워드 (있으면 우선 수집)
     trend_queries = filter_trends_for_category(trends, cat_id)
     if trend_queries:
         print(f"    Trends 매칭: {trend_queries}")
-    for q in trend_queries:
-        if len(articles) >= target:
-            break
-        for item in fetch_naver_news(q):
-            add(clean_html(item.get("title","")),
-                item.get("originallink") or item.get("link",""),
-                clean_html(item.get("description",""))[:120],
-                item.get("pubDate",""))
+        articles += collect_from_queries(trend_queries, 24)
 
-    # 2. 글로벌 게임 RSS 병행
+    # 글로벌 게임 RSS 병행
     if cat_id == "global_game":
-        for feed_url in GLOBAL_GAME_RSS:
-            if len(articles) >= target:
-                break
-            for item in fetch_rss(feed_url):
-                add(item["title"], item["link"], item["description"])
+        articles += collect_from_rss(24)
 
-    # 3. 고정 기반 쿼리
-    for q in BASE_QUERIES.get(cat_id, []):
-        if len(articles) >= target:
-            break
-        for item in fetch_naver_news(q, display=20):
-            add(clean_html(item.get("title","")),
-                item.get("originallink") or item.get("link",""),
-                clean_html(item.get("description",""))[:120],
-                item.get("pubDate",""))
+    # 고정 기반 쿼리
+    articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 24)
 
-    print(f"    수집 완료: {len(articles)}개")
-    return articles[:target]
+    # 2차: 5개 미달이면 48h로 확장 (이미 수집된 건 seen에 남아있어 중복 없음)
+    if len(articles) < 5:
+        print(f"    24h {len(articles)}개 → 48h 확장")
+        if trend_queries:
+            articles += collect_from_queries(trend_queries, 48)
+        if cat_id == "global_game":
+            articles += collect_from_rss(48)
+        articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 48)
+
+    print(f"    수집 완료: {len(articles)}개 (Gemini가 Best 5 선별)")
+    return articles
 
 # ──────────────────────────────────────────────
 # 2단계: Gemini 분석
@@ -491,7 +535,7 @@ def main():
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
-        articles = collect_articles_for_category(cat, trends, target=12)
+        articles = collect_articles_for_category(cat, trends)
         all_data.append({"cat": cat, "articles": articles})
 
     # Gemini 분석
