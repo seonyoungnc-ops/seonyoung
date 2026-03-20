@@ -50,8 +50,8 @@ CATEGORY_RULES = {
         "exclude": "게임 단독 기사, AI 모델·LLM 기술 기사(AI 카테고리 담당), 주식·증권·시황, 박람회 단순 참가 소식",
     },
     "ai": {
-        "include": "오픈AI·구글·앤트로픽·MS·메타 등 빅테크의 AI 모델·서비스 출시, LLM 성능·업데이트, AI 비즈니스 전략·규제",
-        "exclude": "게임 단독 기사, 의료·보안·로봇 등 단순 AI 적용 사례, 박람회 단순 참가 소식, 주식·증권·시황",
+        "include": "AI 모델·서비스 출시·업데이트, LLM 성능 비교, AI 비즈니스 전략·투자·규제, 오픈AI·구글·앤트로픽·MS·메타 AI 관련 전반",
+        "exclude": "게임 단독 기사, 주식·증권·시황 단독 기사",
     },
 }
 
@@ -121,7 +121,7 @@ def http_get(url: str, headers: dict = None) -> bytes:
 def fetch_google_trends() -> list[str]:
     """Google Trends 한국 실시간 급상승 검색어 RSS"""
     try:
-        raw = http_get("https://trends.google.com/trends/trendingsearches/daily/rss?geo=KR")
+        raw = http_get("https://trends.google.com/trending/rss?geo=KR")
         root = ET.fromstring(raw)
         keywords = []
         for item in root.findall(".//item"):
@@ -296,7 +296,7 @@ def build_prompt(batch: list[dict]) -> str:
     if any(e["cat"]["id"] == "it" for e in batch):
         extra += "\n⚠️ IT 업계: 빅테크 서비스·정책 기사만. 주식·시황·AI 모델 기사 제외. summary/reason 반드시 작성."
     if any(e["cat"]["id"] == "ai" for e in batch):
-        extra += "\n⚠️ AI: 빅테크 AI 모델·서비스 기사만. 의료·보안·로봇 박람회 기사 제외. summary/reason 반드시 작성."
+        extra += "\n⚠️ AI: AI 모델·서비스·전략 관련 기사 우선. 게임·주식 단독 기사만 제외. summary/reason 반드시 작성. 반드시 4~5개 선정."
 
     return f"""당신은 게임/IT 플랫폼 기획자를 위한 뉴스 큐레이터입니다.
 {extra}
