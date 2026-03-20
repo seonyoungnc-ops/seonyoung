@@ -1,4 +1,7 @@
+# 스케줄 재활성화 2026-03-20
+
 name: 📬 Platform Planner Daily Brief
+
 
 on:
   schedule:
@@ -9,7 +12,7 @@ on:
 jobs:
   send-brief:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -20,7 +23,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 외부 라이브러리 불필요 — 표준 라이브러리만 사용
       - name: 데일리 브리프 실행
         env:
           NAVER_CLIENT_ID:     ${{ secrets.NAVER_CLIENT_ID }}
