@@ -14,6 +14,7 @@ import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import parsedate_to_datetime
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 
 # ──────────────────────────────────────────────
@@ -98,6 +99,15 @@ NAVER_QUERIES = {
     ],
 }
 
+# 글로벌 게임 전용 RSS (영문 매체 직접 구독 → Gemini가 한국어로 번역)
+GLOBAL_GAME_RSS = [
+    "https://feeds.feedburner.com/ign/games-all",
+    "https://www.gamespot.com/feeds/mashup/",
+    "https://www.eurogamer.net/?format=rss",
+    "https://www.pcgamer.com/rss/",
+    "https://www.videogameschronicle.com/feed/",
+]
+
 CATEGORIES = [
     {"id": "domestic_game", "label": "🎮 국내 게임 시장", "color": "#c84b31"},
     {"id": "global_game",   "label": "🌐 글로벌 게임 시장", "color": "#2563b0"},
@@ -135,43 +145,82 @@ def fetch_naver_news(query: str, display: int = 20) -> list[dict]:
         print(f"    [WARN] Naver API 오류 '{query}': {e}")
         return []
 
+def fetch_rss(url: str, max_items: int = 20) -> list[dict]:
+    """RSS 피드 파싱 → [{title, link, description}]"""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            root = ET.fromstring(resp.read())
+        items = []
+        # RSS 2.0
+        for item in root.findall(".//item")[:max_items]:
+            title = (item.findtext("title") or "").strip()
+            link  = (item.findtext("link") or "").strip()
+            desc  = clean_html(item.findtext("description") or "")[:120]
+            if title and link:
+                items.append({"title": title, "link": link, "description": desc, "pubDate": ""})
+        # Atom fallback
+        if not items:
+            ns = {"a": "http://www.w3.org/2005/Atom"}
+            for entry in root.findall(".//a:entry", ns)[:max_items]:
+                title = (entry.findtext("a:title", namespaces=ns) or "").strip()
+                link_el = entry.find("a:link", ns)
+                link = (link_el.get("href", "") if link_el is not None else "").strip()
+                desc = clean_html(entry.findtext("a:summary", namespaces=ns) or "")[:120]
+                if title and link:
+                    items.append({"title": title, "link": link, "description": desc, "pubDate": ""})
+        return items
+    except Exception as e:
+        print(f"    [WARN] RSS 오류 {url[:50]}: {e}")
+        return []
+
 def collect_articles_for_category(cat: dict, target: int = 10) -> list[dict]:
     """
-    카테고리별 독립 수집 — seen 세트를 카테고리 내에서만 공유
-    (카테고리 간 seen 공유 금지: 한 카테고리 키워드가 다른 카테고리 수집을 막는 부작용 방지)
-    24h 이내 기사 우선, 부족 시 48h 자동 확장
+    카테고리별 독립 수집
+    - 기본 48시간 필터 (24h→48h로 완화하여 5개 미달 방지)
+    - 글로벌 게임: RSS(영문 매체) + 네이버 API 병행
+    - 나머지: 네이버 API
     """
-    seen_links  = set()
-    seen_norms  = set()
-    articles    = []
-    cat_id      = cat["id"]
+    seen_links = set()
+    seen_norms = set()
+    articles   = []
+    cat_id     = cat["id"]
 
-    for hours in (24, 48):
-        if len(articles) >= target:
-            break
-        for query in NAVER_QUERIES.get(cat_id, []):
+    def add_article(title, link, desc, pub=""):
+        norm = normalize_title(title)
+        if not link or link in seen_links or norm in seen_norms:
+            return False
+        seen_links.add(link)
+        seen_norms.add(norm)
+        articles.append({"title": title, "link": link, "description": desc, "pubDate": pub})
+        return True
+
+    # 글로벌 게임: RSS 먼저 수집 (영문 매체 직접 구독)
+    if cat_id == "global_game":
+        for feed_url in GLOBAL_GAME_RSS:
             if len(articles) >= target:
                 break
-            for item in fetch_naver_news(query):
+            for item in fetch_rss(feed_url):
                 if len(articles) >= target:
                     break
-                if not is_within_hours(item.get("pubDate",""), hours):
-                    continue
-                link  = item.get("originallink") or item.get("link","")
-                title = clean_html(item.get("title",""))
-                norm  = normalize_title(title)
-                if not link or link in seen_links or norm in seen_norms:
-                    continue
-                seen_links.add(link)
-                seen_norms.add(norm)
-                articles.append({
-                    "title": title,
-                    "link":  link,
-                    "description": clean_html(item.get("description",""))[:120],
-                    "pubDate": item.get("pubDate",""),
-                })
-        if len(articles) < target and hours == 24:
-            print(f"    24h 기사 {len(articles)}개 → 48h 확장")
+                add_article(item["title"], item["link"], item["description"])
+        print(f"    RSS 수집: {len(articles)}개")
+
+    # 네이버 API (글로벌 게임은 RSS 보충용, 나머지는 주 수집원)
+    # 기본 48시간 필터 적용
+    for query in NAVER_QUERIES.get(cat_id, []):
+        if len(articles) >= target:
+            break
+        for item in fetch_naver_news(query):
+            if len(articles) >= target:
+                break
+            if not is_within_hours(item.get("pubDate", ""), 48):
+                continue
+            link  = item.get("originallink") or item.get("link", "")
+            title = clean_html(item.get("title", ""))
+            desc  = clean_html(item.get("description", ""))[:120]
+            pub   = item.get("pubDate", "")
+            add_article(title, link, desc, pub)
 
     print(f"    수집 완료: {len(articles)}개")
     return articles[:target]
