@@ -115,6 +115,15 @@ GLOBAL_GAME_RSS = [
     "https://www.pcgamer.com/rss/",
 ]
 
+# 네이버 많이 본 뉴스 — 카테고리별 섹션 ID
+# 101=경제, 105=IT/과학, 103=생활/문화, 섹션 없는 게임은 105로 대체
+NAVER_POPULAR_SECTIONS = {
+    "domestic_game": ["105"],        # IT/과학 (게임 포함)
+    "global_game":   ["105"],        # IT/과학 (게임 포함)
+    "it":            ["105", "101"], # IT/과학 + 경제
+    "ai":            ["105"],        # IT/과학
+}
+
 # ──────────────────────────────────────────────
 # 유틸
 # ──────────────────────────────────────────────
@@ -168,8 +177,126 @@ def filter_trends_for_category(trends: list[str], cat_id: str) -> list[str]:
     return matched[:5]
 
 # ──────────────────────────────────────────────
-# 1-B. 네이버 뉴스 API
+# 1-B. 네이버 많이 본 뉴스 크롤링
 # ──────────────────────────────────────────────
+
+# 네이버 뉴스 섹션별 많이 본 뉴스 URL
+# sid=105: IT/과학  sid=103: 생활/문화  sid=101: 경제  sid=100: 정치
+# 게임은 별도 섹션 없으므로 IT/과학(105) + 경제(101) 두 섹션 병합
+NAVER_POPULAR_URLS = {
+    "domestic_game": [
+        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (게임 포함)
+        "https://news.naver.com/section/ranking/popular?sid=103",  # 생활/문화
+    ],
+    "global_game": [
+        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (게임 포함)
+    ],
+    "it": [
+        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학
+        "https://news.naver.com/section/ranking/popular?sid=101",  # 경제 (빅테크 실적 등)
+    ],
+    "ai": [
+        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (AI 포함)
+    ],
+}
+
+def fetch_naver_popular(cat_id: str) -> list[dict]:
+    """
+    네이버 뉴스 섹션별 많이 본 기사 크롤링
+    → 카테고리별 전용 섹션 URL 사용
+    → 기사 제목이 카테고리 키워드 포함 시 수집
+    """
+    urls = NAVER_POPULAR_URLS.get(cat_id, [])
+    if not urls:
+        return []
+
+    seen = set()
+    articles = []
+    cat_kw = BASE_QUERIES.get(cat_id, [])
+    pattern = r'href="(https://n\.news\.naver\.com/[^"]+)"[^>]*>\s*([^<]{5,100})'
+
+    for url in urls:
+        try:
+            html = http_get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Referer": "https://news.naver.com",
+            }).decode("utf-8", errors="ignore")
+
+            for link, title in re.findall(pattern, html):
+                title = title.strip()
+                if not title or link in seen:
+                    continue
+                title_lower = title.lower()
+                if any(kw.lower() in title_lower for kw in cat_kw):
+                    seen.add(link)
+                    articles.append({
+                        "title": title,
+                        "link": link,
+                        "description": "",
+                        "pubDate": "",
+                    })
+        except Exception as e:
+            print(f"    [WARN] 많이 본 뉴스 크롤링 오류 ({url[:50]}): {e}")
+
+    print(f"    많이 본 뉴스 매칭: {len(articles)}개")
+    return articles[:10]
+
+# ──────────────────────────────────────────────
+# 1-C. 네이버 뉴스 API
+# ──────────────────────────────────────────────
+def fetch_naver_popular(section_id: str) -> list[dict]:
+    """
+    네이버 뉴스 섹션별 '많이 본 뉴스' 크롤링
+    https://news.naver.com/section/ranking/popular?sid={section_id}
+    → 실제 독자 클릭수 기반 인기 기사 반환
+    """
+    url = f"https://news.naver.com/section/ranking/popular?sid={section_id}"
+    try:
+        raw = http_get(url, {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept-Language": "ko-KR,ko;q=0.9",
+            "Referer": "https://news.naver.com",
+        }).decode("utf-8", errors="ignore")
+
+        articles = []
+        seen = set()
+
+        # 기사 제목+링크 패턴 추출
+        # 네이버 뉴스 많이 본 뉴스 HTML에서 링크와 제목 파싱
+        pattern = r'href="(https://n\.news\.naver\.com/[^"]+)"[^>]*>\s*([^<]{5,100})</a>'
+        for m in re.finditer(pattern, raw):
+            link  = m.group(1).strip()
+            title = clean_html(m.group(2)).strip()
+            if not title or not link or link in seen:
+                continue
+            if len(title) < 5:
+                continue
+            seen.add(link)
+            articles.append({"title": title, "link": link,
+                              "description": "", "pubDate": ""})
+            if len(articles) >= 20:
+                break
+
+        # 패턴이 안 잡히면 대안 패턴 시도
+        if not articles:
+            pattern2 = r'data-rank-title="([^"]{5,100})"[^>]*data-rank-oid[^>]*href="([^"]+)"'
+            for m in re.finditer(pattern2, raw):
+                title = clean_html(m.group(1)).strip()
+                link  = m.group(2).strip()
+                if not title or not link or link in seen:
+                    continue
+                seen.add(link)
+                articles.append({"title": title, "link": link,
+                                  "description": "", "pubDate": ""})
+                if len(articles) >= 20:
+                    break
+
+        print(f"    많이 본 뉴스 (sid={section_id}): {len(articles)}개")
+        return articles
+    except Exception as e:
+        print(f"    [WARN] 많이 본 뉴스 크롤링 실패 (sid={section_id}): {e}")
+        return []
+
 def fetch_naver_news(query: str, display: int = 20) -> list[dict]:
     encoded = urllib.parse.quote(query)
     url = f"https://openapi.naver.com/v1/search/news.json?query={encoded}&display={display}&sort=date"
@@ -217,83 +344,92 @@ def fetch_rss(url: str, max_items: int = 20) -> list[dict]:
 def collect_articles_for_category(cat: dict, trends: list[str]) -> list[dict]:
     """
     수집 전략:
-    - 키워드별 균등 슬롯 2개씩 배분 → 특정 키워드 독점 방지
-    - 충분히 많이 수집(키워드 수 × 2개)한 뒤 Gemini가 Best 5 선별
-    - 24h 부족 시 48h 자동 확장
+    1순위: 네이버 많이 본 뉴스 크롤링 (실제 클릭수 기반)
+    2순위: 네이버 API (키워드별 균등 2개씩, 24h 이내)
+           5개 미달 시 48h 자동 확장
+    결과: 1순위 먼저 배치, 나머지는 Gemini가 보충 선별
     """
     seen_links = set()
     seen_norms = set()
     cat_id     = cat["id"]
-    PER_QUERY  = 2   # 키워드당 최대 수집 개수
+    PER_QUERY  = 2
 
-    def try_add(title, link, desc, pub, hours) -> bool:
+    def try_add(title, link, desc, pub="", hours=48) -> dict | None:
         norm = normalize_title(title)
         if not link or link in seen_links or norm in seen_norms:
-            return False
+            return None
         if pub and not is_within_hours(pub, hours):
-            return False
+            return None
         seen_links.add(link)
         seen_norms.add(norm)
-        return True
+        return {"title": title, "link": link, "description": desc, "pubDate": pub}
 
     def collect_from_queries(queries, hours) -> list[dict]:
-        """쿼리 목록에서 키워드별 PER_QUERY개씩 균등 수집"""
         result = []
         for q in queries:
             count = 0
             for item in fetch_naver_news(q, display=20):
                 if count >= PER_QUERY:
                     break
-                title = clean_html(item.get("title",""))
-                link  = item.get("originallink") or item.get("link","")
-                desc  = clean_html(item.get("description",""))[:120]
-                pub   = item.get("pubDate","")
-                if try_add(title, link, desc, pub, hours):
-                    result.append({"title": title, "link": link,
-                                   "description": desc, "pubDate": pub})
+                a = try_add(
+                    clean_html(item.get("title","")),
+                    item.get("originallink") or item.get("link",""),
+                    clean_html(item.get("description",""))[:120],
+                    item.get("pubDate",""), hours
+                )
+                if a:
+                    result.append(a)
                     count += 1
         return result
 
     def collect_from_rss(hours) -> list[dict]:
-        """RSS에서 피드별 PER_QUERY개씩 균등 수집"""
         result = []
         for feed_url in GLOBAL_GAME_RSS:
             count = 0
             for item in fetch_rss(feed_url):
                 if count >= PER_QUERY:
                     break
-                if try_add(item["title"], item["link"], item["description"], "", hours):
-                    result.append(item)
+                a = try_add(item["title"], item["link"], item["description"], "", hours)
+                if a:
+                    result.append(a)
                     count += 1
         return result
 
-    # 1차: 24시간 수집
-    articles = []
+    # ── 1순위: 많이 본 뉴스 (클릭수 기반) ──
+    popular_articles = []
+    for art in fetch_naver_popular(cat_id):
+        a = try_add(art["title"], art["link"], art["description"], art.get("pubDate",""), 48)
+        if a:
+            a["is_popular"] = True
+            popular_articles.append(a)
 
-    # Google Trends 매칭 키워드 (있으면 우선 수집)
+    # ── 2순위: API 수집 (24h, 키워드별 균등) ──
+    api_articles = []
     trend_queries = filter_trends_for_category(trends, cat_id)
     if trend_queries:
         print(f"    Trends 매칭: {trend_queries}")
-        articles += collect_from_queries(trend_queries, 24)
+        api_articles += collect_from_queries(trend_queries, 24)
 
-    # 글로벌 게임 RSS 병행
     if cat_id == "global_game":
-        articles += collect_from_rss(24)
+        api_articles += collect_from_rss(24)
 
-    # 고정 기반 쿼리
-    articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 24)
+    api_articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 24)
 
-    # 2차: 5개 미달이면 48h로 확장 (이미 수집된 건 seen에 남아있어 중복 없음)
-    if len(articles) < 5:
-        print(f"    24h {len(articles)}개 → 48h 확장")
+    # 5개 미달이면 48h 확장
+    total = len(popular_articles) + len(api_articles)
+    if total < 5:
+        print(f"    24h {total}개 → 48h 확장")
         if trend_queries:
-            articles += collect_from_queries(trend_queries, 48)
+            api_articles += collect_from_queries(trend_queries, 48)
         if cat_id == "global_game":
-            articles += collect_from_rss(48)
-        articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 48)
+            api_articles += collect_from_rss(48)
+        api_articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 48)
 
-    print(f"    수집 완료: {len(articles)}개 (Gemini가 Best 5 선별)")
+    # 1순위 먼저, 2순위 뒤에 배치
+    articles = popular_articles + api_articles
+    print(f"    수집 완료: {len(articles)}개 (많이 본: {len(popular_articles)}, API: {len(api_articles)})")
     return articles
+
 
 # ──────────────────────────────────────────────
 # 2단계: Gemini 분석
@@ -355,7 +491,7 @@ def build_prompt(batch: list[dict]) -> str:
 2. 동일 게임·이슈·주제 기사가 여러 개면 반드시 1개만 선택. 예: '붉은사막' 관련 기사가 여러 개여도 1개만.
 3. category_insight: 반드시 2문장 이내. 3문장 이상 절대 금지.
 4. summary: 기사 핵심 내용 2~3줄. 절대 비우지 말 것.
-5. reason: 플랫폼 기획자가 주목해야 할 이유 1~2줄. 절대 비우지 말 것.
+5. reason: 주목해야 할 이유 1~2줄. "플랫폼 기획자는" 같은 주어 없이 바로 핵심 이유만 서술. 절대 비우지 말 것.
 6. title: 국문 기사는 원본 그대로, 영문이면 한국어로 번역.
 7. link: 입력된 URL만 사용. 절대 새로 생성 금지.
 
