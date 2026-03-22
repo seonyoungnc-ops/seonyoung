@@ -39,11 +39,11 @@ TODAY_WEEKDAY = ["월","화","수","목","금","토","일"][datetime.now(KST).we
 CATEGORY_RULES = {
     "domestic_game": {
         "include": "넥슨·넷마블·크래프톤·펄어비스·엔씨소프트·카카오게임즈·위메이드 등 국내 게임사의 신작·업데이트·매출·유저반응",
-        "exclude": "닌텐도·소니·EA·유비소프트 등 해외 게임사 단독 기사, 주식·증권·시황, AI 기술 자체",
+        "exclude": "해외 게임사 단독 기사, 주식·증권·시황, AI 기술 자체, 앱 수수료·빅테크 플랫폼 정책(IT 카테고리 담당)",
     },
     "global_game": {
-        "include": "닌텐도·소니·MS·EA·유비소프트·에픽게임즈·스팀 등 해외 게임사의 신작·서비스·M&A, 글로벌 게임 트렌드",
-        "exclude": "넥슨·넷마블·크래프톤·펄어비스 등 국내 게임사 단독 기사, 주식·증권·시황, AI 기술 자체",
+        "include": "해외 게임사의 신작 출시·서비스 변화·M&A·기업 전략, 글로벌 게임 시장 트렌드",
+        "exclude": "국내 게임사 단독 기사, 주식·증권·시황, AI 기술 자체, 게임 할인·세일 정보, 기념일·N주년 회고·IP 연대기",
     },
     "it": {
         "include": "구글·애플·MS·메타·아마존 등 글로벌 빅테크의 신제품·서비스·정책·플랫폼·클라우드·OS 관련 기사",
@@ -471,10 +471,12 @@ def build_prompt(batch: list[dict]) -> str:
     cat_ids  = " / ".join(e["cat"]["id"] for e in batch)
 
     extra = ""
+    if any(e["cat"]["id"] == "domestic_game" for e in batch):
+        extra += "\n⚠️ 국내 게임: 국내 게임사의 신작·업데이트·매출·서비스 기사만. 앱 수수료·빅테크·IT 정책 기사는 IT 업계 카테고리 담당이므로 포함 금지."
     if any(e["cat"]["id"] == "global_game" for e in batch):
-        extra += "\n⚠️ 글로벌 게임: 국내 게임사(넥슨·넷마블·크래프톤·펄어비스 등) 기사는 1개도 포함 금지."
+        extra += "\n⚠️ 글로벌 게임: 국내 게임사(넥슨·넷마블·크래프톤·펄어비스 등) 기사 포함 금지. 게임 할인·세일 정보, 기념일·출시 N주년 회고, 특정 게임 IP 연대기 등 시장 흐름과 무관한 기사 제외. 신작 출시·서비스 변화·M&A·시장 트렌드 기사만 선정."
     if any(e["cat"]["id"] == "it" for e in batch):
-        extra += "\n⚠️ IT 업계: 빅테크 서비스·정책 기사만. 주식·시황·AI 모델 기사 제외. summary/reason 반드시 작성."
+        extra += "\n⚠️ IT 업계: 빅테크 신제품·서비스·정책 기사만. 주식·시황·AI 모델 기사 제외. summary/reason 반드시 작성."
     if any(e["cat"]["id"] == "ai" for e in batch):
         extra += "\n⚠️ AI: AI 모델·서비스·전략 관련 기사 우선. 게임·주식 단독 기사만 제외. summary/reason 반드시 작성. 반드시 4~5개 선정."
 
