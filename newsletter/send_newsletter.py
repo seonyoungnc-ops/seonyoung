@@ -95,17 +95,7 @@ BASE_QUERIES = {
     ],
 }
 
-# 카테고리별 Google Trends 관련 키워드 필터
-TRENDS_KEYWORDS = {
-    "domestic_game": ["게임","모바일게임","PC게임","온라인게임","넥슨","넷마블",
-                      "크래프톤","펄어비스","엔씨","카카오게임"],
-    "global_game":   ["닌텐도","플레이스테이션","Xbox","스팀","유비소프트",
-                      "블리자드","에픽","게임","콘솔"],
-    "it":            ["애플","아이폰","구글","삼성","마이크로소프트","메타",
-                      "아마존","클라우드","반도체","IT"],
-    "ai":            ["AI","인공지능","챗GPT","생성형","LLM","제미나이",
-                      "오픈AI","클로드","딥러닝","머신러닝"],
-}
+
 
 # 글로벌 게임 전용 RSS
 GLOBAL_GAME_RSS = [
@@ -181,139 +171,15 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
         print(f"    [WARN] Google News RSS '{query}': {e}")
         return []
 
-def fetch_google_trends() -> list[str]:
-    """Google Trends 한국 급상승 검색어 (fallback용 유지)"""
-    urls = [
-        "https://trends.google.com/trending/rss?geo=KR",
-        "https://trends.google.com/trends/trendingsearches/daily/rss?geo=KR",
-    ]
-    for url in urls:
-        try:
-            raw = http_get(url)
-            root = ET.fromstring(raw)
-            keywords = [
-                (item.findtext("title") or "").strip()
-                for item in root.findall(".//item")
-            ]
-            keywords = [k for k in keywords if k]
-            if keywords:
-                print(f"    Google Trends 키워드: {len(keywords)}개")
-                return keywords[:30]
-        except Exception:
-            continue
-    print("    [WARN] Google Trends 수집 실패 — 건너뜀")
-    return []
 
-def filter_trends_for_category(trends: list[str], cat_id: str) -> list[str]:
-    cat_kw = TRENDS_KEYWORDS.get(cat_id, [])
-    matched = []
-    for t in trends:
-        t_norm = t.lower()
-        for kw in cat_kw:
-            if kw.lower() in t_norm:
-                matched.append(t)
-                break
-    return matched[:5]
 
 # ──────────────────────────────────────────────
 # 1-B. 네이버 많이 본 뉴스 크롤링
 # ──────────────────────────────────────────────
 
-# 네이버 뉴스 섹션별 많이 본 뉴스 URL
-# sid=105: IT/과학  sid=103: 생활/문화  sid=101: 경제  sid=100: 정치
-# 게임은 별도 섹션 없으므로 IT/과학(105) + 경제(101) 두 섹션 병합
-NAVER_POPULAR_URLS = {
-    "domestic_game": [
-        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (게임 포함)
-        "https://news.naver.com/section/ranking/popular?sid=103",  # 생활/문화
-    ],
-    "global_game": [
-        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (게임 포함)
-    ],
-    "it": [
-        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학
-        "https://news.naver.com/section/ranking/popular?sid=101",  # 경제 (빅테크 실적 등)
-    ],
-    "ai": [
-        "https://news.naver.com/section/ranking/popular?sid=105",  # IT/과학 (AI 포함)
-    ],
-}
 
-def fetch_naver_popular(cat_id: str) -> list[dict]:
-    """
-    네이버 뉴스 섹션별 많이 본 기사 크롤링
-    → 카테고리별 전용 섹션 URL + 키워드 매칭
-    """
-    urls = NAVER_POPULAR_URLS.get(cat_id, [])
-    if not urls:
-        return []
 
-    seen = set()
-    articles = []
-    cat_kw = BASE_QUERIES.get(cat_id, [])
-    pattern = r'href="(https://n\.news\.naver\.com/[^"]+)"[^>]*>\s*([^<]{5,100})'
 
-    for url in urls:
-        try:
-            html = http_get(url, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Referer": "https://news.naver.com",
-            }).decode("utf-8", errors="ignore")
-
-            for link, title in re.findall(pattern, html):
-                title = title.strip()
-                if not title or link in seen:
-                    continue
-                title_lower = title.lower()
-                if any(kw.lower() in title_lower for kw in cat_kw):
-                    seen.add(link)
-                    articles.append({"title": title, "link": link,
-                                     "description": "", "pubDate": ""})
-        except Exception as e:
-            print(f"    [WARN] 많이 본 뉴스 크롤링 오류 ({url[:50]}): {e}")
-
-    print(f"    많이 본 뉴스 매칭: {len(articles)}개")
-    return articles[:10]
-
-def fetch_naver_comment_news(cat_id: str) -> list[dict]:
-    """
-    네이버 뉴스 댓글 많은 기사 크롤링
-    → IT/과학 섹션에서 댓글순 정렬
-    → 카테고리 키워드 매칭 후 반환
-    """
-    # 댓글 많은 순 정렬 URL (rankingType=comment)
-    sid_map = {
-        "domestic_game": "105", "global_game": "105",
-        "it": "105", "ai": "105",
-    }
-    sid = sid_map.get(cat_id, "105")
-    url = f"https://news.naver.com/section/ranking/comment?sid={sid}"
-    cat_kw = BASE_QUERIES.get(cat_id, [])
-    pattern = r'href="(https://n\.news\.naver\.com/[^"]+)"[^>]*>\s*([^<]{5,100})'
-
-    try:
-        html = http_get(url, headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Referer": "https://news.naver.com",
-        }).decode("utf-8", errors="ignore")
-
-        seen = set()
-        articles = []
-        for link, title in re.findall(pattern, html):
-            title = title.strip()
-            if not title or link in seen:
-                continue
-            title_lower = title.lower()
-            if any(kw.lower() in title_lower for kw in cat_kw):
-                seen.add(link)
-                articles.append({"title": title, "link": link,
-                                 "description": "", "pubDate": ""})
-
-        print(f"    댓글 많은 뉴스 매칭: {len(articles)}개")
-        return articles[:10]
-    except Exception as e:
-        print(f"    [WARN] 댓글 많은 뉴스 크롤링 오류: {e}")
-        return []
 
 # ──────────────────────────────────────────────
 # 1-C. 네이버 뉴스 API
@@ -415,7 +281,7 @@ def fetch_rss(url: str, max_items: int = 20) -> list[dict]:
 # ──────────────────────────────────────────────
 # 1-D. 카테고리별 기사 수집
 # ──────────────────────────────────────────────
-def collect_articles_for_category(cat: dict, trends: list[str]) -> list[dict]:
+def collect_articles_for_category(cat: dict) -> list[dict]:
     """
     수집 전략:
     1순위: 네이버 많이 본 뉴스 크롤링 (실제 클릭수 기반)
@@ -469,48 +335,32 @@ def collect_articles_for_category(cat: dict, trends: list[str]) -> list[dict]:
                     count += 1
         return result
 
-    # ── 1순위: 네이버 많이 본 뉴스 + 댓글 많은 뉴스 (실제 독자 반응 기반) ──
-    popular_articles = []
-    for art in fetch_naver_popular(cat_id) + fetch_naver_comment_news(cat_id):
-        a = try_add(art["title"], art["link"], art["description"], art.get("pubDate",""), 48)
-        if a:
-            popular_articles.append(a)
-
-    # ── 2순위: Google News RSS (트렌딩 뉴스, 실시간) ──
+    # ── 1순위: Google News RSS (구글 트렌딩 뉴스) ──
     gnews_articles = []
     for q in GOOGLE_NEWS_QUERIES.get(cat_id, []):
-        if len(popular_articles) + len(gnews_articles) >= 15:
+        if len(gnews_articles) >= 15:
             break
         for item in fetch_google_news_rss(q, max_items=5):
             a = try_add(item["title"], item["link"], item["description"], item["pubDate"], 48)
             if a:
                 gnews_articles.append(a)
 
-    # ── 3순위: 네이버 API (24h, 키워드별 균등) ──
+    # ── 2순위: 네이버 API (최신순, 키워드별 균등 2개) ──
     api_articles = []
-    trend_queries = filter_trends_for_category(trends, cat_id)
-    if trend_queries:
-        print(f"    Trends 매칭: {trend_queries}")
-        api_articles += collect_from_queries(trend_queries, 24)
-
     if cat_id == "global_game":
         api_articles += collect_from_rss(24)
-
     api_articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 24)
 
     # 5개 미달이면 48h 확장
-    total = len(popular_articles) + len(gnews_articles) + len(api_articles)
+    total = len(gnews_articles) + len(api_articles)
     if total < 5:
         print(f"    24h {total}개 → 48h 확장")
-        if trend_queries:
-            api_articles += collect_from_queries(trend_queries, 48)
         if cat_id == "global_game":
             api_articles += collect_from_rss(48)
         api_articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 48)
 
-    # 우선순위 순으로 배치
-    articles = popular_articles + gnews_articles + api_articles
-    print(f"    수집 완료: {len(articles)}개 (많이본/댓글: {len(popular_articles)}, GoogleNews: {len(gnews_articles)}, API: {len(api_articles)})")
+    articles = gnews_articles + api_articles
+    print(f"    수집 완료: {len(articles)}개 (GoogleNews: {len(gnews_articles)}, NaverAPI: {len(api_articles)})")
     return articles
 
 
@@ -576,7 +426,7 @@ def build_prompt(batch: list[dict]) -> str:
 2. 동일 게임·이슈·주제 기사가 여러 개면 반드시 1개만 선택. 예: '붉은사막' 관련 기사가 여러 개여도 1개만.
 3. category_insight: 반드시 2문장 이내. 3문장 이상 절대 금지.
 4. summary: 기사 핵심 내용 2~3줄. 절대 비우지 말 것.
-5. reason: 주목해야 할 이유 1~2줄. "플랫폼 기획자는" 같은 주어 없이 바로 핵심 이유만 서술. 절대 비우지 말 것.
+5. insight: 이 기사가 플랫폼 기획·전략·의사결정에 어떤 함의를 갖는지 2줄 이내로 구체적으로 서술. "확인해야 합니다" 같은 당위 표현 금지. 실제 액션이나 판단 근거가 될 수 있는 내용으로 작성. 절대 비우지 말 것.
 6. title: 국문 기사는 원본 그대로, 영문이면 한국어로 번역.
 7. link: 입력된 URL만 사용. 절대 새로 생성 금지.
 
@@ -591,7 +441,7 @@ JSON 배열만 출력 (다른 텍스트 없이):
         "link": "원본 URL",
         "summary": "핵심 내용 2~3줄 (비우지 말 것)",
         "keywords": ["키워드1", "키워드2", "키워드3"],
-        "reason": "기획자 주목 이유 1~2줄 (비우지 말 것)"
+        "insight": "기획·전략·의사결정 활용 관점 2줄 이내 (구체적 액션/판단 근거)"
       }}
     ]
   }}
@@ -681,8 +531,8 @@ def build_html(category_results: list[dict]) -> str:
                   <td style="padding:3px 0;font-size:13px;color:#4a4a47;font-family:{BASE_FONT};line-height:1.6;">{art.get('summary','')}</td>
                 </tr>
                 <tr style="vertical-align:top;">
-                  <td style="width:52px;padding:3px 0;">{label('주목')}</td>
-                  <td style="padding:3px 0;font-size:13px;color:#4a4a47;font-family:{BASE_FONT};line-height:1.6;">{art.get('reason','')}</td>
+                  <td style="width:52px;padding:3px 0;">{label('인사이트')}</td>
+                  <td style="padding:3px 0;font-size:13px;color:#4a4a47;font-family:{BASE_FONT};line-height:1.6;">{art.get('insight','')}</td>
                 </tr>
               </table>
             </div>"""
@@ -748,15 +598,13 @@ def send_email(html_content: str):
 def main():
     print(f"[{TODAY}] 데일리 브리프 생성 시작")
 
-    # Google Trends 급상승 키워드 수집
-    print("  ▶ Google Trends 키워드 수집 중...")
-    trends = fetch_google_trends()
+
 
     # 카테고리별 기사 수집 (Trends + 고정쿼리 혼합)
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
-        articles = collect_articles_for_category(cat, trends)
+        articles = collect_articles_for_category(cat)
         all_data.append({"cat": cat, "articles": articles})
 
     # Gemini 분석
