@@ -127,11 +127,24 @@ def normalize_title(title: str) -> str:
     return re.sub(r"[^a-zA-Z0-9가-힣]", "", title).lower()
 
 def is_within_hours(pub: str, hours: int = 24) -> bool:
+    """pubDate 파싱 실패 시 False 반환 — 날짜 불명 기사 제외"""
+    if not pub or not pub.strip():
+        return False  # pubDate 없으면 제외
+    # RFC 2822 (네이버/Google News 공통 형식)
     try:
         dt = parsedate_to_datetime(pub)
         return (datetime.now(timezone.utc) - dt).total_seconds() <= hours * 3600
     except Exception:
-        return True
+        pass
+    # ISO 8601 형식 시도 (일부 RSS)
+    try:
+        pub_clean = pub.strip().replace("Z", "+00:00")
+        dt = datetime.fromisoformat(pub_clean)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt).total_seconds() <= hours * 3600
+    except Exception:
+        return False  # 파싱 실패 시 제외 (오래된 기사 섞임 방지)
 
 def http_get(url: str, headers: dict = None) -> bytes:
     req = urllib.request.Request(url, headers=headers or {"User-Agent": "Mozilla/5.0"})
@@ -150,6 +163,25 @@ GOOGLE_NEWS_QUERIES = {
     "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시"],
 }
 
+def resolve_google_news_url(google_url: str) -> str:
+    """
+    Google News 리다이렉션 URL → 실제 원본 URL 변환
+    news.google.com/rss/articles/... 형태를 실제 기사 URL로 해석
+    """
+    try:
+        # HEAD 요청으로 리다이렉션 따라가기
+        req = urllib.request.Request(
+            google_url,
+            headers={"User-Agent": "Mozilla/5.0"},
+            method="HEAD"
+        )
+        # redirect 따라가도록 설정
+        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
+        with opener.open(req, timeout=8) as resp:
+            return resp.url
+    except Exception:
+        return google_url  # 실패 시 원본 그대로
+
 def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
     """Google News RSS 키워드 검색 — 실시간 트렌딩 뉴스"""
     encoded = urllib.parse.quote(query)
@@ -164,6 +196,9 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
             desc  = clean_html(item.findtext("description") or "")[:120]
             pub   = (item.findtext("pubDate") or "").strip()
             if title and link:
+                # 구글 리다이렉션 URL → 실제 원본 URL 변환
+                if "news.google.com" in link:
+                    link = resolve_google_news_url(link)
                 items.append({"title": title, "link": link,
                               "description": desc, "pubDate": pub})
         return items
