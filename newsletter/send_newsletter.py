@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 플랫폼 기획자 데일리 브리프 자동 발송
-Google Trends 급상승 키워드 + 네이버 뉴스 인기 기사 크롤링 → Gemini → Gmail
+Google News RSS (트렌딩) + 네이버 뉴스 API (최신) → Gemini 2.5 Flash → Gmail
 """
 
 import os
