@@ -411,7 +411,7 @@ def call_gemini(prompt: str, retries: int = 4) -> str:
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 return json.loads(resp.read().decode("utf-8"))["candidates"][0]["content"]["parts"][0]["text"]
         except Exception as e:
             wait = 30 * (2 ** attempt)
@@ -635,12 +635,12 @@ def main():
 
 
 
-    # 카테고리별 기사 수집 (Trends + 고정쿼리 혼합)
+    # 카테고리별 기사 수집 — Gemini에는 카테고리당 최대 12개만 전달 (타임아웃 방지)
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
         articles = collect_articles_for_category(cat)
-        all_data.append({"cat": cat, "articles": articles})
+        all_data.append({"cat": cat, "articles": articles[:12]})
 
     # Gemini 분석
     print("  ▶ Gemini 분석 중...")
