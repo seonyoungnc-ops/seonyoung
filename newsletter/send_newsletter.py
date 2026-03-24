@@ -160,7 +160,7 @@ GOOGLE_NEWS_QUERIES = {
     "domestic_game": ["넥슨 게임", "넷마블 게임", "크래프톤", "펄어비스", "엔씨소프트", "카카오게임즈"],
     "global_game":   ["Nintendo game", "PlayStation game", "Xbox game", "Steam game release", "Ubisoft", "Blizzard game"],
     "it":            ["Apple 애플", "Google 구글", "Microsoft 마이크로소프트", "Meta 메타", "Samsung 삼성전자"],
-    "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시"],
+    "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시", "딥시크 DeepSeek", "퍼플렉시티 Perplexity"],
 }
 
 def resolve_google_news_url(google_url: str) -> str:
