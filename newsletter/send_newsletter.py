@@ -163,27 +163,11 @@ GOOGLE_NEWS_QUERIES = {
     "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시", "딥시크 DeepSeek", "퍼플렉시티 Perplexity"],
 }
 
-def resolve_google_news_url(google_url: str) -> str:
-    """
-    Google News 리다이렉션 URL → 실제 원본 URL 변환
-    news.google.com/rss/articles/... 형태를 실제 기사 URL로 해석
-    """
-    try:
-        # HEAD 요청으로 리다이렉션 따라가기
-        req = urllib.request.Request(
-            google_url,
-            headers={"User-Agent": "Mozilla/5.0"},
-            method="HEAD"
-        )
-        # redirect 따라가도록 설정
-        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
-        with opener.open(req, timeout=8) as resp:
-            return resp.url
-    except Exception:
-        return google_url  # 실패 시 원본 그대로
-
 def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
-    """Google News RSS 키워드 검색 — 실시간 트렌딩 뉴스"""
+    """
+    Google News RSS 키워드 검색
+    원본 URL은 <source url="..."> 속성에서 직접 추출
+    """
     encoded = urllib.parse.quote(query)
     url = f"https://news.google.com/rss/search?q={encoded}&hl=ko&gl=KR&ceid=KR:ko"
     try:
@@ -192,14 +176,22 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
         items = []
         for item in root.findall(".//item")[:max_items]:
             title = clean_html(item.findtext("title") or "")
-            link  = (item.findtext("link") or "").strip()
-            desc  = clean_html(item.findtext("description") or "")[:120]
             pub   = (item.findtext("pubDate") or "").strip()
-            if title and link:
-                # 구글 리다이렉션 URL → 실제 원본 URL 변환
-                if "news.google.com" in link:
-                    link = resolve_google_news_url(link)
-                items.append({"title": title, "link": link,
+
+            # 원본 URL: <source url="실제URL"> 속성에서 추출
+            source_el = item.find("source")
+            orig_url = ""
+            if source_el is not None:
+                orig_url = source_el.get("url", "").strip()
+
+            # source url이 없으면 <link> 사용 (구글 리다이렉션 URL)
+            if not orig_url:
+                orig_url = (item.findtext("link") or "").strip()
+
+            desc = clean_html(item.findtext("description") or "")[:120]
+
+            if title and orig_url:
+                items.append({"title": title, "link": orig_url,
                               "description": desc, "pubDate": pub})
         return items
     except Exception as e:
