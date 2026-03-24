@@ -92,6 +92,7 @@ BASE_QUERIES = {
         "앤트로픽","Anthropic","클로드","Claude",
         "생성형AI","LLM","AI모델","Llama",
         "코파일럿","Copilot",
+        "딥시크","DeepSeek","퍼플렉시티","Perplexity",
     ],
 }
 
