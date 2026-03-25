@@ -165,21 +165,37 @@ GOOGLE_NEWS_QUERIES = {
     "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시", "딥시크 DeepSeek", "퍼플렉시티 Perplexity", "그록 Grok xAI"],
 }
 
+def resolve_google_news_url(google_url: str) -> str:
+    """
+    Google News 리다이렉션 URL → 실제 원본 URL
+    1순위: description href 파싱
+    2순위: GET 요청으로 리다이렉션 추적
+    """
+    # GET 요청으로 리다이렉션 추적 (브라우저 UA 사용)
+    try:
+        req = urllib.request.Request(google_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        })
+        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
+        with opener.open(req, timeout=8) as resp:
+            final_url = resp.url
+            if "news.google.com" not in final_url:
+                return final_url
+    except Exception:
+        pass
+    return google_url
+
 def extract_url_from_description(desc_html: str) -> str:
-    """
-    Google News RSS <description> 내 첫 번째 <a href="..."> 에서 실제 기사 URL 추출
-    예: <a href="https://실제매체.com/기사경로">제목</a>
-    """
-    match = re.search(r'href="(https?://(?!news\.google\.com)[^"]+)"', desc_html)
-    if match:
-        return match.group(1)
+    """Google News RSS description에서 실제 기사 URL 추출"""
+    # news.google.com 제외한 첫 번째 href
+    matches = re.findall(r'href="(https?://[^"]+)"', desc_html)
+    for url in matches:
+        if "news.google.com" not in url:
+            return url
     return ""
 
 def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
-    """
-    Google News RSS 키워드 검색
-    실제 기사 URL은 <description> 안의 href에서 추출 (구글 리다이렉션 URL 우회)
-    """
+    """Google News RSS 키워드 검색 — 실제 기사 URL 추출"""
     encoded = urllib.parse.quote(query)
     url = f"https://news.google.com/rss/search?q={encoded}&hl=ko&gl=KR&ceid=KR:ko"
     try:
@@ -190,24 +206,25 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
             title    = clean_html(item.findtext("title") or "")
             pub      = (item.findtext("pubDate") or "").strip()
             desc_raw = item.findtext("description") or ""
+            google_link = (item.findtext("link") or "").strip()
 
-            # description HTML에서 실제 기사 URL 추출
+            # 1순위: description href에서 추출
             orig_url = extract_url_from_description(desc_raw)
 
-            # fallback: description에 URL 없으면 <link> 사용
-            if not orig_url:
-                orig_url = (item.findtext("link") or "").strip()
+            # 2순위: 리다이렉션 추적
+            if not orig_url and google_link:
+                orig_url = resolve_google_news_url(google_link)
+
+            # 그래도 구글 URL이면 스킵 (접근 불가 링크 제외)
+            if not orig_url or "news.google.com" in orig_url:
+                continue
 
             desc = clean_html(desc_raw)[:120]
-
-            if title and orig_url:
+            if title:
                 items.append({"title": title, "link": orig_url,
                               "description": desc, "pubDate": pub})
-        # 디버그: 수집된 pubDate 샘플 출력
         if items:
-            sample_dates = [i["pubDate"] for i in items[:3] if i["pubDate"]]
-            if sample_dates:
-                print(f"    [DEBUG] pubDate 샘플: {sample_dates[0]}")
+            print(f"    [DEBUG] pubDate 샘플: {items[0].get('pubDate','없음')}")
         return items
     except Exception as e:
         print(f"    [WARN] Google News RSS '{query}': {e}")
@@ -377,17 +394,21 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
                     count += 1
         return result
 
-    # ── 1순위: Google News RSS (구글 트렌딩 뉴스) ──
-    gnews_articles = []
-    for q in GOOGLE_NEWS_QUERIES.get(cat_id, []):
-        if len(gnews_articles) >= 15:
-            break
-        for item in fetch_google_news_rss(q, max_items=5):
-            a = try_add(item["title"], item["link"], item["description"], item["pubDate"], 48)
-            if a:
-                gnews_articles.append(a)
+    def collect_gnews(hours):
+        result = []
+        for q in GOOGLE_NEWS_QUERIES.get(cat_id, []):
+            if len(result) >= 15:
+                break
+            for item in fetch_google_news_rss(q, max_items=5):
+                a = try_add(item["title"], item["link"], item["description"], item["pubDate"], hours)
+                if a:
+                    result.append(a)
+        return result
 
-    # ── 2순위: 네이버 API (최신순, 키워드별 균등 2개) ──
+    # ── 1순위: Google News RSS ──
+    gnews_articles = collect_gnews(24)
+
+    # ── 2순위: 네이버 API ──
     api_articles = []
     if cat_id == "global_game":
         api_articles += collect_from_rss(24)
@@ -397,6 +418,7 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
     total = len(gnews_articles) + len(api_articles)
     if total < 5:
         print(f"    24h {total}개 → 48h 확장")
+        gnews_articles += collect_gnews(48)
         if cat_id == "global_game":
             api_articles += collect_from_rss(48)
         api_articles += collect_from_queries(BASE_QUERIES.get(cat_id, []), 48)
@@ -421,26 +443,27 @@ def load_yesterday_articles() -> set:
         print("    [INFO] GITHUB_TOKEN/REPOSITORY 없음 — 중복 제거 스킵")
         return set()
     try:
+        import zipfile, io
         # 최근 artifact 목록 조회
         api_url = f"https://api.github.com/repos/{repo}/actions/artifacts?per_page=10&name=sent-articles"
         req = urllib.request.Request(api_url, headers={
-            "Authorization": f"Bearer {token}",
+            "Authorization": f"token {token}",
             "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
         })
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read())
-        artifacts = data.get("artifacts", [])
+        artifacts = [a for a in data.get("artifacts", []) if not a.get("expired", True)]
         if not artifacts:
             print("    [INFO] 어제 artifact 없음 — 중복 제거 스킵")
             return set()
-        # 가장 최신 artifact 다운로드 URL 취득
         latest = artifacts[0]
         dl_url = latest["archive_download_url"]
         req2 = urllib.request.Request(dl_url, headers={
-            "Authorization": f"Bearer {token}",
+            "Authorization": f"token {token}",
             "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
         })
-        import zipfile, io
         with urllib.request.urlopen(req2, timeout=15) as resp:
             zdata = resp.read()
         with zipfile.ZipFile(io.BytesIO(zdata)) as z:
