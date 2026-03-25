@@ -70,12 +70,12 @@ BASE_QUERIES = {
         "카카오게임즈","위메이드","컴투스","스마일게이트","시프트업",
         "넥슨게임즈","카카오게임",
     ],
-    # 글로벌 게임: 한글+영문 병행 (영문으로 검색 시 해외 번역 기사 추가 수집)
+    # 글로벌 게임: 회사별 교차 배치 (한글+영문 연속 배치 방지)
     "global_game": [
-        "닌텐도","Nintendo","플레이스테이션","PlayStation",
-        "Xbox","엑스박스","유비소프트","Ubisoft",
-        "블리자드","Blizzard","에픽게임즈","Epic Games",
-        "스팀","Steam","EA게임","Valve",
+        "닌텐도","플레이스테이션","Xbox","유비소프트",
+        "블리자드","에픽게임즈","스팀","EA게임",
+        "Nintendo","PlayStation","엑스박스","Ubisoft",
+        "Blizzard","Epic Games","Steam","Valve",
     ],
     # IT: 회사별로 교차 배치 → 특정 회사 기사 독점 방지
     # 순서: 애플→구글→MS→메타→아마존→삼성→빅테크 순환
@@ -84,15 +84,14 @@ BASE_QUERIES = {
         "삼성전자","Apple","Google","Microsoft","Meta",
         "Amazon","Samsung","빅테크","클라우드","iPhone",
     ],
-    # AI: 한글+영문 병행 (모델명은 영문이 더 정확)
+    # AI: 회사별 교차 배치 → 오픈AI 독점 방지
+    # 순서: 오픈AI→구글→앤트로픽→MS→메타→딥시크→퍼플렉시티→xAI 순환
     "ai": [
-        "챗GPT","ChatGPT","GPT-4","오픈AI","OpenAI",
-        "제미나이","Gemini","구글AI","Google AI",
-        "앤트로픽","Anthropic","클로드","Claude",
-        "생성형AI","LLM","AI모델","Llama",
-        "코파일럿","Copilot",
-        "딥시크","DeepSeek","퍼플렉시티","Perplexity",
-        "그록","Grok","xAI",
+        "챗GPT","제미나이","클로드","코파일럿",
+        "딥시크","퍼플렉시티","그록","생성형AI",
+        "ChatGPT","Gemini","Claude","Copilot",
+        "OpenAI","Anthropic","DeepSeek","Grok",
+        "LLM","AI모델","Llama","xAI",
     ],
 }
 
