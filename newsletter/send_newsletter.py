@@ -387,6 +387,67 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
 
 
 # ──────────────────────────────────────────────
+# 어제 발송 기사 중복 제거 (GitHub Actions Artifacts)
+# ──────────────────────────────────────────────
+
+def load_yesterday_articles() -> set:
+    """
+    GitHub Actions API로 어제 artifact(sent_articles.json)에서
+    발송된 기사 URL + 정규화 제목 세트 로드
+    """
+    token = os.environ.get("GITHUB_TOKEN", "")
+    repo  = os.environ.get("GITHUB_REPOSITORY", "")
+    if not token or not repo:
+        print("    [INFO] GITHUB_TOKEN/REPOSITORY 없음 — 중복 제거 스킵")
+        return set()
+    try:
+        # 최근 artifact 목록 조회
+        api_url = f"https://api.github.com/repos/{repo}/actions/artifacts?per_page=10&name=sent-articles"
+        req = urllib.request.Request(api_url, headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        artifacts = data.get("artifacts", [])
+        if not artifacts:
+            print("    [INFO] 어제 artifact 없음 — 중복 제거 스킵")
+            return set()
+        # 가장 최신 artifact 다운로드 URL 취득
+        latest = artifacts[0]
+        dl_url = latest["archive_download_url"]
+        req2 = urllib.request.Request(dl_url, headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+        })
+        import zipfile, io
+        with urllib.request.urlopen(req2, timeout=15) as resp:
+            zdata = resp.read()
+        with zipfile.ZipFile(io.BytesIO(zdata)) as z:
+            with z.open("sent_articles.json") as f:
+                yesterday = json.loads(f.read())
+        seen = set()
+        for art in yesterday:
+            seen.add(art.get("link", ""))
+            seen.add(normalize_title(art.get("title", "")))
+        print(f"    [INFO] 어제 발송 기사 {len(yesterday)}개 로드 — 중복 제거 적용")
+        return seen
+    except Exception as e:
+        print(f"    [WARN] 어제 기사 로드 실패: {e} — 중복 제거 스킵")
+        return set()
+
+def save_today_articles(category_results: list[dict]):
+    """오늘 발송한 기사 목록을 sent_articles.json으로 저장"""
+    articles = []
+    for cr in category_results:
+        for art in cr["analyzed"].get("articles", []):
+            articles.append({"link": art.get("link",""), "title": art.get("title","")})
+    path = "newsletter/sent_articles.json"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(articles, f, ensure_ascii=False, indent=2)
+    print(f"    오늘 발송 기사 {len(articles)}개 저장 → {path}")
+
+# ──────────────────────────────────────────────
 # 2단계: Gemini 분석
 # ──────────────────────────────────────────────
 def call_gemini(prompt: str, retries: int = 4) -> str:
@@ -622,13 +683,24 @@ def send_email(html_content: str):
 def main():
     print(f"[{TODAY}] 데일리 브리프 생성 시작")
 
+    # 어제 발송 기사 로드 (중복 제거용)
+    print("  ▶ 어제 발송 기사 로드 중...")
+    yesterday_seen = load_yesterday_articles()
 
-
-    # 카테고리별 기사 수집 — Gemini에는 카테고리당 최대 12개만 전달 (타임아웃 방지)
+    # 카테고리별 기사 수집 — 어제 기사 제외 후 최대 12개 전달
     all_data = []
     for cat in CATEGORIES:
         print(f"  ▶ {cat['label']} 기사 수집 중...")
         articles = collect_articles_for_category(cat)
+        # 어제 발송 기사 제외
+        if yesterday_seen:
+            before = len(articles)
+            articles = [
+                a for a in articles
+                if a["link"] not in yesterday_seen
+                and normalize_title(a["title"]) not in yesterday_seen
+            ]
+            print(f"    어제 기사 제외: {before}개 → {len(articles)}개")
         all_data.append({"cat": cat, "articles": articles[:12]})
 
     # Gemini 분석
@@ -652,6 +724,9 @@ def main():
 
     print("  ▶ 이메일 발송 중...")
     send_email(html)
+
+    # 오늘 발송 기사 저장 (내일 중복 제거용)
+    save_today_articles(category_results)
     print("[완료] 데일리 브리프 발송 성공!")
 
 if __name__ == "__main__":
