@@ -1,14 +1,9 @@
-# 스케줄 재활성화 2026-03-20
-
 name: 📬 Platform Planner Daily Brief
-
 
 on:
   schedule:
-    # KST 09:00 목표 — GitHub Actions 무료플랜 최대 5h 지연 감안해 UTC 19:00 (전날) 설정
-    # UTC 19:00 = KST 04:00 출발 → 지연 포함 KST 09:00 전후 도착 예상
     - cron: "0 19 * * *"
-  workflow_dispatch: # 수동 실행 허용
+  workflow_dispatch:
 
 jobs:
   send-brief:
@@ -32,6 +27,8 @@ jobs:
           SMTP_EMAIL:          ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD:       ${{ secrets.SMTP_PASSWORD }}
           TO_EMAIL:            ${{ secrets.TO_EMAIL }}
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:   ${{ github.repository }}
         run: python newsletter/send_newsletter.py
 
       - name: HTML 미리보기 아티팩트 저장
@@ -41,3 +38,12 @@ jobs:
           name: brief-preview-${{ github.run_number }}
           path: newsletter/brief_preview.html
           retention-days: 7
+
+      - name: 오늘 발송 기사 목록 저장
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sent-articles
+          path: newsletter/sent_articles.json
+          retention-days: 2
+          overwrite: true
