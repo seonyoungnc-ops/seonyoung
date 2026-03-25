@@ -77,13 +77,12 @@ BASE_QUERIES = {
         "블리자드","Blizzard","에픽게임즈","Epic Games",
         "스팀","Steam","EA게임","Valve",
     ],
-    # IT: 한글+영문 병행
+    # IT: 회사별로 교차 배치 → 특정 회사 기사 독점 방지
+    # 순서: 애플→구글→MS→메타→아마존→삼성→빅테크 순환
     "it": [
-        "애플","Apple","아이폰","iPhone",
-        "구글","Google","안드로이드","Android",
-        "마이크로소프트","Microsoft","삼성전자","Samsung",
-        "메타","Meta","아마존","Amazon",
-        "빅테크","클라우드",
+        "애플","구글","마이크로소프트","메타","아마존",
+        "삼성전자","Apple","Google","Microsoft","Meta",
+        "Amazon","Samsung","빅테크","클라우드","iPhone",
     ],
     # AI: 한글+영문 병행 (모델명은 영문이 더 정확)
     "ai": [
@@ -364,12 +363,14 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
         return {"title": title, "link": link, "description": desc, "pubDate": pub}
 
     def collect_from_queries(queries, hours) -> list[dict]:
+        """
+        1라운드: 모든 키워드에서 1개씩 순환 수집 → 뒷 키워드 누락 방지
+        2라운드: 여전히 부족하면 각 키워드에서 추가 수집
+        """
         result = []
+        # 1라운드: 전 키워드 1개씩
         for q in queries:
-            count = 0
             for item in fetch_naver_news(q, display=20):
-                if count >= PER_QUERY:
-                    break
                 a = try_add(
                     clean_html(item.get("title","")),
                     item.get("originallink") or item.get("link",""),
@@ -378,7 +379,22 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
                 )
                 if a:
                     result.append(a)
+                    break  # 키워드당 1개만
+        # 2라운드: 추가 수집 (각 키워드에서 1개 더)
+        for q in queries:
+            count = 0
+            for item in fetch_naver_news(q, display=20):
+                a = try_add(
+                    clean_html(item.get("title","")),
+                    item.get("originallink") or item.get("link",""),
+                    clean_html(item.get("description",""))[:120],
+                    item.get("pubDate",""), hours
+                )
+                if a:
                     count += 1
+                    result.append(a)
+                if count >= 1:
+                    break
         return result
 
     def collect_from_rss(hours) -> list[dict]:
@@ -396,13 +412,24 @@ def collect_articles_for_category(cat: dict) -> list[dict]:
 
     def collect_gnews(hours):
         result = []
-        for q in GOOGLE_NEWS_QUERIES.get(cat_id, []):
-            if len(result) >= 15:
-                break
+        queries = GOOGLE_NEWS_QUERIES.get(cat_id, [])
+        # 1라운드: 전 키워드 1개씩 순환
+        for q in queries:
             for item in fetch_google_news_rss(q, max_items=5):
                 a = try_add(item["title"], item["link"], item["description"], item["pubDate"], hours)
                 if a:
                     result.append(a)
+                    break
+        # 2라운드: 추가 수집
+        for q in queries:
+            count = 0
+            for item in fetch_google_news_rss(q, max_items=5):
+                a = try_add(item["title"], item["link"], item["description"], item["pubDate"], hours)
+                if a:
+                    result.append(a)
+                    count += 1
+                if count >= 1:
+                    break
         return result
 
     # ── 1순위: Google News RSS ──
