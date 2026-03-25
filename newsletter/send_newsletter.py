@@ -179,15 +179,9 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
             title = clean_html(item.findtext("title") or "")
             pub   = (item.findtext("pubDate") or "").strip()
 
-            # 원본 URL: <source url="실제URL"> 속성에서 추출
-            source_el = item.find("source")
-            orig_url = ""
-            if source_el is not None:
-                orig_url = source_el.get("url", "").strip()
-
-            # source url이 없으면 <link> 사용 (구글 리다이렉션 URL)
-            if not orig_url:
-                orig_url = (item.findtext("link") or "").strip()
+            # <link>가 실제 기사 URL (Google이 리다이렉션으로 원본 연결)
+            # <source url="">는 매체 홈페이지 URL이라 기사와 불일치 문제 있음
+            orig_url = (item.findtext("link") or "").strip()
 
             desc = clean_html(item.findtext("description") or "")[:120]
 
@@ -435,7 +429,7 @@ def build_prompt(batch: list[dict]) -> str:
     if any(e["cat"]["id"] == "domestic_game" for e in batch):
         extra += "\n⚠️ 국내 게임: 국내 게임사의 신작·업데이트·매출·서비스 기사만. 앱 수수료·빅테크·IT 정책 기사는 IT 업계 카테고리 담당이므로 포함 금지."
     if any(e["cat"]["id"] == "global_game" for e in batch):
-        extra += "\n⚠️ 글로벌 게임: 국내 게임사(넥슨·넷마블·크래프톤·펄어비스 등) 기사 포함 금지. 단순 할인 세일 기사, 기념일 단순 회고는 제외. 5개 채우기 어려우면 해외 게임사 관련 기사라면 포함. 반드시 5개 선정 목표."
+        extra += "\n⚠️ 글로벌 게임: 국내 게임사(넥슨·넷마블·크래프톤·펄어비스 등) 기사 포함 금지. 단순 할인·세일, 기념일 회고, 개인 체험기·사용기, 팁/가이드 기사 제외. 신작·서비스·전략·M&A·시장 동향 기사만. 5개 목표."
     if any(e["cat"]["id"] == "it" for e in batch):
         extra += "\n⚠️ IT 업계: 빅테크 신제품·서비스·정책 기사 우선. 주식·시황 단독 기사 제외. 5개 채우기 위해 IT 관련 기사라면 포함."
     if any(e["cat"]["id"] == "ai" for e in batch):
@@ -456,7 +450,7 @@ def build_prompt(batch: list[dict]) -> str:
 2. 동일 게임·이슈·주제 기사가 여러 개면 가장 핵심적인 1개만 선택.
 3. category_insight: 반드시 2문장 이내. 3문장 이상 절대 금지.
 4. summary: 기사 핵심 내용 2~3줄. 절대 비우지 말 것.
-5. insight: 이 기사에서 읽을 수 있는 시장 흐름이나 전략적 함의를 2줄 이내로 서술. "플랫폼 기획 시", "기획자는" 같은 표현 사용 금지. "확인해야 합니다" 같은 당위 표현도 금지. 시장에서 무슨 일이 일어나고 있는지, 그게 왜 중요한지를 담을 것. 절대 비우지 말 것.
+5. insight: 시장에서 무슨 일이 일어나고 있는지, 그게 왜 중요한지를 2줄 이내로 서술. 다음 표현 절대 금지: "플랫폼 기획 시", "기획자는", "기획자가", "확인해야", "참고해야", "고려해야", "활용할 수 있". 주어 없이 시장 현상과 그 의미만 담을 것. 절대 비우지 말 것.
 6. title: 국문 기사는 원본 그대로, 영문이면 한국어로 번역.
 7. link: 입력된 URL만 사용. 절대 새로 생성 금지.
 
