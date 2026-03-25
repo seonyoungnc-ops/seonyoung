@@ -93,6 +93,7 @@ BASE_QUERIES = {
         "생성형AI","LLM","AI모델","Llama",
         "코파일럿","Copilot",
         "딥시크","DeepSeek","퍼플렉시티","Perplexity",
+        "그록","Grok","xAI",
     ],
 }
 
@@ -161,13 +162,23 @@ GOOGLE_NEWS_QUERIES = {
     "domestic_game": ["넥슨 게임", "넷마블 게임", "크래프톤", "펄어비스", "엔씨소프트", "카카오게임즈"],
     "global_game":   ["Nintendo game", "PlayStation game", "Xbox game", "Steam game release", "Ubisoft", "Blizzard game"],
     "it":            ["Apple 애플", "Google 구글", "Microsoft 마이크로소프트", "Meta 메타", "Samsung 삼성전자"],
-    "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시", "딥시크 DeepSeek", "퍼플렉시티 Perplexity"],
+    "ai":            ["ChatGPT OpenAI", "Gemini Google AI", "Claude Anthropic", "생성형AI LLM", "AI 모델 출시", "딥시크 DeepSeek", "퍼플렉시티 Perplexity", "그록 Grok xAI"],
 }
+
+def extract_url_from_description(desc_html: str) -> str:
+    """
+    Google News RSS <description> 내 첫 번째 <a href="..."> 에서 실제 기사 URL 추출
+    예: <a href="https://실제매체.com/기사경로">제목</a>
+    """
+    match = re.search(r'href="(https?://(?!news\.google\.com)[^"]+)"', desc_html)
+    if match:
+        return match.group(1)
+    return ""
 
 def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
     """
     Google News RSS 키워드 검색
-    원본 URL은 <source url="..."> 속성에서 직접 추출
+    실제 기사 URL은 <description> 안의 href에서 추출 (구글 리다이렉션 URL 우회)
     """
     encoded = urllib.parse.quote(query)
     url = f"https://news.google.com/rss/search?q={encoded}&hl=ko&gl=KR&ceid=KR:ko"
@@ -176,18 +187,27 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
         root = ET.fromstring(raw)
         items = []
         for item in root.findall(".//item")[:max_items]:
-            title = clean_html(item.findtext("title") or "")
-            pub   = (item.findtext("pubDate") or "").strip()
+            title    = clean_html(item.findtext("title") or "")
+            pub      = (item.findtext("pubDate") or "").strip()
+            desc_raw = item.findtext("description") or ""
 
-            # <link>가 실제 기사 URL (Google이 리다이렉션으로 원본 연결)
-            # <source url="">는 매체 홈페이지 URL이라 기사와 불일치 문제 있음
-            orig_url = (item.findtext("link") or "").strip()
+            # description HTML에서 실제 기사 URL 추출
+            orig_url = extract_url_from_description(desc_raw)
 
-            desc = clean_html(item.findtext("description") or "")[:120]
+            # fallback: description에 URL 없으면 <link> 사용
+            if not orig_url:
+                orig_url = (item.findtext("link") or "").strip()
+
+            desc = clean_html(desc_raw)[:120]
 
             if title and orig_url:
                 items.append({"title": title, "link": orig_url,
                               "description": desc, "pubDate": pub})
+        # 디버그: 수집된 pubDate 샘플 출력
+        if items:
+            sample_dates = [i["pubDate"] for i in items[:3] if i["pubDate"]]
+            if sample_dates:
+                print(f"    [DEBUG] pubDate 샘플: {sample_dates[0]}")
         return items
     except Exception as e:
         print(f"    [WARN] Google News RSS '{query}': {e}")
