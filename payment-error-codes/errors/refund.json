@@ -1,0 +1,36 @@
+[
+  {
+    "code": "REFUND_001",
+    "name_ko": "환불 기간 초과",
+    "name_en": "Refund period exceeded",
+    "category": "환불/취소",
+    "http_status": 422,
+    "level": "ERROR",
+    "regions": { "K": true, "A": true, "T": true, "J": true },
+    "reusable": false,
+    "reuse_cases": [],
+    "message_ko": "환불 가능 기간이 초과되었습니다.",
+    "message_en": "The refund period has exceeded.",
+    "cause": "환불 정책 기간 이후 요청",
+    "guide": "환불 불가 안내 및 고객센터 연결",
+    "registered_at": "2024-03-01",
+    "updated_at": "2024-03-01"
+  },
+  {
+    "code": "REFUND_002",
+    "name_ko": "이미 취소된 주문",
+    "name_en": "Order already cancelled",
+    "category": "환불/취소",
+    "http_status": 409,
+    "level": "WARN",
+    "regions": { "K": true, "A": true, "T": true, "J": true },
+    "reusable": true,
+    "reuse_cases": ["환불 요청", "취소 요청"],
+    "message_ko": "이미 취소된 주문입니다.",
+    "message_en": "This order has already been cancelled.",
+    "cause": "중복 취소 요청",
+    "guide": "주문 상태 재조회 안내",
+    "registered_at": "2024-03-01",
+    "updated_at": "2024-09-10"
+  }
+]

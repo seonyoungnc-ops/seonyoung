@@ -1,0 +1,36 @@
+[
+  {
+    "code": "GUARD_001",
+    "name_ko": "보호자 동의 미완료",
+    "name_en": "Parental consent not completed",
+    "category": "보호자 동의",
+    "http_status": 403,
+    "level": "ERROR",
+    "regions": { "K": true, "A": false, "T": false, "J": true },
+    "reusable": false,
+    "reuse_cases": [],
+    "message_ko": "보호자 동의가 필요합니다.",
+    "message_en": "Parental consent is required.",
+    "cause": "미성년자 결제 시 보호자 동의 절차 미이행",
+    "guide": "보호자 동의 프로세스 재시작",
+    "registered_at": "2024-02-01",
+    "updated_at": "2024-08-01"
+  },
+  {
+    "code": "GUARD_002",
+    "name_ko": "보호자 동의 시간 초과",
+    "name_en": "Parental consent timeout",
+    "category": "보호자 동의",
+    "http_status": 408,
+    "level": "WARN",
+    "regions": { "K": true, "A": false, "T": false, "J": true },
+    "reusable": false,
+    "reuse_cases": [],
+    "message_ko": "보호자 동의 대기 시간이 초과되었습니다.",
+    "message_en": "Parental consent request has timed out.",
+    "cause": "보호자 동의 대기 제한 시간 초과",
+    "guide": "보호자 동의 재요청 안내",
+    "registered_at": "2024-02-01",
+    "updated_at": "2024-02-01"
+  }
+]

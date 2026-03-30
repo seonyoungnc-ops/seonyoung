@@ -1,0 +1,52 @@
+[
+  {
+    "error_code": "ORD_002",
+    "case_id": "CASE-001",
+    "case_name": "주문 최종 확인 화면에서 뒤로가기 후 재결제 시도",
+    "regions": ["K", "A", "T", "J"],
+    "trigger": "사용자가 결제 확인 후 취소하고 동일 주문 재결제",
+    "priority": "높음",
+    "note": "주문 세션 유지 시간 30분",
+    "owner": "기획팀"
+  },
+  {
+    "error_code": "ORD_002",
+    "case_id": "CASE-002",
+    "case_name": "결제 수단 변경 화면에서 세션 만료 후 재시도",
+    "regions": ["K", "A", "T", "J"],
+    "trigger": "결제 수단 변경 중 세션 타임아웃 발생",
+    "priority": "중간",
+    "note": "",
+    "owner": "개발팀"
+  },
+  {
+    "error_code": "CMN_002",
+    "case_id": "CASE-003",
+    "case_name": "주문서 생성 시 필수값 누락",
+    "regions": ["K", "A", "T", "J"],
+    "trigger": "상품 ID 또는 수량 파라미터 누락",
+    "priority": "높음",
+    "note": "API 문서 필수값 참조",
+    "owner": "개발팀"
+  },
+  {
+    "error_code": "CMN_002",
+    "case_id": "CASE-004",
+    "case_name": "결제 수단 등록 시 카드 번호 형식 오류",
+    "regions": ["K", "A"],
+    "trigger": "카드 번호 16자리 형식 불일치",
+    "priority": "높음",
+    "note": "",
+    "owner": "개발팀"
+  },
+  {
+    "error_code": "REFUND_002",
+    "case_id": "CASE-005",
+    "case_name": "환불 처리 완료 후 동일 요청 재전송",
+    "regions": ["K", "A", "T", "J"],
+    "trigger": "네트워크 오류로 인한 중복 환불 요청",
+    "priority": "중간",
+    "note": "멱등성 키 사용 권장",
+    "owner": "개발팀"
+  }
+]
