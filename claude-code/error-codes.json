@@ -1,0 +1,17 @@
+[
+  {"code":1001,"type":"AUTH_TOKEN_EXPIRED","service":"인증","message":"인증 토큰이 만료되었습니다.\n세션을 갱신한 후 다시 시도해 주세요.","cause":"세션 시간 초과","guide":[{"button":"재로그인","action":"로그인 페이지로 자동 이동 후 세션을 재발급합니다."}]},
+  {"code":1002,"type":"AUTH_INVALID_CREDENTIALS","service":"인증","message":"유효하지 않은 인증 정보입니다.\n올바른 자격 증명을 사용해 주세요.","cause":"잘못된 토큰 형식","guide":[{"button":"확인","action":"오류 메시지를 닫고 자격 증명 재입력을 안내합니다."}]},
+  {"code":1003,"type":"AUTH_ACCESS_DENIED","service":"인증","message":"접근 권한이 없습니다.\n해당 리소스에 대한 권한을 확인하세요.","cause":"권한 미보유","guide":[{"button":"확인","action":"이전 페이지로 이동합니다."},{"button":"문의하기","action":"권한 요청 페이지로 이동합니다."}]},
+  {"code":2001,"type":"PAYMENT_PROCESS_FAILED","service":"결제","message":"결제 처리 중 오류가 발생했습니다.\nPG사로부터 응답을 받지 못했습니다.","cause":"PG사 응답 오류","guide":[{"button":"재시도","action":"결제를 재요청합니다."},{"button":"취소","action":"결제를 취소하고 주문서로 돌아갑니다."}]},
+  {"code":2002,"type":"PAYMENT_DUPLICATE_DETECTED","service":"결제","message":"중복 결제가 감지되었습니다.\n이미 동일 주문에 대한 결제가 진행 중입니다.","cause":"동일 주문 중복 요청","guide":[{"button":"확인","action":"진행 중인 결제 창으로 이동하며 신규 요청을 차단합니다."}]},
+  {"code":2003,"type":"PAYMENT_INSUFFICIENT_BALANCE","service":"결제","message":"잔액이 부족합니다.\n결제 수단의 잔액을 확인해 주세요.","cause":"잔액 부족","guide":[{"button":"결제수단 변경","action":"다른 결제 수단 선택 화면으로 이동합니다."},{"button":"취소","action":"결제를 취소합니다."}]},
+  {"code":2004,"type":"PAYMENT_METHOD_UNSUPPORTED","service":"결제","message":"지원하지 않는 결제 수단입니다.\n다른 결제 수단을 선택해 주세요.","cause":"미지원 결제 수단","guide":[{"button":"결제수단 변경","action":"지원 가능한 결제 수단 목록으로 이동합니다."}]},
+  {"code":3001,"type":"NETWORK_CONNECTION_FAILED","service":"공통","message":"서버 연결에 실패했습니다.\n네트워크 환경을 확인한 후 다시 시도해 주세요.","cause":"네트워크 불안정","guide":[{"button":"재시도","action":"연결을 재시도하며, 실패 지속 시 오프라인 안내를 표시합니다."}]},
+  {"code":3002,"type":"NETWORK_REQUEST_TIMEOUT","service":"공통","message":"요청 시간이 초과되었습니다.\n서버 응답이 지연되고 있습니다.","cause":"서버 응답 지연","guide":[{"button":"닫기","action":"오류 팝업을 닫고 이전 화면으로 복귀합니다."}]},
+  {"code":4001,"type":"SYSTEM_INTERNAL_ERROR","service":"공통","message":"내부 서버 오류가 발생했습니다.\n문제가 지속되면 관리자에게 문의하세요.","cause":"알 수 없는 시스템 오류","guide":[{"button":"확인","action":"메인 화면으로 이동하며 오류 로그를 자동 수집합니다."}]},
+  {"code":4002,"type":"SYSTEM_MAINTENANCE","service":"공통","message":"시스템 점검 중입니다.\n점검 종료 후 다시 접속해 주세요.","cause":"정기 점검","guide":[{"button":"확인","action":"점검 안내 페이지로 이동합니다."}]},
+  {"code":5001,"type":"ORDER_NOT_FOUND","service":"주문서","message":"주문을 찾을 수 없습니다.\n주문 번호를 확인해 주세요.","cause":"주문 ID 불일치","guide":[{"button":"목록으로","action":"주문 목록 페이지로 이동합니다."}]},
+  {"code":5002,"type":"ORDER_EXPIRED","service":"주문서","message":"주문서가 만료되었습니다.\n새로운 주문을 생성해 주세요.","cause":"주문 유효 시간 초과","guide":[{"button":"재주문","action":"상품 페이지로 이동하여 새 주문을 생성합니다."},{"button":"취소","action":"메인 화면으로 이동합니다."}]},
+  {"code":5003,"type":"ORDER_INVALID_STATUS","service":"주문서","message":"처리할 수 없는 주문 상태입니다.\n현재 주문 상태를 확인해 주세요.","cause":"유효하지 않은 상태 전이","guide":[{"button":"확인","action":"주문 상세 페이지로 이동합니다."}]},
+  {"code":6001,"type":"WALLET_INSUFFICIENT_FUNDS","service":"지갑","message":"지갑 잔액이 부족합니다.\n충전 후 다시 시도해 주세요.","cause":"잔액 부족","guide":[{"button":"충전하기","action":"지갑 충전 페이지로 이동합니다."},{"button":"취소","action":"결제를 취소합니다."}]}
+]
