@@ -6,137 +6,176 @@
 <title>에러 코드 관리 — ErrorCode Admin</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#ffffff;--bg2:#f7f7f6;--bg3:#eeeeec;
-  --text:#1a1a18;--text2:#6b6b67;--text3:#a8a8a4;
-  --border:#e8e8e4;--border2:#d0d0cc;
-  --primary:#1a73e8;--primary-bg:#e8f0fe;
-  --chip-bg:#f0f0ee;--chip-text:#3c3c38;
-  --radius:6px;--radius-lg:10px;
-  --header-h:60px;--page-header-h:66px;--toolbar-h:64px;--banner-h:44px;
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;font-size:14px;background:#f5f5f7;color:#1a1a1a;min-height:100vh}
 
 /* GNB */
-#gnb{height:var(--header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;background:var(--bg);z-index:200}
-#gnb .logo{font-weight:600;font-size:15px;letter-spacing:-.2px}
+#gnb{
+  background:#2d2f6e;
+  height:60px;display:flex;align-items:center;padding:0 24px;
+  position:sticky;top:0;z-index:100;
+}
+#gnb .logo{color:#fff;font-size:15px;font-weight:600;letter-spacing:-.1px}
 
 /* Page Header */
-#page-header{height:var(--page-header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px}
-#page-header h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+#page-header{
+  background:#fff;border-bottom:1px solid #e8e8ec;
+  height:66px;display:flex;align-items:center;padding:0 40px;
+}
+#page-header h1{font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:-.3px}
 
 /* Toolbar */
-#toolbar{height:var(--toolbar-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;gap:12px}
-#search-box{position:relative;display:flex;align-items:center}
-#search-box svg{position:absolute;left:10px;color:var(--text3);pointer-events:none}
-#search{padding:8px 10px 8px 32px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);width:260px;outline:none;background:var(--bg)}
-#search:focus{border-color:var(--primary)}
-#svc-filter{padding:8px 30px 8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 10px center;min-width:144px;outline:none;cursor:pointer}
-#svc-filter:focus{border-color:var(--primary)}
+#toolbar{
+  background:#fff;border-bottom:1px solid #e8e8ec;
+  height:64px;display:flex;align-items:center;padding:0 40px;gap:12px;
+}
+.tb-input-wrap{position:relative}
+.tb-input-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none}
+#search{
+  padding:9px 12px 9px 32px;border:1px solid #d5d5db;border-radius:6px;
+  font-size:13px;color:#1a1a1a;width:240px;outline:none;background:#fff;
+}
+#search::placeholder{color:#aaa}
+#search:focus{border-color:#2d2f6e}
+#svc-filter{
+  padding:9px 28px 9px 10px;border:1px solid #d5d5db;border-radius:6px;
+  font-size:13px;color:#1a1a1a;min-width:140px;outline:none;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%23aaa'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance:none;cursor:pointer;
+}
+#svc-filter:focus{border-color:#2d2f6e}
 
 /* Banner */
-#banner{height:var(--banner-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;justify-content:space-between}
-#banner .banner-left{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
-#banner .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
-#banner a{font-size:13px;color:var(--primary);text-decoration:none;font-weight:500}
-#banner a:hover{text-decoration:underline}
+#banner{
+  background:#fffbf0;border-bottom:1px solid #e8e8ec;
+  height:44px;display:flex;align-items:center;padding:0 40px;justify-content:space-between;
+}
+.banner-left{display:flex;align-items:center;gap:8px;font-size:13px;color:#555}
+.dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+.banner-link{font-size:13px;color:#2d2f6e;font-weight:500;text-decoration:none}
+.banner-link:hover{text-decoration:underline}
 
-/* Table area */
-#table-area{padding:20px 40px}
-.table-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+/* Table container */
+#table-area{padding:20px 40px 40px}
+
+.table-wrap{
+  background:#fff;border:1px solid #e8e8ec;border-radius:10px;overflow:hidden;
+}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-colgroup .c-code   {width:90px}
-colgroup .c-type   {width:220px}
-colgroup .c-service{width:110px}
-colgroup .c-message{width:auto}
-colgroup .c-cause  {width:180px}
-colgroup .c-guide  {width:320px}
-thead{background:var(--bg2)}
-th{padding:12px 14px;text-align:left;font-weight:500;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.2px}
-td{padding:0;border-bottom:1px solid var(--border);vertical-align:top}
-td .cell{padding:14px 14px;height:100%}
+col.c-code   {width:88px}
+col.c-type   {width:216px}
+col.c-svc    {width:110px}
+col.c-msg    {width:auto}
+col.c-cause  {width:180px}
+col.c-guide  {width:340px}
+
+/* Header */
+thead tr{background:#eef0f8}
+th{
+  padding:12px 14px;text-align:left;
+  font-size:12px;font-weight:600;color:#666;
+  border-bottom:1px solid #e0e0e8;white-space:nowrap;letter-spacing:.1px;
+}
+
+/* Body */
+td{padding:0;border-bottom:1px solid #ededf0;vertical-align:top}
 tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--bg2)}
+tbody tr:hover td{background:#fafafa}
+.cell{padding:14px 14px}
 
-/* Code cell */
-.code-val{font-family:'SF Mono',Consolas,monospace;font-size:12px;font-weight:600;color:var(--text)}
-.code-badge{display:inline-block;font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text2);margin-top:3px}
+/* Code */
+.code-val{font-size:13px;font-weight:600;color:#1a1a1a;font-family:'SF Mono',Consolas,monospace}
 
-/* Type cell */
-.type-val{font-family:'SF Mono',Consolas,monospace;font-size:11.5px;color:var(--text2);word-break:break-all;line-height:1.6}
+/* Type */
+.type-val{font-size:12px;color:#555;font-family:'SF Mono',Consolas,monospace;word-break:break-all;line-height:1.6}
 
-/* Service badge */
-.svc-badge{display:inline-block;padding:2px 8px;background:var(--bg3);border-radius:100px;font-size:11px;color:var(--text2)}
+/* Service */
+.svc-tag{
+  display:inline-block;padding:2px 9px;
+  background:#f0f0f5;border-radius:100px;
+  font-size:11px;color:#555;
+}
 
 /* Message */
-.msg-text{font-size:13px;color:var(--text);line-height:1.6;word-break:keep-all}
+.msg-text{font-size:13px;color:#1a1a1a;line-height:1.65;word-break:keep-all}
 
-/* Guide */
-.guide-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+/* Cause */
+.cause-text{font-size:13px;color:#1a1a1a}
+
+/* Guide chips */
+.guide-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
 .guide-row:last-child{margin-bottom:0}
-.chip{display:inline-block;background:var(--chip-bg);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500;color:var(--chip-text);white-space:nowrap;flex-shrink:0}
-.guide-action{font-size:12px;color:var(--text2);line-height:1.5;padding-top:1px}
+.chip{
+  display:inline-block;padding:2px 9px;
+  background:#eeeef8;border-radius:4px;
+  font-size:11px;font-weight:600;color:#4b4d9b;
+  white-space:nowrap;flex-shrink:0;
+}
+.guide-action{font-size:12px;color:#666;line-height:1.5;padding-top:2px}
 
 /* Footer */
-#table-footer{border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg)}
-.page-size{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
-.page-size select{padding:5px 24px 5px 8px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 8px center;cursor:pointer;outline:none}
-.total-count{font-size:13px;color:var(--text2)}
-.pagination{display:flex;align-items:center;gap:4px}
-.page-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text2);background:var(--bg);cursor:pointer;transition:all .15s}
-.page-btn:hover:not(.active):not([disabled]){background:var(--bg2)}
-.page-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
-.page-btn[disabled]{opacity:.35;cursor:default}
-.page-btn.arrow{font-size:16px;color:var(--text3)}
+.table-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-top:1px solid #ededf0;background:#fff;
+}
+.footer-left{display:flex;align-items:center;gap:12px}
+.ps-select{
+  padding:6px 24px 6px 8px;border:1px solid #d5d5db;border-radius:6px;
+  font-size:13px;color:#1a1a1a;appearance:none;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0l4 4 4-4z' fill='%23aaa'/%3E%3C/svg%3E") no-repeat right 8px center;
+  cursor:pointer;outline:none;
+}
+.total-txt{font-size:13px;color:#777}
+.pagination{display:flex;gap:4px;align-items:center}
+.pg-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:1px solid #e0e0e8;border-radius:6px;font-size:13px;color:#555;
+  background:#fff;cursor:pointer;transition:background .12s;user-select:none;
+}
+.pg-btn:hover:not(.active):not(:disabled){background:#f5f5f8}
+.pg-btn.active{background:#2d2f6e;border-color:#2d2f6e;color:#fff;font-weight:600}
+.pg-btn:disabled{opacity:.3;cursor:default}
+.pg-arrow{font-size:16px;color:#999}
 
-/* Loading / empty */
-#loading{text-align:center;padding:60px;color:var(--text2);font-size:14px}
-.empty{text-align:center;padding:48px;color:var(--text2);font-size:13px}
-
-/* Error */
-#fetch-error{background:#fff5f5;border:1px solid #fca5a5;border-radius:var(--radius);padding:14px 16px;margin:20px 40px;font-size:13px;color:#b91c1c;display:none}
+/* States */
+#loading{text-align:center;padding:60px 0;color:#aaa;font-size:14px}
+.no-result{text-align:center;padding:48px;color:#aaa;font-size:13px}
+#err-box{margin:16px 40px;padding:12px 16px;background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;font-size:13px;color:#b91c1c;display:none}
 </style>
 </head>
 <body>
 
-<!-- GNB -->
 <nav id="gnb"><span class="logo">ErrorCode Admin</span></nav>
 
-<!-- Page Header -->
 <div id="page-header"><h1>에러 코드 관리</h1></div>
 
-<!-- Toolbar -->
 <div id="toolbar">
-  <div id="search-box">
-    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+  <div class="tb-input-wrap">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20">
+      <circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="18" y2="18"/>
+    </svg>
     <input id="search" type="text" placeholder="코드 / 메시지 검색..." oninput="onFilter()">
   </div>
-  <select id="svc-filter" onchange="onFilter()">
-    <option value="">서비스 전체</option>
-  </select>
+  <select id="svc-filter" onchange="onFilter()"><option value="">서비스 전체</option></select>
 </div>
 
-<!-- Banner -->
 <div id="banner">
   <div class="banner-left">
     <div class="dot"></div>
     <span>이 페이지는 읽기 전용입니다. 에러 코드 추가 및 수정은 GitHub 저장소를 통해 관리됩니다.</span>
   </div>
-  <a href="https://github.com/seonyoungnc-ops/seonyoung/blob/main/claude-code/error-codes.json" target="_blank">GitHub에서 수정하기 →</a>
+  <a class="banner-link" href="https://github.com/seonyoungnc-ops/seonyoung/blob/main/claude-code/error-codes.json" target="_blank">GitHub에서 수정하기 →</a>
 </div>
 
-<!-- Fetch Error -->
-<div id="fetch-error"></div>
+<div id="err-box"></div>
 
-<!-- Table -->
 <div id="table-area">
   <div id="loading">데이터를 불러오는 중...</div>
-  <div id="table-container" style="display:none">
+  <div id="table-wrap-outer" style="display:none">
     <div class="table-wrap">
       <table>
         <colgroup>
-          <col class="c-code"><col class="c-type"><col class="c-service">
-          <col class="c-message"><col class="c-cause"><col class="c-guide">
+          <col class="c-code"><col class="c-type"><col class="c-svc">
+          <col class="c-msg"><col class="c-cause"><col class="c-guide">
         </colgroup>
         <thead>
           <tr>
@@ -146,15 +185,15 @@ tbody tr:hover td{background:var(--bg2)}
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div id="table-footer">
-        <div class="page-size">
-          <select id="page-size" onchange="onPageSize()">
+      <div class="table-footer">
+        <div class="footer-left">
+          <select class="ps-select" id="ps" onchange="onPs()">
             <option value="15">15개씩</option>
             <option value="30">30개씩</option>
             <option value="50">50개씩</option>
             <option value="100">100개씩</option>
           </select>
-          <span class="total-count" id="total-count"></span>
+          <span class="total-txt" id="total-txt"></span>
         </div>
         <div class="pagination" id="pagination"></div>
       </div>
@@ -163,177 +202,125 @@ tbody tr:hover td{background:var(--bg2)}
 </div>
 
 <script>
-// ── 설정 ──────────────────────────────────────────────────
 const JSON_URL = 'https://raw.githubusercontent.com/seonyoungnc-ops/seonyoung/main/claude-code/error-codes.json';
 
-// ── 상태 ─────────────────────────────────────────────────
-let allData = [];
-let filtered = [];
-let currentPage = 1;
-let pageSize = 15;
+let all = [], filtered = [], page = 1, ps = 15;
 
-// ── 데이터 정규화 (구 형식 + 신 형식 통합) ───────────────
-function normalize(item) {
+function norm(d) {
   return {
-    code:    String(item.code    ?? item.errorCode ?? item.systemCode ?? ''),
-    type:    item.type    || '',
-    service: item.service || '',
-    message: item.message || '',
-    cause:   item.cause   || '',
-    guide:   Array.isArray(item.guide) ? item.guide : [],
-    // 원본 구분용
-    _isLegacy:   !!item.code && !item.systemCode && !item.errorCode,
-    _hasGuide:   Array.isArray(item.guide) && item.guide.length > 0
+    code:    String(d.code ?? d.errorCode ?? d.systemCode ?? ''),
+    type:    d.type    || '',
+    service: d.service || '',
+    message: (d.message || '').replace(/\n/g, '\n'),
+    cause:   d.cause   || '',
+    guide:   Array.isArray(d.guide) ? d.guide : []
   };
 }
 
-// ── 서비스 필터 목록 구성 ──────────────────────────────────
-function buildServiceFilter(data) {
+function e(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+function buildSvcFilter() {
   const sel = document.getElementById('svc-filter');
-  const services = [...new Set(data.map(d => d.service).filter(Boolean))].sort();
-  services.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    sel.appendChild(opt);
-  });
+  const svcs = [...new Set(all.map(d=>d.service).filter(Boolean))].sort();
+  svcs.forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
 }
 
-// ── 필터링 ────────────────────────────────────────────────
 function applyFilter() {
-  const q   = document.getElementById('search').value.trim().toLowerCase();
+  const q   = document.getElementById('search').value.toLowerCase().trim();
   const svc = document.getElementById('svc-filter').value;
-  filtered = allData.filter(d => {
+  filtered = all.filter(d => {
     if (svc && d.service !== svc) return false;
-    if (q) {
-      const hay = `${d.code} ${d.type} ${d.service} ${d.message} ${d.cause}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
+    if (q && !`${d.code} ${d.type} ${d.service} ${d.message} ${d.cause}`.toLowerCase().includes(q)) return false;
     return true;
   });
-  currentPage = 1;
+  page = 1;
 }
 
-function onFilter() { applyFilter(); render(); }
-function onPageSize() { pageSize = +document.getElementById('page-size').value; currentPage = 1; render(); }
+function onFilter(){ applyFilter(); render(); }
+function onPs(){ ps = +document.getElementById('ps').value; page = 1; render(); }
 
-// ── 렌더 ──────────────────────────────────────────────────
 function render() {
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / pageSize) || 1;
-  if (currentPage > totalPages) currentPage = totalPages;
+  const tot   = filtered.length;
+  const pages = Math.max(1, Math.ceil(tot / ps));
+  if (page > pages) page = pages;
 
-  const start = (currentPage - 1) * pageSize;
-  const page  = filtered.slice(start, start + pageSize);
-
-  document.getElementById('total-count').textContent = `총 ${total.toLocaleString()}개 항목`;
-
-  renderRows(page);
-  renderPagination(totalPages);
+  const slice = filtered.slice((page-1)*ps, page*ps);
+  document.getElementById('total-txt').textContent = `총 ${tot.toLocaleString()}개 항목`;
+  renderRows(slice);
+  renderPagination(pages);
 }
 
-function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
-
-function renderRows(page) {
+function renderRows(rows) {
   const tbody = document.getElementById('tbody');
-  if (!page.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">검색 결과가 없습니다.</td></tr>`;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-result">검색 결과가 없습니다.</td></tr>';
     return;
   }
-  tbody.innerHTML = page.map(d => {
-    // 가이드
+  tbody.innerHTML = rows.map(d => {
     const guideHtml = d.guide.length
-      ? d.guide.map(g => `
-          <div class="guide-row">
-            <span class="chip">${esc(g.button)}</span>
-            <span class="guide-action">${esc(g.action)}</span>
+      ? d.guide.map(g =>
+          `<div class="guide-row">
+            <span class="chip">${e(g.button)}</span>
+            <span class="guide-action">${e(g.action)}</span>
           </div>`).join('')
-      : `<span style="color:var(--text3);font-size:12px">—</span>`;
+      : `<span style="color:#ccc;font-size:13px">—</span>`;
+
+    const msgLines = d.message.split('\n').map(l => e(l)).join('<br>');
 
     return `<tr>
-      <td><div class="cell">
-        <div class="code-val">${esc(d.code)}</div>
-      </div></td>
-      <td><div class="cell">
-        <div class="type-val">${esc(d.type) || '<span style="color:var(--text3)">—</span>'}</div>
-      </div></td>
-      <td><div class="cell">
-        <span class="svc-badge">${esc(d.service)}</span>
-      </div></td>
-      <td><div class="cell">
-        <div class="msg-text">${esc(d.message) || '<span style="color:var(--text3)">—</span>'}</div>
-      </div></td>
-      <td><div class="cell">
-        <div style="font-size:13px;color:var(--text)">${esc(d.cause) || '<span style="color:var(--text3)">—</span>'}</div>
-      </div></td>
+      <td><div class="cell"><span class="code-val">${e(d.code)}</span></div></td>
+      <td><div class="cell"><span class="type-val">${e(d.type)||'<span style="color:#ccc">—</span>'}</span></div></td>
+      <td><div class="cell"><span class="svc-tag">${e(d.service)}</span></div></td>
+      <td><div class="cell"><div class="msg-text">${msgLines||'<span style="color:#ccc">—</span>'}</div></div></td>
+      <td><div class="cell"><span class="cause-text">${e(d.cause)||'<span style="color:#ccc">—</span>'}</span></div></td>
       <td><div class="cell">${guideHtml}</div></td>
     </tr>`;
   }).join('');
 }
 
-function renderPagination(totalPages) {
+function renderPagination(total) {
   const pg = document.getElementById('pagination');
-  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  if (total <= 1) { pg.innerHTML = ''; return; }
 
-  const maxVisible = 5;
-  let start = Math.max(1, currentPage - 2);
-  let end   = Math.min(totalPages, start + maxVisible - 1);
-  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+  const W = 5;
+  let s = Math.max(1, page - 2);
+  let end = Math.min(total, s + W - 1);
+  if (end - s < W - 1) s = Math.max(1, end - W + 1);
 
-  let html = `<button class="page-btn arrow" onclick="goPage(${currentPage - 1})" ${currentPage===1?'disabled':''}>‹</button>`;
-
-  if (start > 1) {
-    html += `<button class="page-btn" onclick="goPage(1)">1</button>`;
-    if (start > 2) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
-  }
-  for (let i = start; i <= end; i++) {
-    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-  }
-  if (end < totalPages) {
-    if (end < totalPages - 1) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
-    html += `<button class="page-btn" onclick="goPage(${totalPages})">${totalPages}</button>`;
-  }
-
-  html += `<button class="page-btn arrow" onclick="goPage(${currentPage + 1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
-  pg.innerHTML = html;
+  let h = `<button class="pg-btn pg-arrow" onclick="go(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  if (s > 1) { h += btn(1); if (s>2) h += `<span style="color:#bbb;padding:0 2px">…</span>`; }
+  for (let i=s; i<=end; i++) h += btn(i);
+  if (end < total) { if (end<total-1) h += `<span style="color:#bbb;padding:0 2px">…</span>`; h += btn(total); }
+  h += `<button class="pg-btn pg-arrow" onclick="go(${page+1})" ${page===total?'disabled':''}>›</button>`;
+  pg.innerHTML = h;
 }
 
-function goPage(p) {
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / pageSize) || 1;
-  if (p < 1 || p > totalPages) return;
-  currentPage = p;
+function btn(n){ return `<button class="pg-btn${n===page?' active':''}" onclick="go(${n})">${n}</button>`; }
+
+function go(n) {
+  const tot = Math.max(1, Math.ceil(filtered.length/ps));
+  if (n<1||n>tot) return;
+  page = n;
   render();
-  document.getElementById('table-area').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('table-area').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── 데이터 fetch ─────────────────────────────────────────
 async function fetchData() {
   try {
-    // cache-bust: 분 단위로 갱신 (항상 최신 JSON 반영)
-    const url = JSON_URL + '?t=' + Math.floor(Date.now() / 60000);
-    const res = await fetch(url);
+    const res = await fetch(JSON_URL + '?t=' + Math.floor(Date.now()/60000));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw = await res.json();
-    allData  = raw.map(normalize);
-    filtered = [...allData];
-
-    buildServiceFilter(allData);
+    all = raw.map(norm);
+    filtered = [...all];
+    buildSvcFilter();
     render();
-
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('table-container').style.display = 'block';
-  } catch (e) {
+    document.getElementById('table-wrap-outer').style.display = 'block';
+  } catch(err) {
     document.getElementById('loading').style.display = 'none';
-    const err = document.getElementById('fetch-error');
-    err.style.display = 'block';
-    err.textContent = `데이터를 불러오지 못했습니다: ${e.message} — JSON URL: ${JSON_URL}`;
-    console.error(e);
+    const box = document.getElementById('err-box');
+    box.style.display = 'block';
+    box.textContent = '데이터를 불러오지 못했습니다: ' + err.message;
   }
 }
 
