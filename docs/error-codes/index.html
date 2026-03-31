@@ -3,255 +3,341 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>결제 플랫폼 에러코드 뷰어</title>
+<title>에러 코드 관리 — ErrorCode Admin</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeecea;
-  --text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;
-  --border:#e0deda;
-  --blue-bg:#e6f1fb;--blue-text:#0c447c;--blue-border:#185fa5;
-  --green-bg:#e1f5ee;--green-text:#085041;
-  --amber-bg:#faeeda;--amber-text:#633806;
-  --red-bg:#fcebeb;--red-text:#791f1f;
-  --radius:8px;--radius-lg:12px;
+  --bg:#ffffff;--bg2:#f7f7f6;--bg3:#eeeeec;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a8a8a4;
+  --border:#e8e8e4;--border2:#d0d0cc;
+  --primary:#1a73e8;--primary-bg:#e8f0fe;
+  --chip-bg:#f0f0ee;--chip-text:#3c3c38;
+  --radius:6px;--radius-lg:10px;
+  --header-h:60px;--page-header-h:66px;--toolbar-h:64px;--banner-h:44px;
 }
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1c1c1a;--bg2:#242422;--bg3:#2c2c2a;
-    --text:#e8e6e0;--text2:#9a9a96;--text3:#6b6b67;
-    --border:#3a3a36;
-    --blue-bg:#0c447c;--blue-text:#b5d4f4;--blue-border:#378add;
-    --green-bg:#085041;--green-text:#9fe1cb;
-    --amber-bg:#633806;--amber-text:#fac775;
-    --red-bg:#791f1f;--red-text:#f7c1c1;
-  }
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
-header{background:var(--bg);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-weight:600;font-size:15px;color:var(--text)}
-.logo span{font-weight:400;color:var(--text2);margin-left:6px;font-size:13px}
-.gh-link{font-size:12px;color:var(--text2);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;display:flex;align-items:center;gap:5px}
-.gh-link:hover{background:var(--bg2)}
-main{max-width:1100px;margin:0 auto;padding:20px 24px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-.stat{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
-.stat-label{font-size:11px;color:var(--text2);margin-bottom:5px}
-.stat-val{font-size:22px;font-weight:600;color:var(--text)}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-.toolbar input,.toolbar select{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text);outline:none}
-.toolbar input:focus,.toolbar select:focus{border-color:var(--blue-border)}
-.toolbar input{flex:1;min-width:200px}
-.toolbar select{min-width:130px}
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* GNB */
+#gnb{height:var(--header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;background:var(--bg);z-index:200}
+#gnb .logo{font-weight:600;font-size:15px;letter-spacing:-.2px}
+
+/* Page Header */
+#page-header{height:var(--page-header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px}
+#page-header h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+
+/* Toolbar */
+#toolbar{height:var(--toolbar-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;gap:12px}
+#search-box{position:relative;display:flex;align-items:center}
+#search-box svg{position:absolute;left:10px;color:var(--text3);pointer-events:none}
+#search{padding:8px 10px 8px 32px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);width:260px;outline:none;background:var(--bg)}
+#search:focus{border-color:var(--primary)}
+#svc-filter{padding:8px 30px 8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 10px center;min-width:144px;outline:none;cursor:pointer}
+#svc-filter:focus{border-color:var(--primary)}
+
+/* Banner */
+#banner{height:var(--banner-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;justify-content:space-between}
+#banner .banner-left{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+#banner .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+#banner a{font-size:13px;color:var(--primary);text-decoration:none;font-weight:500}
+#banner a:hover{text-decoration:underline}
+
+/* Table area */
+#table-area{padding:20px 40px}
+.table-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+colgroup .c-code   {width:90px}
+colgroup .c-type   {width:220px}
+colgroup .c-service{width:110px}
+colgroup .c-message{width:auto}
+colgroup .c-cause  {width:180px}
+colgroup .c-guide  {width:320px}
 thead{background:var(--bg2)}
-th{padding:10px 12px;text-align:left;font-weight:500;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;overflow:hidden;text-overflow:ellipsis}
+th{padding:12px 14px;text-align:left;font-weight:500;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.2px}
+td{padding:0;border-bottom:1px solid var(--border);vertical-align:top}
+td .cell{padding:14px 14px;height:100%}
 tr:last-child td{border-bottom:none}
-tbody tr{cursor:pointer;transition:background .1s}
 tbody tr:hover td{background:var(--bg2)}
-tbody tr.active td{background:var(--blue-bg)}
-.rtag{display:inline-block;width:20px;height:20px;border-radius:4px;font-size:10px;font-weight:600;text-align:center;line-height:20px;margin-right:2px}
-.rK{background:var(--green-bg);color:var(--green-text)}
-.rA{background:var(--blue-bg);color:var(--blue-text)}
-.rT{background:var(--amber-bg);color:var(--amber-text)}
-.rJ{background:var(--red-bg);color:var(--red-text)}
-.rN{background:var(--bg3);color:var(--text3);opacity:.5}
-.action-tag{display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:5px;font-size:11px;padding:2px 7px;color:var(--text2);margin-right:3px;margin-bottom:2px;white-space:nowrap}
-.detail{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-top:14px}
-.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
-.detail-code{font-family:monospace;font-size:15px;font-weight:600}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}
-.detail-field{display:flex;flex-direction:column;gap:4px}
-.detail-field.full{grid-column:1/-1}
-.field-key{font-size:11px;color:var(--text2);font-weight:500}
-.field-val{color:var(--text)}
-.msg-box{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text)}
-.close-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text2)}
-.close-btn:hover{background:var(--bg2)}
-.empty{text-align:center;padding:40px;color:var(--text2);font-size:13px}
-footer{text-align:center;padding:24px;color:var(--text3);font-size:12px;border-top:1px solid var(--border);margin-top:32px}
-@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.detail-grid{grid-template-columns:1fr}.toolbar select{min-width:auto}}
+
+/* Code cell */
+.code-val{font-family:'SF Mono',Consolas,monospace;font-size:12px;font-weight:600;color:var(--text)}
+.code-badge{display:inline-block;font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text2);margin-top:3px}
+
+/* Type cell */
+.type-val{font-family:'SF Mono',Consolas,monospace;font-size:11.5px;color:var(--text2);word-break:break-all;line-height:1.6}
+
+/* Service badge */
+.svc-badge{display:inline-block;padding:2px 8px;background:var(--bg3);border-radius:100px;font-size:11px;color:var(--text2)}
+
+/* Message */
+.msg-text{font-size:13px;color:var(--text);line-height:1.6;word-break:keep-all}
+
+/* Guide */
+.guide-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.guide-row:last-child{margin-bottom:0}
+.chip{display:inline-block;background:var(--chip-bg);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500;color:var(--chip-text);white-space:nowrap;flex-shrink:0}
+.guide-action{font-size:12px;color:var(--text2);line-height:1.5;padding-top:1px}
+
+/* Footer */
+#table-footer{border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg)}
+.page-size{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.page-size select{padding:5px 24px 5px 8px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 8px center;cursor:pointer;outline:none}
+.total-count{font-size:13px;color:var(--text2)}
+.pagination{display:flex;align-items:center;gap:4px}
+.page-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text2);background:var(--bg);cursor:pointer;transition:all .15s}
+.page-btn:hover:not(.active):not([disabled]){background:var(--bg2)}
+.page-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+.page-btn[disabled]{opacity:.35;cursor:default}
+.page-btn.arrow{font-size:16px;color:var(--text3)}
+
+/* Loading / empty */
+#loading{text-align:center;padding:60px;color:var(--text2);font-size:14px}
+.empty{text-align:center;padding:48px;color:var(--text2);font-size:13px}
+
+/* Error */
+#fetch-error{background:#fff5f5;border:1px solid #fca5a5;border-radius:var(--radius);padding:14px 16px;margin:20px 40px;font-size:13px;color:#b91c1c;display:none}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">결제 플랫폼 에러코드 뷰어 <span>Payment Error Codes</span></div>
-  <a class="gh-link" href="https://github.com/seonyoungnc-ops/seonyoung/tree/main/payment-error-codes" target="_blank">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-    GitHub
-  </a>
-</header>
+<!-- GNB -->
+<nav id="gnb"><span class="logo">ErrorCode Admin</span></nav>
 
-<main>
-  <div class="stats">
-    <div class="stat"><div class="stat-label">전체 에러코드</div><div class="stat-val" id="s-total">-</div></div>
-    <div class="stat"><div class="stat-label">현재 표시</div><div class="stat-val" id="s-shown">-</div></div>
-    <div class="stat"><div class="stat-label">권역 필터</div><div class="stat-val" id="s-region">전체</div></div>
+<!-- Page Header -->
+<div id="page-header"><h1>에러 코드 관리</h1></div>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <div id="search-box">
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+    <input id="search" type="text" placeholder="코드 / 메시지 검색..." oninput="onFilter()">
   </div>
+  <select id="svc-filter" onchange="onFilter()">
+    <option value="">서비스 전체</option>
+  </select>
+</div>
 
-  <div class="toolbar">
-    <input type="text" id="search" placeholder="코드 · 에러명 · 원인 검색..." oninput="render()">
-    <select id="cat" onchange="render()">
-      <option value="">전체 분류</option>
-      <option>공통</option><option>주문서</option><option>결제 수단</option><option>보호자 동의</option><option>환불/취소</option>
-    </select>
-    <select id="region" onchange="render()">
-      <option value="">전체 권역</option>
-      <option value="K">한국 (K)</option><option value="A">글로벌 (A)</option>
-      <option value="T">대만·홍콩·마카오 (T)</option><option value="J">일본 (J)</option>
-    </select>
+<!-- Banner -->
+<div id="banner">
+  <div class="banner-left">
+    <div class="dot"></div>
+    <span>이 페이지는 읽기 전용입니다. 에러 코드 추가 및 수정은 GitHub 저장소를 통해 관리됩니다.</span>
   </div>
+  <a href="https://github.com/seonyoungnc-ops/seonyoung/blob/main/claude-code/error-codes.json" target="_blank">GitHub에서 수정하기 →</a>
+</div>
 
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width:110px"><col style="width:160px"><col style="width:100px">
-        <col style="width:auto"><col style="width:180px">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>Value</th>
-          <th>Name</th>
-          <th>Case</th>
-          <th>문구</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+<!-- Fetch Error -->
+<div id="fetch-error"></div>
+
+<!-- Table -->
+<div id="table-area">
+  <div id="loading">데이터를 불러오는 중...</div>
+  <div id="table-container" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col class="c-code"><col class="c-type"><col class="c-service">
+          <col class="c-message"><col class="c-cause"><col class="c-guide">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>코드</th><th>타입</th><th>서비스</th>
+            <th>메시지</th><th>원인</th><th>가이드</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="table-footer">
+        <div class="page-size">
+          <select id="page-size" onchange="onPageSize()">
+            <option value="15">15개씩</option>
+            <option value="30">30개씩</option>
+            <option value="50">50개씩</option>
+            <option value="100">100개씩</option>
+          </select>
+          <span class="total-count" id="total-count"></span>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
   </div>
-
-  <div id="detail"></div>
-</main>
-
-<footer>
-  데이터 원본: <a href="https://github.com/seonyoungnc-ops/seonyoung/tree/main/payment-error-codes" target="_blank" style="color:var(--blue-text)">seonyoungnc-ops/seonyoung</a>
-  &nbsp;·&nbsp; JSON 수정 후 PR → merge 시 자동 반영
-</footer>
+</div>
 
 <script>
-const DATA = {
-  common:[
-    {code:"CMN_001",name_ko:"서버 내부 오류",name_en:"Internal server error",category:"공통",regions:{K:true,A:true,T:true,J:true},message_ko:"일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",cause:"서버 내부 처리 오류",guide:"재시도 안내, 지속 시 고객센터 연결",actions:["재시도 버튼 제공","고객센터 연결"],registered_at:"2024-01-01",updated_at:"2024-01-01"},
-    {code:"CMN_002",name_ko:"요청 값 오류",name_en:"Invalid request parameter",category:"공통",regions:{K:true,A:true,T:true,J:true},message_ko:"입력 값을 확인해 주세요.",cause:"필수 파라미터 누락 또는 형식 오류",guide:"클라이언트 입력값 검증 로직 확인",actions:["입력 폼 포커스","오류 필드 강조"],registered_at:"2024-01-01",updated_at:"2024-11-01"}
-  ],
-  order:[
-    {code:"ORD_001",name_ko:"주문 정보 없음",name_en:"Order not found",category:"주문서",regions:{K:true,A:true,T:true,J:true},message_ko:"주문 정보를 찾을 수 없습니다.",cause:"주문 ID가 유효하지 않거나 만료됨",guide:"주문 목록 재조회 또는 고객센터 안내",actions:["주문 목록으로 이동","고객센터 연결"],registered_at:"2024-01-10",updated_at:"2024-01-10"},
-    {code:"ORD_002",name_ko:"주문 시간 만료",name_en:"Order session expired",category:"주문서",regions:{K:true,A:true,T:true,J:true},message_ko:"주문 유효 시간이 만료되었습니다. 다시 시도해 주세요.",cause:"주문 세션 타임아웃",guide:"주문서 재생성 유도",actions:["창 닫기","주문서 재생성"],registered_at:"2024-01-10",updated_at:"2024-05-20"}
-  ],
-  payment:[
-    {code:"PAY_001",name_ko:"결제 수단 미등록",name_en:"Payment method not registered",category:"결제 수단",regions:{K:true,A:true,T:true,J:true},message_ko:"결제 수단을 먼저 등록해 주세요.",cause:"유효한 결제 수단이 없음",guide:"결제 수단 등록 페이지로 안내",actions:["결제 수단 등록 페이지 이동"],registered_at:"2024-01-01",updated_at:"2024-06-01"},
-    {code:"PAY_002",name_ko:"잔액 부족",name_en:"Insufficient balance",category:"결제 수단",regions:{K:true,A:true,T:false,J:true},message_ko:"잔액이 부족합니다. 결제 수단을 확인해 주세요.",cause:"결제 가능 금액 초과",guide:"충전 또는 다른 결제 수단 선택 안내",actions:["충전 페이지 이동","다른 결제 수단 선택"],registered_at:"2024-01-01",updated_at:"2024-07-15"}
-  ],
-  guardian:[
-    {code:"GUARD_001",name_ko:"보호자 동의 미완료",name_en:"Parental consent not completed",category:"보호자 동의",regions:{K:true,A:false,T:false,J:true},message_ko:"보호자 동의가 필요합니다.",cause:"미성년자 결제 시 보호자 동의 절차 미이행",guide:"보호자 동의 프로세스 재시작",actions:["보호자 동의 화면 이동","창 닫기"],registered_at:"2024-02-01",updated_at:"2024-08-01"},
-    {code:"GUARD_002",name_ko:"보호자 동의 시간 초과",name_en:"Parental consent timeout",category:"보호자 동의",regions:{K:true,A:false,T:false,J:true},message_ko:"보호자 동의 대기 시간이 초과되었습니다.",cause:"보호자 동의 대기 제한 시간 초과",guide:"보호자 동의 재요청 안내",actions:["재요청 버튼 제공","창 닫기"],registered_at:"2024-02-01",updated_at:"2024-02-01"}
-  ],
-  refund:[
-    {code:"REFUND_001",name_ko:"환불 기간 초과",name_en:"Refund period exceeded",category:"환불/취소",regions:{K:true,A:true,T:true,J:true},message_ko:"환불 가능 기간이 초과되었습니다.",cause:"환불 정책 기간 이후 요청",guide:"환불 불가 안내 및 고객센터 연결",actions:["창 닫기","고객센터 연결"],registered_at:"2024-03-01",updated_at:"2024-03-01"},
-    {code:"REFUND_002",name_ko:"이미 취소된 주문",name_en:"Order already cancelled",category:"환불/취소",regions:{K:true,A:true,T:true,J:true},message_ko:"이미 취소된 주문입니다.",cause:"중복 취소 요청",guide:"주문 상태 재조회 안내",actions:["창 닫기","주문 상태 재조회"],registered_at:"2024-03-01",updated_at:"2024-09-10"}
-  ]
-};
+// ── 설정 ──────────────────────────────────────────────────
+const JSON_URL = 'https://raw.githubusercontent.com/seonyoungnc-ops/seonyoung/main/claude-code/error-codes.json';
 
-const allData = Object.values(DATA).flat();
-let selected = null;
+// ── 상태 ─────────────────────────────────────────────────
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+let pageSize = 15;
 
-function init(){
-  document.getElementById('s-total').textContent = allData.length;
-  render();
+// ── 데이터 정규화 (구 형식 + 신 형식 통합) ───────────────
+function normalize(item) {
+  return {
+    code:    String(item.code    ?? item.errorCode ?? item.systemCode ?? ''),
+    type:    item.type    || '',
+    service: item.service || '',
+    message: item.message || '',
+    cause:   item.cause   || '',
+    guide:   Array.isArray(item.guide) ? item.guide : [],
+    // 원본 구분용
+    _isLegacy:   !!item.code && !item.systemCode && !item.errorCode,
+    _hasGuide:   Array.isArray(item.guide) && item.guide.length > 0
+  };
 }
 
-function render(){
-  const q = document.getElementById('search').value.toLowerCase();
-  const cat = document.getElementById('cat').value;
-  const rgn = document.getElementById('region').value;
+// ── 서비스 필터 목록 구성 ──────────────────────────────────
+function buildServiceFilter(data) {
+  const sel = document.getElementById('svc-filter');
+  const services = [...new Set(data.map(d => d.service).filter(Boolean))].sort();
+  services.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
 
-  document.getElementById('s-region').textContent = rgn || '전체';
-
-  const filtered = allData.filter(d=>{
-    if(q && !`${d.code}${d.name_ko}${d.name_en}${d.cause}`.toLowerCase().includes(q)) return false;
-    if(cat && d.category!==cat) return false;
-    if(rgn && !d.regions[rgn]) return false;
+// ── 필터링 ────────────────────────────────────────────────
+function applyFilter() {
+  const q   = document.getElementById('search').value.trim().toLowerCase();
+  const svc = document.getElementById('svc-filter').value;
+  filtered = allData.filter(d => {
+    if (svc && d.service !== svc) return false;
+    if (q) {
+      const hay = `${d.code} ${d.type} ${d.service} ${d.message} ${d.cause}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     return true;
   });
+  currentPage = 1;
+}
 
-  document.getElementById('s-shown').textContent = filtered.length;
+function onFilter() { applyFilter(); render(); }
+function onPageSize() { pageSize = +document.getElementById('page-size').value; currentPage = 1; render(); }
 
+// ── 렌더 ──────────────────────────────────────────────────
+function render() {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * pageSize;
+  const page  = filtered.slice(start, start + pageSize);
+
+  document.getElementById('total-count').textContent = `총 ${total.toLocaleString()}개 항목`;
+
+  renderRows(page);
+  renderPagination(totalPages);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function renderRows(page) {
   const tbody = document.getElementById('tbody');
-  if(!filtered.length){
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">검색 결과가 없습니다.</td></tr>`;
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">검색 결과가 없습니다.</td></tr>`;
     return;
   }
+  tbody.innerHTML = page.map(d => {
+    // 가이드
+    const guideHtml = d.guide.length
+      ? d.guide.map(g => `
+          <div class="guide-row">
+            <span class="chip">${esc(g.button)}</span>
+            <span class="guide-action">${esc(g.action)}</span>
+          </div>`).join('')
+      : `<span style="color:var(--text3);font-size:12px">—</span>`;
 
-  tbody.innerHTML = filtered.map(d=>{
-    const isActive = selected && selected.code===d.code;
-    const regions = ['K','A','T','J'].map(r=>
-      `<span class="rtag ${d.regions[r]?'r'+r:'rN'}">${r}</span>`
-    ).join('');
-    const actions = (d.actions||[]).map(a=>`<span class="action-tag">${a}</span>`).join('');
-    return `<tr onclick="toggle('${d.code}')" class="${isActive?'active':''}">
-      <td style="font-family:monospace;font-weight:600;font-size:12px;white-space:nowrap">${d.code}</td>
-      <td>
-        <div style="font-weight:500">${d.name_ko}</div>
-        <div style="font-size:11px;color:var(--text2)">${d.name_en}</div>
-      </td>
-      <td style="white-space:normal">${regions}</td>
-      <td style="white-space:normal;font-size:12px;color:var(--text2)">${d.message_ko}</td>
-      <td style="white-space:normal">${actions||`<span style="color:var(--text3);font-size:12px">-</span>`}</td>
+    return `<tr>
+      <td><div class="cell">
+        <div class="code-val">${esc(d.code)}</div>
+      </div></td>
+      <td><div class="cell">
+        <div class="type-val">${esc(d.type) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">
+        <span class="svc-badge">${esc(d.service)}</span>
+      </div></td>
+      <td><div class="cell">
+        <div class="msg-text">${esc(d.message) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">
+        <div style="font-size:13px;color:var(--text)">${esc(d.cause) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">${guideHtml}</div></td>
     </tr>`;
   }).join('');
-
-  renderDetail();
 }
 
-function toggle(code){
-  const d = allData.find(x=>x.code===code);
-  selected = (selected && selected.code===code) ? null : d;
+function renderPagination(totalPages) {
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage - 2);
+  let end   = Math.min(totalPages, start + maxVisible - 1);
+  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+  let html = `<button class="page-btn arrow" onclick="goPage(${currentPage - 1})" ${currentPage===1?'disabled':''}>‹</button>`;
+
+  if (start > 1) {
+    html += `<button class="page-btn" onclick="goPage(1)">1</button>`;
+    if (start > 2) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
+  }
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (end < totalPages) {
+    if (end < totalPages - 1) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
+    html += `<button class="page-btn" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  }
+
+  html += `<button class="page-btn arrow" onclick="goPage(${currentPage + 1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
   render();
+  document.getElementById('table-area').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-function renderDetail(){
-  const panel = document.getElementById('detail');
-  if(!selected){ panel.innerHTML=''; return; }
-  const d = selected;
-  const regions = ['K','A','T','J'];
+// ── 데이터 fetch ─────────────────────────────────────────
+async function fetchData() {
+  try {
+    // cache-bust: 분 단위로 갱신 (항상 최신 JSON 반영)
+    const url = JSON_URL + '?t=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = await res.json();
+    allData  = raw.map(normalize);
+    filtered = [...allData];
 
-  panel.innerHTML = `
-    <div class="detail">
-      <div class="detail-header">
-        <div>
-          <div class="detail-code">${d.code}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:4px">${d.category} &nbsp;·&nbsp; 등록 ${d.registered_at} &nbsp;·&nbsp; 수정 ${d.updated_at}</div>
-        </div>
-        <button class="close-btn" onclick="selected=null;render()">닫기</button>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-field"><span class="field-key">에러명 (KO)</span><span class="field-val">${d.name_ko}</span></div>
-        <div class="detail-field"><span class="field-key">에러명 (EN)</span><span class="field-val">${d.name_en}</span></div>
-        <div class="detail-field">
-          <span class="field-key">적용 권역</span>
-          <span class="field-val" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px">
-            ${regions.map(r=>`<span class="rtag ${d.regions[r]?'r'+r:'rN'}">${r}</span>`).join('')}
-          </span>
-        </div>
-        <div class="detail-field"><span class="field-key">원인</span><span class="field-val">${d.cause}</span></div>
-        <div class="detail-field full">
-          <span class="field-key">클라이언트 메시지</span>
-          <div class="msg-box">${d.message_ko}</div>
-        </div>
-        <div class="detail-field full">
-          <span class="field-key">처리 Action</span>
-          <div style="margin-top:4px">${(d.actions||[]).map(a=>`<span class="action-tag">${a}</span>`).join('')||'-'}</div>
-        </div>
-        <div class="detail-field full"><span class="field-key">처리 가이드 (개발용)</span><span class="field-val">${d.guide}</span></div>
-      </div>
-    </div>`;
+    buildServiceFilter(allData);
+    render();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table-container').style.display = 'block';
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('fetch-error');
+    err.style.display = 'block';
+    err.textContent = `데이터를 불러오지 못했습니다: ${e.message} — JSON URL: ${JSON_URL}`;
+    console.error(e);
+  }
 }
 
-init();
+fetchData();
 </script>
 </body>
 </html>
