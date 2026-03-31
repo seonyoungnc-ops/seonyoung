@@ -217,7 +217,7 @@
   {
     "systemCode": "GWA00",
     "service": "공통",
-    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNNNN)",
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)",
     "cause": "시스템 오류"
   },
   {
@@ -236,7 +236,7 @@
   {
     "systemCode": "GWA96",
     "service": "공통",
-    "message": "PURPLE의 로그인 세션이 끊어졌습니다.\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다.",
+    "message": "PURPLE의 로그인 세션이 끊어졌습니다.\r\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다.",
     "cause": "통합계정 제재 (세션 차단)"
   },
   {
@@ -244,7 +244,7 @@
     "service": "공통",
     "systemCode": "GWA96",
     "cause": "통합계정 제재 (세션 차단)",
-    "message": "PURPLE의 로그인 세션이 끊어졌습니다.\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다."
+    "message": "PURPLE의 로그인 세션이 끊어졌습니다.\r\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다."
   },
   {
     "systemCode": "GWA1011",
@@ -489,17 +489,17 @@
   {
     "systemCode": "SUA01",
     "service": "공통",
-    "message": "결제가 완료되지 않았습니다."
+    "message": "결제가 완료되지 않았습니다.\n퍼플앱에서 결제를 진행해 주세요."
   },
   {
     "systemCode": "SUA02",
     "service": "공통",
-    "message": "결제 요청 횟수를 초과했습니다."
+    "message": "결제 요청 횟수를 초과했습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "systemCode": "SUA03",
     "service": "공통",
-    "message": "코드 요청 횟수를 초과했습니다."
+    "message": "코드 요청 횟수를 초과했습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "systemCode": "GSE016",
@@ -517,18 +517,18 @@
   {
     "systemCode": "GWA20",
     "service": "공통",
-    "message": "지원하지 않는 결제 수단입니다."
+    "message": "지원하지 않는 결제 수단입니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 80103,
     "service": "공통",
     "systemCode": "GWA20",
-    "message": "지원하지 않는 결제 수단입니다."
+    "message": "지원하지 않는 결제 수단입니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "systemCode": "GWA2002",
     "service": "공통",
-    "message": "결제 대기 중인 [가상계좌or은행지점/ATM or편의점 수납] 내역이 있습니다.",
+    "message": "결제 대기 중인 [가상계좌or은행지점/ATM or편의점 수납] 내역이 있습니다.\n충전을 완료한 후 다시 시도해 주세요.",
     "cause": "가상계좌/"
   },
   {
@@ -585,13 +585,13 @@
   {
     "systemCode": "GSE018",
     "service": "공통",
-    "message": "이용중인 정기 결제 상품을 해지 후 구매 가능합니다.",
+    "message": "이용중인 정기 결제 상품을 해지 후 구매 가능합니다.\n해지 후에도 남은 멤버십 기간은 이용 가능합니다.\n해지하시겠습니까?",
     "cause": "정기결제 이용 중에 다른"
   },
   {
     "systemCode": "GWA00",
     "service": "송금",
-    "message": "요청된 작업을 수행하지 못했습니다.",
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)",
     "cause": "시스템 오류"
   },
   {
@@ -600,7 +600,7 @@
     "systemCode": "GWA00",
     "type": "SYSTEM_ERROR",
     "cause": "시스템 오류",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 82962,
@@ -608,7 +608,7 @@
     "systemCode": "GWA00",
     "type": "BAD_REQUEST",
     "cause": "잘못된 요청",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "systemCode": "GWA11",
@@ -655,7 +655,7 @@
   {
     "systemCode": "GWA08",
     "service": "송금",
-    "message": "코인 잔액이 부족합니다.",
+    "message": "코인 잔액이 부족합니다.\n충전 후 다시 시도해 주세요.",
     "cause": "잔액 부족"
   },
   {
@@ -664,7 +664,7 @@
     "systemCode": "GWA08",
     "type": "INVALID_CURRENCY_AMOUNT",
     "cause": "보유 화폐 이상 선물 요청한 경우",
-    "message": "코인 잔액이 부족합니다."
+    "message": "코인 잔액이 부족합니다.\n충전 후 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA1001",
@@ -703,7 +703,7 @@
   {
     "systemCode": "GWA1010",
     "service": "송금",
-    "message": "선물 가능한 코인이 없습니다.",
+    "message": "선물 가능한 코인이 없습니다.\n충전 후, 코인을 선물해 주세요.",
     "cause": "코인 미보유"
   },
   {
@@ -712,7 +712,7 @@
     "systemCode": "GWA1010",
     "type": "PAYMENTMGMT_DENIED_BY_USER_PERSONAL_LIMIT",
     "cause": "자율결제한도 초과",
-    "message": "선물 가능한 코인이 없습니다."
+    "message": "선물 가능한 코인이 없습니다.\n충전 후, 코인을 선물해 주세요."
   },
   {
     "errorCode": 9114,
@@ -720,7 +720,7 @@
     "systemCode": "GWA1010",
     "type": "PAYMENTMGMT_DENIED_BY_LIMIT",
     "cause": "결제한도금액초과",
-    "message": "선물 가능한 코인이 없습니다."
+    "message": "선물 가능한 코인이 없습니다.\n충전 후, 코인을 선물해 주세요."
   },
   {
     "systemCode": "GWA06",
@@ -749,19 +749,19 @@
   {
     "systemCode": "GWA1006",
     "service": "송금",
-    "message": "보내는 사람을 변경하시겠습니까?",
+    "message": "보내는 사람을 변경하시겠습니까?\n보내는 사람을 변경하면 입력 정보가 초기화 됩니다.",
     "cause": "보내는 사람 변경"
   },
   {
     "systemCode": "GWA1007",
     "service": "송금",
-    "message": "계정이 보유한 캐릭터가 없습니다.",
+    "message": "계정이 보유한 캐릭터가 없습니다.\n게임 캐릭터를 생성해 주세요.",
     "cause": "캐릭터 미보유"
   },
   {
     "systemCode": "GWA9000",
     "service": "송금",
-    "message": "페이지를 닫으면 선택한 목록이 저장되지 않습니다.",
+    "message": "페이지를 닫으면 선택한 목록이 저장되지 않습니다.\n페이지를 닫으시겠습니까?",
     "cause": "미저장 상태에서 페이지 닫음 시도"
   },
   {
@@ -787,37 +787,37 @@
   {
     "systemCode": "GWA004",
     "service": "QR",
-    "message": "주문 정보가 일치하지 않습니다.",
+    "message": "주문 정보가 일치하지 않습니다.\n결제 주문서를 다시 확인해 주세요.",
     "cause": "계정 불일치"
   },
   {
     "systemCode": "GWA001",
     "service": "QR",
-    "message": "QR스캔을 위해 카메라",
+    "message": "QR스캔을 위해 카메라\n접근 권한 허용이 필요합니다.\n설정을 눌러 권한을 허용해 주세요.",
     "cause": "접근 권한 미설정"
   },
   {
     "systemCode": "GWA002",
     "service": "QR",
-    "message": "유효하지 않은 QR코드 입니다.",
+    "message": "유효하지 않은 QR코드 입니다.\nQR코드를 다시 스캔해 주세요.",
     "cause": "유효하지 않은 코드"
   },
   {
     "systemCode": "gwa1203",
     "service": "충전결제",
-    "message": "코인을 충전하시겠습니까?\\n\n충전이 완료되면 결제를 이어서 진행합니다.",
+    "message": "코인을 충전하시겠습니까?\\n\r\n충전이 완료되면 결제를 이어서 진행합니다.",
     "cause": "충전여부 확인"
   },
   {
     "systemCode": "gwa1204",
     "service": "충전결제",
-    "message": "카이모을 충전하시겠습니까?\\n\n충전이 완료되면 결제를 이어서 진행합니다.",
+    "message": "카이모을 충전하시겠습니까?\\n\r\n충전이 완료되면 결제를 이어서 진행합니다.",
     "cause": "충전여부 확인"
   },
   {
     "systemCode": "GWA9101",
     "service": "충전결제",
-    "message": "코인 잠금이 설정된 게임입니다. \n잠금 상태를 확인해 주세요.",
+    "message": "코인 잠금이 설정된 게임입니다. \r\n잠금 상태를 확인해 주세요.",
     "cause": "0원 결제 코인 잠금"
   },
   {
@@ -825,7 +825,7 @@
     "service": "충전결제",
     "systemCode": "GWA9101",
     "cause": "0원 결제 코인 잠금",
-    "message": "코인 잠금이 설정된 게임입니다. \n잠금 상태를 확인해 주세요."
+    "message": "코인 잠금이 설정된 게임입니다. \r\n잠금 상태를 확인해 주세요."
   },
   {
     "systemCode": "GWA89",
@@ -905,7 +905,7 @@
   {
     "systemCode": "GWA83",
     "service": "충전결제",
-    "message": "결제가 완료된 상품입니다.\n주문 정보를 다시 확인해 주세요.",
+    "message": "결제가 완료된 상품입니다.\r\n주문 정보를 다시 확인해 주세요.",
     "cause": "중복결제"
   },
   {
@@ -914,7 +914,7 @@
     "systemCode": "GWA83",
     "type": "NET_ERR_PAYMENTMGMT_DUPLICATED_REQUEST",
     "cause": "중복 요청",
-    "message": "결제가 완료된 상품입니다.\n주문 정보를 다시 확인해 주세요."
+    "message": "결제가 완료된 상품입니다.\r\n주문 정보를 다시 확인해 주세요."
   },
   {
     "errorCode": 9121,
@@ -922,7 +922,7 @@
     "systemCode": "GWA83",
     "type": "NET_ERR_PAYMENTMGMT_PAYMENT_ALREADY_COMPLETED",
     "cause": "결제 완료 API에 대해 이미 완료한 결제인 경우",
-    "message": "결제가 완료된 상품입니다.\n주문 정보를 다시 확인해 주세요."
+    "message": "결제가 완료된 상품입니다.\r\n주문 정보를 다시 확인해 주세요."
   },
   {
     "systemCode": "GWA84",
@@ -941,7 +941,7 @@
   {
     "systemCode": "GWA19",
     "service": "충전결제",
-    "message": "→ 제한된 결제 수단입니다. 다른 결제 수단을 이용해 주세요",
+    "message": "제한된 결제 수단입니다.\n다른 결제 수단을 이용해 주세요.",
     "cause": "ADMIN_예외한도"
   },
   {
@@ -950,12 +950,12 @@
     "systemCode": "GWA19",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_BLACKLIST_PAYMENT_TYPE",
     "cause": "블랙리스트에 의한 거부(해당 결제 수단에 대해서만)",
-    "message": "→ 제한된 결제 수단입니다. 다른 결제 수단을 이용해 주세요"
+    "message": "제한된 결제 수단입니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "systemCode": "GWA7003",
     "service": "충전결제",
-    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요.",
+    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \r\nNCpay외 다른 결제 수단으로 결제를 시도해 주세요.",
     "cause": "RM결제 제한"
   },
   {
@@ -964,7 +964,7 @@
     "systemCode": "GWA7003",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_CREDIT_CARD_DAILY_RM",
     "cause": "신용카드 일간 RM 초과",
-    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
+    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \r\nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
   },
   {
     "errorCode": 9143,
@@ -972,7 +972,7 @@
     "systemCode": "GWA7003",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_CREDIT_CARD_MONTHLY_RM",
     "cause": "신용카드 월간RM 초과",
-    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
+    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \r\nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
   },
   {
     "errorCode": 9144,
@@ -980,12 +980,12 @@
     "systemCode": "GWA7003",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_NCPAY_DAILY_RM",
     "cause": "NCPay 일간 RM 초과",
-    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
+    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \r\nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
   },
   {
     "systemCode": "GWA00",
     "service": "충전, 결제",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)",
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)",
     "cause": "시스템 오류"
   },
   {
@@ -994,7 +994,7 @@
     "systemCode": "GWA00",
     "type": "SYSTEM_ERROR",
     "cause": "시스템 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 69701,
@@ -1002,7 +1002,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERROR_GLOBAL_ORDER_BAD_REQUEST",
     "cause": "잘못된 주문 요청 파라메터, 상세메시지는 text 필드 참조",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9101,
@@ -1010,7 +1010,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_POLICY_ERROR",
     "cause": "일반 정책 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9105,
@@ -1018,7 +1018,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_CONCURRENT_REQUEST",
     "cause": "동시에 두가지 요청 발생",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9106,
@@ -1026,7 +1026,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_GOODS_ERROR",
     "cause": "상품 검증 실패",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9108,
@@ -1034,14 +1034,14 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_DIFFERENT_GOODS_PRICE_AND_PAYMENT_AMOUNT",
     "cause": "상품 금액 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9109,
     "service": "충전, 결제",
     "systemCode": "GWA00",
     "cause": "결제주문키 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9110,
@@ -1049,7 +1049,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_INVALID_REQUESTKEY",
     "cause": "요청키 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9111,
@@ -1057,7 +1057,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_INVALID_USERID",
     "cause": "사용자ID 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9112,
@@ -1065,7 +1065,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_INVALID_PAYMENTID",
     "cause": "결제ID 오류",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9128,
@@ -1073,7 +1073,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_VIRTUALCURRENCY_ERROR",
     "cause": "보유 N코인 조회 실패",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 69703,
@@ -1081,7 +1081,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERROR_GLOBAL_ORDER_BUCKET_ERROR",
     "cause": "주문 정보 저장을 위한 버킷이 정보가 없음",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9102,
@@ -1089,7 +1089,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_NO_CUSTOMER_KEY_FOR_USER",
     "cause": "사용자 정보에 Customer Key가 없음",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9120,
@@ -1097,7 +1097,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_HTTP_RESPONSE_ERROR",
     "cause": "HTTP 요청에 대한 실패 응답 시",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9107,
@@ -1105,7 +1105,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_PURCHASE_ERROR",
     "cause": "구매 배송 실패",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 9124,
@@ -1113,7 +1113,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PAYMENTMGMT_NO_REFUND_BANK_ACCOUNT",
     "cause": "저장된 개인 환불계좌 정보 없이 환불요청을 한 경우",
-    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "systemCode": "GWA11",
@@ -1130,7 +1130,7 @@
   {
     "systemCode": "GWA17",
     "service": "충전",
-    "message": "자가 한도를 초과 했습니다. \n한도 변경 후 결제를 다시 시도해 주세요.",
+    "message": "자가 한도를 초과 했습니다. \r\n한도 변경 후 결제를 다시 시도해 주세요.",
     "cause": "자가한도 초과"
   },
   {
@@ -1139,7 +1139,7 @@
     "systemCode": "GWA17",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_MAX_HOLD_NCOIN_LIMIT",
     "cause": "보유 N코인 한도를 초과하여 결제시도를 한 경우",
-    "message": "자가 한도를 초과 했습니다. \n한도 변경 후 결제를 다시 시도해 주세요."
+    "message": "자가 한도를 초과 했습니다. \r\n한도 변경 후 결제를 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA1201",
@@ -1189,7 +1189,7 @@
   {
     "systemCode": "GWA1301",
     "service": "결제",
-    "message": "삭제된 결제 수단 입니다.",
+    "message": "삭제된 결제 수단 입니다.\n결제 수단 확인 후, 다시 시도해 주세요.",
     "cause": "NCPAY 삭제"
   },
   {
@@ -1229,7 +1229,7 @@
   {
     "systemCode": "GWA18",
     "service": "결제, 충전",
-    "message": "한도 초과로 결제가 불가능합니다.",
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요.",
     "cause": "ADMIN_결제 수단 한도"
   },
   {
@@ -1238,7 +1238,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_LIMIT_MOBILE_PHONE",
     "cause": "핸드폰 당 한도에 의한 거부",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 9119,
@@ -1246,7 +1246,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_SMISHING",
     "cause": "휴대폰 스미싱 정책에 의한 한도로 거부",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 9130,
@@ -1254,7 +1254,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_NCPAY_RM",
     "cause": "간편결제 신용카드/휴대폰 RM 정책에 의한 한도로 거부",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 9133,
@@ -1262,7 +1262,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_LIMIT_MOBILE_PG_SET",
     "cause": "모바일 한도 초과 오류",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 829,
@@ -1270,7 +1270,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_LIMITCHECK_RETURN_PURCHASE_LIMIT_ERROR",
     "cause": "한도  오류",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 58569,
@@ -1278,7 +1278,7 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_GLOBALPAYMENT_LIMIT_OVER",
     "cause": "결제 한도 초과",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "errorCode": 9117,
@@ -1286,12 +1286,12 @@
     "systemCode": "GWA18",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_RM",
     "cause": "가상계좌 or ATM RM 정책에 의한 한도로 거부",
-    "message": "한도 초과로 결제가 불가능합니다."
+    "message": "한도 초과로 결제가 불가능합니다.\n다른 결제 수단을 이용해 주세요."
   },
   {
     "systemCode": "GWA19",
     "service": "결제, 충전",
-    "message": "제한된 결제 수단입니다.",
+    "message": "제한된 결제 수단입니다.\n다른 결제 수단을 이용해 주세요.",
     "cause": "ADMIN_예외한도"
   },
   {
@@ -1319,7 +1319,7 @@
   {
     "systemCode": "GWA20",
     "service": "결제, 충전",
-    "message": "지원하지 않는 결제 수단입니다.",
+    "message": "지원하지 않는 결제 수단입니다.\n다른 결제 수단을 이용해 주세요.",
     "cause": "ADMIN_앱그룹 코드별"
   },
   {
@@ -1377,7 +1377,7 @@
   {
     "systemCode": "GWA7001",
     "service": "결제",
-    "message": "코인 잠금이 설정된 게임입니다.\n다른 수단으로 결제를 시도해 주세요.",
+    "message": "코인 잠금이 설정된 게임입니다.\r\n다른 수단으로 결제를 시도해 주세요.",
     "cause": "코인잠금"
   },
   {
@@ -1386,7 +1386,7 @@
     "systemCode": "GWA7001",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_NCOIN_LOCK_STATE",
     "cause": "N코인 잠금 상태",
-    "message": "코인 잠금이 설정된 게임입니다.\n다른 수단으로 결제를 시도해 주세요."
+    "message": "코인 잠금이 설정된 게임입니다.\r\n다른 수단으로 결제를 시도해 주세요."
   },
   {
     "systemCode": "GWA7002",
@@ -1397,7 +1397,7 @@
   {
     "systemCode": "GWA2004",
     "service": "충전",
-    "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요.",
+    "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\r\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요.",
     "cause": "가상계좌/편의점 수납으로 결제 시, 기존에 진행중인 충전이 있을 경우"
   },
   {
@@ -1406,12 +1406,12 @@
     "systemCode": "GWA2004",
     "type": "NET_ERR_PAYMENTMGMT_EXIST_OPENED_VIRTUAL_BANK_ACCOUNT",
     "cause": "현재 채번(결제 진행)중인 가상계좌가 존재함",
-    "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요."
+    "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\r\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요."
   },
   {
     "systemCode": "GWA2008",
     "service": "충전",
-    "message": "고객님의 ATM 결제 이력이 없어 {YY}년 {MM}월까지 (5만원/월) 결제 가능합니다.",
+    "message": "고객님의 ATM 결제 이력이 없어 {YY}년 {MM}월까지 (5만원/월) 결제 가능합니다.\n결제를 계속하시겠습니까?",
     "cause": "가상계좌/ATM RM 정책에 의한 한도 제한"
   },
   {
@@ -1432,18 +1432,18 @@
   {
     "systemCode": "GWA2006",
     "service": "충전",
-    "message": "#원천사명#의 결제가 제한된 상태입니다.\n다른 결제 수단을 이용해 주세요."
+    "message": "#원천사명#의 결제가 제한된 상태입니다.\r\n다른 결제 수단을 이용해 주세요."
   },
   {
     "systemCode": "GWA67",
     "service": "결제",
-    "message": "결제에 실패했습니다.",
+    "message": "결제에 실패했습니다.\n잠시후 다시 시도해 주세요.",
     "cause": "선물실패"
   },
   {
     "systemCode": "GWA70",
     "service": "결제",
-    "message": "장기 미사용으로 등록된 결제 수단이 삭제되었습니다.\nNCPAY를 다시 등록해 주세요.",
+    "message": "장기 미사용으로 등록된 결제 수단이 삭제 되었습니다.\r\nNCPAY를 다시 등록해 주세요.",
     "cause": "NCPAY 휴면"
   },
   {
@@ -1455,7 +1455,7 @@
   {
     "systemCode": "GWA8402",
     "service": "결제,충전",
-    "message": "코인 충전이 완료되었습니다.\n결제를 이어서 진행하시겠습니까?\n[이어서 결제하기]",
+    "message": "코인 충전이 완료되었습니다.\r\n결제를 이어서 진행하시겠습니까?\r\n[이어서 결제하기]",
     "cause": "시리얼카드 충전 성공"
   },
   {
@@ -1463,7 +1463,7 @@
     "service": "결제,충전",
     "systemCode": "GWA8402",
     "cause": "처리 결과 정상 (string 일 경우 0000)",
-    "message": "코인 충전이 완료되었습니다.\n결제를 이어서 진행하시겠습니까?\n[이어서 결제하기]"
+    "message": "코인 충전이 완료되었습니다.\r\n결제를 이어서 진행하시겠습니까?\r\n[이어서 결제하기]"
   },
   {
     "systemCode": "GWA8401",
@@ -1495,7 +1495,7 @@
   {
     "systemCode": "GPW0307",
     "service": "결제",
-    "message": "MyCard 선불카드(시리얼카드) 충전 금액이 부족하여 \n상품 결제에 실패했습니다.\n충전된 금액은 월렛 >코인 내역에서 확인 가능합니다.",
+    "message": "MyCard 선불카드(시리얼카드) 충전 금액이 부족하여 \r\n상품 결제에 실패했습니다.\r\n충전된 금액은 월렛 >코인 내역에서 확인 가능합니다.",
     "cause": "시리얼카드 결제 실패"
   },
   {
@@ -1905,7 +1905,7 @@
   {
     "systemCode": "GWA56",
     "service": "NCPAY",
-    "message": "휴대폰 등록 가능 횟수를 초과했습니다.",
+    "message": "휴대폰 등록 가능 횟수를 초과했습니다.\n다음달에 다시 시도해 주세요.(당월 이후)\n결제 수단의 등록 횟수를 초과했습니다.\n다음에 다시 시도해 주세요.(당월 이후)",
     "cause": "모든 결제 수단(월)"
   },
   {
@@ -1913,12 +1913,12 @@
     "service": "NCPAY",
     "systemCode": "GWA56",
     "cause": "월 등록 건수 초과로 이용 제한 (다날 제공 코드 - 0178)",
-    "message": "휴대폰 등록 가능 횟수를 초과했습니다."
+    "message": "휴대폰 등록 가능 횟수를 초과했습니다.\n다음달에 다시 시도해 주세요.(당월 이후)\n결제 수단의 등록 횟수를 초과했습니다.\n다음에 다시 시도해 주세요.(당월 이후)"
   },
   {
     "systemCode": "GWA57",
     "service": "NCPAY",
-    "message": "결제 수단의 등록 횟수를 초과했습니다.",
+    "message": "결제 수단의 등록 횟수를 초과했습니다.\n내일 다시 시도해 주세요.(00시 이후)",
     "cause": "모든 결제 수단(일)"
   },
   {
@@ -1926,18 +1926,18 @@
     "service": "NCPAY",
     "systemCode": "GWA57",
     "cause": "일 등록 건수 초과로 이용 제한 (다날 제공 코드 - 0172, 0185)",
-    "message": "결제 수단의 등록 횟수를 초과했습니다."
+    "message": "결제 수단의 등록 횟수를 초과했습니다.\n내일 다시 시도해 주세요.(00시 이후)"
   },
   {
     "systemCode": "GWA58",
     "service": "NCPAY",
-    "message": "카드 등록 가능 횟수를 초과했습니다.",
+    "message": "카드 등록 가능 횟수를 초과했습니다.\n내일 다시 시도해 주세요.(00시 이후)",
     "cause": "신용카드"
   },
   {
     "systemCode": "GWA59",
     "service": "NCPAY",
-    "message": "계좌 등록 가능 횟수를 초과했습니다.",
+    "message": "계좌 등록 가능 횟수를 초과했습니다.\n내일 다시 시도해 주세요.(00시 이후)",
     "cause": "계좌"
   },
   {
@@ -1957,13 +1957,13 @@
   {
     "systemCode": "GWA61",
     "service": "NCPAY",
-    "message": "최대 3개의 계좌를 등록할 수 있습니다.",
+    "message": "최대 3개의 계좌를 등록할 수 있습니다.\n결제 수단 수정 후, 다시 시도해 주세요.",
     "cause": "계좌"
   },
   {
     "systemCode": "GWA62",
     "service": "NCPAY",
-    "message": "최대 1 개의 통신사만 등록할 수 있습니다.",
+    "message": "최대 1 개의 통신사만 등록할 수 있습니다.\n결제 수단 수정 후, 다시 시도해 주세요.",
     "cause": "휴대폰"
   },
   {
@@ -1972,31 +1972,31 @@
     "systemCode": "GWA62",
     "type": "LIMIT_PAY_METHOD_TYPE",
     "cause": "결제 수단 유형별 등록 갯수 초과",
-    "message": "최대 1 개의 통신사만 등록할 수 있습니다."
+    "message": "최대 1 개의 통신사만 등록할 수 있습니다.\n결제 수단 수정 후, 다시 시도해 주세요."
   },
   {
     "errorCode": 1010,
     "service": "NCPAY",
     "systemCode": "GWA62",
     "cause": "결제 수단 별 등록 가능 건수 제한 초과 오류 (다날 제공 코드 - 0206)",
-    "message": "최대 1 개의 통신사만 등록할 수 있습니다."
+    "message": "최대 1 개의 통신사만 등록할 수 있습니다.\n결제 수단 수정 후, 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA63",
     "service": "NCPAY",
-    "message": "NCPAY 서비스를 해지 하시겠습니까?",
+    "message": "NCPAY 서비스를 해지 하시겠습니까?\n등록된 결제 정보를 모두 삭제하며\n삭제된 데이터는 복구되지 않습니다.",
     "cause": "해지하기"
   },
   {
     "systemCode": "GWA64",
     "service": "NCPAY",
-    "message": "NCPAY 서비스를 해지했습니다.",
+    "message": "NCPAY 서비스를 해지했습니다.\n다시 이용을 원하시는 경우\n새로운 결제 수단을 등록해 주세요.",
     "cause": "해지완료"
   },
   {
     "systemCode": "GWA85",
     "service": "NCPAY",
-    "message": "NCPAY 서비스 해지에 실패하였습니다.",
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요.",
     "cause": "해지 실패"
   },
   {
@@ -2005,7 +2005,7 @@
     "systemCode": "GWA85",
     "type": "EASYPAY_SERVICE_CANCEL_FAIL",
     "cause": "간편결제 서비스 해지 오류",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80100,
@@ -2013,7 +2013,7 @@
     "systemCode": "GWA85",
     "type": "SYSTEM_ERROR",
     "cause": "시스템 오류",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80101,
@@ -2021,7 +2021,7 @@
     "systemCode": "GWA85",
     "type": "BAD_REQUEST",
     "cause": "잘못된 요청",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80102,
@@ -2029,7 +2029,7 @@
     "systemCode": "GWA85",
     "type": "UNSUPPORTED_PG",
     "cause": "지원하지 않는 PG",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80104,
@@ -2037,7 +2037,7 @@
     "systemCode": "GWA85",
     "type": "NOT_FOUND_EASY_PAY_INFO",
     "cause": "간편결제 수단 찾을 수 없음",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80107,
@@ -2045,7 +2045,7 @@
     "systemCode": "GWA85",
     "type": "PG_ADD_FAIL",
     "cause": "PG 추가 오류",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80108,
@@ -2053,7 +2053,7 @@
     "systemCode": "GWA85",
     "type": "PG_APPROVE_FAIL",
     "cause": "PG 승인 오류",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80109,
@@ -2061,7 +2061,7 @@
     "systemCode": "GWA85",
     "type": "PG_CANCEL_FAIL",
     "cause": "PG 취소 오류",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80110,
@@ -2069,7 +2069,7 @@
     "systemCode": "GWA85",
     "type": "NOT_FOUND_PAYMENT_INFO",
     "cause": "결제 정보 찾을 수 없음",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "errorCode": 80111,
@@ -2077,7 +2077,7 @@
     "systemCode": "GWA85",
     "type": "ALREADY_EASY_PAY_CANCELED",
     "cause": "이미 취소 됨",
-    "message": "NCPAY 서비스 해지에 실패하였습니다."
+    "message": "NCPAY 서비스 해지에 실패하였습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA86",
@@ -2103,7 +2103,7 @@
   {
     "systemCode": "GWA70",
     "service": "NCPAY",
-    "message": "장기 미사용으로 등록된 결제 수단이 삭제 되었습니다.\nNCPAY를 다시 등록해 주세요.",
+    "message": "장기 미사용으로 등록된 결제 수단이 삭제 되었습니다.\r\nNCPAY를 다시 등록해 주세요.",
     "cause": "NCPAY 휴먼"
   },
   {
@@ -2112,7 +2112,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_DB_UPDATE_PURCHASE",
     "cause": "구매상태 변경 실패",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 5125,
@@ -2120,7 +2120,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_DB_UPDATE_PURCHASE_NOT_FOUND_ROW",
     "cause": "변경할 구매가 없습니다.",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 5192,
@@ -2128,7 +2128,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_GOODS_ERROR",
     "cause": "상품 정보 없음",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 5159,
@@ -2136,7 +2136,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_NOT_VALID_GOODS",
     "cause": "상품 정보 파싱 오류 ( 서버 에러 )",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 5132,
@@ -2144,7 +2144,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_DB_GET_PURCHASES",
     "cause": "구매 데이터 오류 ( DB에러 )",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "errorCode": 5136,
@@ -2152,7 +2152,7 @@
     "systemCode": "GWA00",
     "type": "NET_ERR_PCH_DB_GET_GOODS_DELIVERY_REQUESTS",
     "cause": "배송 정보 없음 ( DB 에러 )",
-    "message": "요청된 작업을 수행하지 못했습니다."
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\r\n잠시 후 다시 시도해 주세요.\r\n(오류코드: NNNNNN)"
   },
   {
     "systemCode": "GWA29",
@@ -2163,13 +2163,13 @@
   {
     "systemCode": "GWA30",
     "service": "선물함",
-    "message": "#보낸 선물 취소#에 실패했습니다.",
+    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)\n잠시 후 다시 시도해 주세요.",
     "cause": "선물취소  실패(단일)"
   },
   {
     "systemCode": "GWA30",
     "service": "선물함|구매내역",
-    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)",
+    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)\n잠시 후 다시 시도해 주세요.",
     "cause": "선물취소  실패(다중)"
   },
   {
@@ -2178,12 +2178,12 @@
     "systemCode": "GWA30",
     "type": "NET_ERR_REFUND_NOT_EXIST_REFUNDABLE_GOODS",
     "cause": "환불 가능한 상품이",
-    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)"
+    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)\n잠시 후 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA87",
     "service": "선물함",
-    "message": "유효하지 않은 상품입니다.",
+    "message": "유효하지 않은 상품입니다.\n선물을 다시 확인해 주세요.",
     "cause": "선물 수락  실패"
   },
   {
@@ -2192,24 +2192,24 @@
     "systemCode": "GWA87",
     "type": "NET_ERR_PCH_DB_PERMISSION_DENIED",
     "cause": "허용 불가 (권한없는 변경 시도)",
-    "message": "유효하지 않은 상품입니다."
+    "message": "유효하지 않은 상품입니다.\n선물을 다시 확인해 주세요."
   },
   {
     "systemCode": "GWA01",
     "service": "선물함",
-    "message": "선물을 거절하시겠습니까?",
+    "message": "선물을 거절하시겠습니까?\n보낸 사람의 계정으로 환불 처리되며  다시 복구할 수 없습니다.",
     "cause": "선물 거절"
   },
   {
     "systemCode": "GWA0101",
     "service": "선물함",
-    "message": "선물을 거절하시겠습니까?",
+    "message": "선물을 거절하시겠습니까?\n거절한 선물은 다시 복구할 수 없습니다.",
     "cause": "선물 거절"
   },
   {
     "systemCode": "GWA88",
     "service": "선물함",
-    "message": "받은 선물 거절에 실패했습니다.",
+    "message": "받은 선물 거절에 실패했습니다.\n잠시 후 다시 시도해 주세요.",
     "cause": "선물 거절 실패"
   },
   {
@@ -2218,7 +2218,7 @@
     "systemCode": "GWA88",
     "type": "NET_ERR_PCH_INVALID_DELIVERY_STATUS",
     "cause": "거절 가능한 상태가 아님",
-    "message": "받은 선물 거절에 실패했습니다."
+    "message": "받은 선물 거절에 실패했습니다.\n잠시 후 다시 시도해 주세요."
   },
   {
     "systemCode": "GWA28",
@@ -2229,7 +2229,7 @@
   {
     "systemCode": "GW3001",
     "service": "선물함|구매내역",
-    "message": "청약철회 기간이 만료된 상품은 결제를 취소할 수 없습니다.",
+    "message": "청약철회 기간이 만료된 상품은 결제를 취소할 수 없습니다.\n환불을 원하시는 경우 웹 브라우저를 통해 진행해 주세요.",
     "cause": "결제 취소 불가"
   },
   {
@@ -2246,7 +2246,7 @@
   {
     "systemCode": "GW3003",
     "service": "결제내역",
-    "message": "서비스 이용 제한 안내",
+    "message": "서비스 이용 제한 안내\n비정상적인 활동이 감지되어 환불이 불가능합니다.\n도움이 필요하신 경우 고객센터로 문의해 주시기 바랍니다",
     "cause": "환불제재"
   },
   {
@@ -2254,12 +2254,12 @@
     "service": "결제내역",
     "systemCode": "GW3003",
     "cause": "게임 제재(ex. bot)",
-    "message": "서비스 이용 제한 안내"
+    "message": "서비스 이용 제한 안내\n비정상적인 활동이 감지되어 환불이 불가능합니다.\n도움이 필요하신 경우 고객센터로 문의해 주시기 바랍니다"
   },
   {
     "systemCode": "GWA3004",
     "service": "결제내역",
-    "message": "지급 받은 무료 코인 사용으로",
+    "message": "지급 받은 무료 코인 사용으로\n상품을 환불할 수 없습니다.",
     "cause": "무료코인"
   },
   {
@@ -2403,18 +2403,18 @@
   {
     "systemCode": "GWA31",
     "service": "쿠폰 사용",
-    "message": "사용할 수 없는 쿠폰 입니다."
+    "message": "사용할 수 없는 쿠폰 입니다.\n등록 수량을 초과했습니다."
   },
   {
     "errorCode": 83996,
     "service": "쿠폰 사용",
     "systemCode": "GWA31",
-    "message": "사용할 수 없는 쿠폰 입니다."
+    "message": "사용할 수 없는 쿠폰 입니다.\n등록 수량을 초과했습니다."
   },
   {
     "systemCode": "GWA47",
     "service": "쿠폰등록",
-    "message": "사용할 수 없는 쿠폰입니다.",
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요.",
     "cause": "유효하지 않은 쿠폰번호"
   },
   {
@@ -2422,7 +2422,7 @@
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "쿠폰 상태가 유효하지 않음",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5901,
@@ -2430,63 +2430,63 @@
     "systemCode": "GWA47",
     "type": "NET_ERR_COUPON_ALREADY_REGISTERED",
     "cause": "이미 등록 된 쿠폰",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5902,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "이미 사용한 쿠폰",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5918,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "쿠폰이 존재하지 않음",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5919,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "사용할 수 없는 쿠폰",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5917,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "선물 불가함",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5922,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "요청처코드, 요청키로 이미 등록 된 요청임",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5923,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "요청처코드, 요청키에 해당하는 Coupon 데이터는 존재하나 UserCoupon 데이터는 존재하지 않는 잘못된 형태의 데이터가 존재함",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5913,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "유효하지 않은 쿠폰 회차 상태",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5916,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "쿠폰 회차 데이터가 없음",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5915,
@@ -2494,21 +2494,21 @@
     "systemCode": "GWA47",
     "type": "NET_ERR_COUPON_ISSUE_NOT_FOUND",
     "cause": "쿠폰발행 데이터가 없음",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 84005,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "지원하지 않는 앱그룹코드",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "errorCode": 5928,
     "service": "쿠폰등록",
     "systemCode": "GWA47",
     "cause": "유효하지 않은 쿠폰번호",
-    "message": "사용할 수 없는 쿠폰입니다."
+    "message": "사용할 수 없는 쿠폰입니다.\n쿠폰 번호를 다시 확인해 주세요."
   },
   {
     "systemCode": "GWA39",
@@ -2565,7 +2565,7 @@
   {
     "systemCode": "GWA92",
     "service": "쿠폰",
-    "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다.",
+    "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다.\n쿠폰 사용 기간을 다시 확인해 주세요.",
     "cause": "예약쿠폰"
   },
   {
@@ -2573,7 +2573,7 @@
     "service": "쿠폰",
     "systemCode": "GWA92",
     "cause": "유효기간 미도래 쿠폰",
-    "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다."
+    "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다.\n쿠폰 사용 기간을 다시 확인해 주세요."
   },
   {
     "systemCode": "GWA93",
@@ -2628,13 +2628,13 @@
   {
     "systemCode": "GWA34",
     "service": "쿠폰사용",
-    "message": "“쿠폰명01”을 사용하시겠습니까?",
+    "message": "“쿠폰명01”을 사용하시겠습니까?\n쿠폰의 상품은 즉시 지급되며 취소할 수 없습니다.",
     "cause": "사용하기"
   },
   {
     "systemCode": "GWA38",
     "service": "쿠폰",
-    "message": "“쿠폰명01”을 삭제하시겠습니까?",
+    "message": "“쿠폰명01”을 삭제하시겠습니까?\n삭제한 쿠폰은 복원할 수 없습니다.",
     "cause": "쿠폰 삭제"
   },
   {
@@ -2657,7 +2657,7 @@
   {
     "systemCode": "pws_wps07",
     "service": "생체인증 설정",
-    "message": "생체정보를 불러오는데 실패하였습니다.\\n"
+    "message": "생체정보를 불러오는데 실패하였습니다.\\n\n설정에서 생체정보를 설정 상태를 확인해 주세요."
   },
   {
     "systemCode": "PWS-WPS08",
@@ -2697,25 +2697,25 @@
   {
     "systemCode": "PWS-CMN01",
     "service": "공통",
-    "message": "변경 중단",
+    "message": "변경 중단\n페이지를 벗어나시겠습니까?\n확인 선택시, 변경사항은 저장되지 않습니다.",
     "cause": "결제비밀번호 인증 후 저장 버튼 미입력"
   },
   {
     "systemCode": "PWS-CLS01",
     "service": "충전 한도 설정",
-    "message": "충전 한도 변경",
+    "message": "충전 한도 변경\n충전 한도는 월 2회 변경할 수 있습니다.\n충전 한도를 변경하시겠습니까?",
     "cause": "충전 한도 변경 월 횟수 2회 미만"
   },
   {
     "systemCode": "PWS-CLS02",
     "service": "충전 한도 설정",
-    "message": "충전 한도 변경 횟수 초과",
+    "message": "충전 한도 변경 횟수 초과\n충전 한도는 월 2회 변경할 수 있습니다. yyyy-mm-dd 이후 다시 시도해 주세요.",
     "cause": "충전 한도 변경 월 횟수 2회 초과"
   },
   {
     "systemCode": "PWS-CLS03",
     "service": "충전 한도 설정",
-    "message": "설정 가능 한도 초과",
+    "message": "설정 가능 한도 초과\n3천만 원 이상 한도 저장이 필요한 경우, NCSOFT 고객센터로 유선 연락해 주세요.",
     "cause": "충전 금액 한도 초과"
   },
   {
@@ -2794,7 +2794,7 @@
   {
     "systemCode": "PWS-WPS02",
     "service": "결제비밀번호 설정",
-    "message": "결제비밀번호 입력을 5회 이상 실패하여 초기화를 위해 본인인증을 진행합니다.",
+    "message": "결제비밀번호 입력을 5회 이상 실패하여 초기화를 위해 본인인증을 진행합니다.\n생체인증이 등록되어 있는 경우 함께 해제됩니다.",
     "cause": "입력 불일치 5회 달성으로 인한 초기화"
   },
   {
