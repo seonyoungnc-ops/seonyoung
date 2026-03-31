@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>에러 코드 관리 — ErrorCode Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f6;--bg3:#eeeeec;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a8a8a4;
+  --border:#e8e8e4;--border2:#d0d0cc;
+  --primary:#1a73e8;--primary-bg:#e8f0fe;
+  --chip-bg:#f0f0ee;--chip-text:#3c3c38;
+  --radius:6px;--radius-lg:10px;
+  --header-h:60px;--page-header-h:66px;--toolbar-h:64px;--banner-h:44px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* GNB */
+#gnb{height:var(--header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;background:var(--bg);z-index:200}
+#gnb .logo{font-weight:600;font-size:15px;letter-spacing:-.2px}
+
+/* Page Header */
+#page-header{height:var(--page-header-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px}
+#page-header h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+
+/* Toolbar */
+#toolbar{height:var(--toolbar-h);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;gap:12px}
+#search-box{position:relative;display:flex;align-items:center}
+#search-box svg{position:absolute;left:10px;color:var(--text3);pointer-events:none}
+#search{padding:8px 10px 8px 32px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);width:260px;outline:none;background:var(--bg)}
+#search:focus{border-color:var(--primary)}
+#svc-filter{padding:8px 30px 8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 10px center;min-width:144px;outline:none;cursor:pointer}
+#svc-filter:focus{border-color:var(--primary)}
+
+/* Banner */
+#banner{height:var(--banner-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 40px;justify-content:space-between}
+#banner .banner-left{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+#banner .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+#banner a{font-size:13px;color:var(--primary);text-decoration:none;font-weight:500}
+#banner a:hover{text-decoration:underline}
+
+/* Table area */
+#table-area{padding:20px 40px}
+.table-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+colgroup .c-code   {width:90px}
+colgroup .c-type   {width:220px}
+colgroup .c-service{width:110px}
+colgroup .c-message{width:auto}
+colgroup .c-cause  {width:180px}
+colgroup .c-guide  {width:320px}
+thead{background:var(--bg2)}
+th{padding:12px 14px;text-align:left;font-weight:500;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.2px}
+td{padding:0;border-bottom:1px solid var(--border);vertical-align:top}
+td .cell{padding:14px 14px;height:100%}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+
+/* Code cell */
+.code-val{font-family:'SF Mono',Consolas,monospace;font-size:12px;font-weight:600;color:var(--text)}
+.code-badge{display:inline-block;font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text2);margin-top:3px}
+
+/* Type cell */
+.type-val{font-family:'SF Mono',Consolas,monospace;font-size:11.5px;color:var(--text2);word-break:break-all;line-height:1.6}
+
+/* Service badge */
+.svc-badge{display:inline-block;padding:2px 8px;background:var(--bg3);border-radius:100px;font-size:11px;color:var(--text2)}
+
+/* Message */
+.msg-text{font-size:13px;color:var(--text);line-height:1.6;word-break:keep-all}
+
+/* Guide */
+.guide-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.guide-row:last-child{margin-bottom:0}
+.chip{display:inline-block;background:var(--chip-bg);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500;color:var(--chip-text);white-space:nowrap;flex-shrink:0}
+.guide-action{font-size:12px;color:var(--text2);line-height:1.5;padding-top:1px}
+
+/* Footer */
+#table-footer{border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg)}
+.page-size{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.page-size select{padding:5px 24px 5px 8px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 8px center;cursor:pointer;outline:none}
+.total-count{font-size:13px;color:var(--text2)}
+.pagination{display:flex;align-items:center;gap:4px}
+.page-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text2);background:var(--bg);cursor:pointer;transition:all .15s}
+.page-btn:hover:not(.active):not([disabled]){background:var(--bg2)}
+.page-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+.page-btn[disabled]{opacity:.35;cursor:default}
+.page-btn.arrow{font-size:16px;color:var(--text3)}
+
+/* Loading / empty */
+#loading{text-align:center;padding:60px;color:var(--text2);font-size:14px}
+.empty{text-align:center;padding:48px;color:var(--text2);font-size:13px}
+
+/* Error */
+#fetch-error{background:#fff5f5;border:1px solid #fca5a5;border-radius:var(--radius);padding:14px 16px;margin:20px 40px;font-size:13px;color:#b91c1c;display:none}
+</style>
+</head>
+<body>
+
+<!-- GNB -->
+<nav id="gnb"><span class="logo">ErrorCode Admin</span></nav>
+
+<!-- Page Header -->
+<div id="page-header"><h1>에러 코드 관리</h1></div>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <div id="search-box">
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+    <input id="search" type="text" placeholder="코드 / 메시지 검색..." oninput="onFilter()">
+  </div>
+  <select id="svc-filter" onchange="onFilter()">
+    <option value="">서비스 전체</option>
+  </select>
+</div>
+
+<!-- Banner -->
+<div id="banner">
+  <div class="banner-left">
+    <div class="dot"></div>
+    <span>이 페이지는 읽기 전용입니다. 에러 코드 추가 및 수정은 GitHub 저장소를 통해 관리됩니다.</span>
+  </div>
+  <a href="https://github.com/seonyoungnc-ops/seonyoung/blob/main/claude-code/error-codes.json" target="_blank">GitHub에서 수정하기 →</a>
+</div>
+
+<!-- Fetch Error -->
+<div id="fetch-error"></div>
+
+<!-- Table -->
+<div id="table-area">
+  <div id="loading">데이터를 불러오는 중...</div>
+  <div id="table-container" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col class="c-code"><col class="c-type"><col class="c-service">
+          <col class="c-message"><col class="c-cause"><col class="c-guide">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>코드</th><th>타입</th><th>서비스</th>
+            <th>메시지</th><th>원인</th><th>가이드</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="table-footer">
+        <div class="page-size">
+          <select id="page-size" onchange="onPageSize()">
+            <option value="15">15개씩</option>
+            <option value="30">30개씩</option>
+            <option value="50">50개씩</option>
+            <option value="100">100개씩</option>
+          </select>
+          <span class="total-count" id="total-count"></span>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 설정 ──────────────────────────────────────────────────
+const JSON_URL = 'https://raw.githubusercontent.com/seonyoungnc-ops/seonyoung/main/claude-code/error-codes.json';
+
+// ── 상태 ─────────────────────────────────────────────────
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+let pageSize = 15;
+
+// ── 데이터 정규화 (구 형식 + 신 형식 통합) ───────────────
+function normalize(item) {
+  return {
+    code:    String(item.code    ?? item.errorCode ?? item.systemCode ?? ''),
+    type:    item.type    || '',
+    service: item.service || '',
+    message: item.message || '',
+    cause:   item.cause   || '',
+    guide:   Array.isArray(item.guide) ? item.guide : [],
+    // 원본 구분용
+    _isLegacy:   !!item.code && !item.systemCode && !item.errorCode,
+    _hasGuide:   Array.isArray(item.guide) && item.guide.length > 0
+  };
+}
+
+// ── 서비스 필터 목록 구성 ──────────────────────────────────
+function buildServiceFilter(data) {
+  const sel = document.getElementById('svc-filter');
+  const services = [...new Set(data.map(d => d.service).filter(Boolean))].sort();
+  services.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+// ── 필터링 ────────────────────────────────────────────────
+function applyFilter() {
+  const q   = document.getElementById('search').value.trim().toLowerCase();
+  const svc = document.getElementById('svc-filter').value;
+  filtered = allData.filter(d => {
+    if (svc && d.service !== svc) return false;
+    if (q) {
+      const hay = `${d.code} ${d.type} ${d.service} ${d.message} ${d.cause}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  currentPage = 1;
+}
+
+function onFilter() { applyFilter(); render(); }
+function onPageSize() { pageSize = +document.getElementById('page-size').value; currentPage = 1; render(); }
+
+// ── 렌더 ──────────────────────────────────────────────────
+function render() {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * pageSize;
+  const page  = filtered.slice(start, start + pageSize);
+
+  document.getElementById('total-count').textContent = `총 ${total.toLocaleString()}개 항목`;
+
+  renderRows(page);
+  renderPagination(totalPages);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function renderRows(page) {
+  const tbody = document.getElementById('tbody');
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">검색 결과가 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = page.map(d => {
+    // 가이드
+    const guideHtml = d.guide.length
+      ? d.guide.map(g => `
+          <div class="guide-row">
+            <span class="chip">${esc(g.button)}</span>
+            <span class="guide-action">${esc(g.action)}</span>
+          </div>`).join('')
+      : `<span style="color:var(--text3);font-size:12px">—</span>`;
+
+    return `<tr>
+      <td><div class="cell">
+        <div class="code-val">${esc(d.code)}</div>
+      </div></td>
+      <td><div class="cell">
+        <div class="type-val">${esc(d.type) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">
+        <span class="svc-badge">${esc(d.service)}</span>
+      </div></td>
+      <td><div class="cell">
+        <div class="msg-text">${esc(d.message) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">
+        <div style="font-size:13px;color:var(--text)">${esc(d.cause) || '<span style="color:var(--text3)">—</span>'}</div>
+      </div></td>
+      <td><div class="cell">${guideHtml}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPagination(totalPages) {
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage - 2);
+  let end   = Math.min(totalPages, start + maxVisible - 1);
+  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+  let html = `<button class="page-btn arrow" onclick="goPage(${currentPage - 1})" ${currentPage===1?'disabled':''}>‹</button>`;
+
+  if (start > 1) {
+    html += `<button class="page-btn" onclick="goPage(1)">1</button>`;
+    if (start > 2) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
+  }
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (end < totalPages) {
+    if (end < totalPages - 1) html += `<span style="padding:0 2px;color:var(--text3)">…</span>`;
+    html += `<button class="page-btn" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  }
+
+  html += `<button class="page-btn arrow" onclick="goPage(${currentPage + 1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  render();
+  document.getElementById('table-area').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── 데이터 fetch ─────────────────────────────────────────
+async function fetchData() {
+  try {
+    // cache-bust: 분 단위로 갱신 (항상 최신 JSON 반영)
+    const url = JSON_URL + '?t=' + Math.floor(Date.now() / 60000);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = await res.json();
+    allData  = raw.map(normalize);
+    filtered = [...allData];
+
+    buildServiceFilter(allData);
+    render();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table-container').style.display = 'block';
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('fetch-error');
+    err.style.display = 'block';
+    err.textContent = `데이터를 불러오지 못했습니다: ${e.message} — JSON URL: ${JSON_URL}`;
+    console.error(e);
+  }
+}
+
+fetchData();
+</script>
+</body>
+</html>
