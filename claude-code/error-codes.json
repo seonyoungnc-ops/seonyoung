@@ -1337,351 +1337,6 @@
     "message": "충전이 불가능한 금액입니다."
   },
   {
-    "systemCode": "Code",
-    "service": "주문서버",
-    "message": "Description",
-    "cause": "Error"
-  },
-  {
-    "errorCode": 69709,
-    "service": "주문서버",
-    "systemCode": "Code",
-    "cause": "DEVICE_NOT_REGISTER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 69702,
-    "service": "주문서버",
-    "systemCode": "Code",
-    "cause": "NET_ERROR_GLOBAL_ORDER_GOODS_NOTFOUND",
-    "message": "Description"
-  },
-  {
-    "systemCode": "Code",
-    "service": "빌링구매서버",
-    "message": "Description",
-    "cause": "Error"
-  },
-  {
-    "errorCode": 9104,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_OPENED_VIRTUAL_BANK_ACCOUNT_EXISTS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9118,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_DENIED_BY_RM_AND_DELAYED_DEPOSIT",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9122,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_NO_WAITING_PAYMENT_CANCELS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9125,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_CHANGABLE_COUNT_OVER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9129,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_OPENED_RECEIPT_AGENCY_BANK_ACCOUNT_EXISTS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9132,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_DIFFERENT_VIRTUAL_BANK_ACCOUNTS_GCOIN",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9134,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_NOT_AVALIABLE_ICAFE_STATUS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9135,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_NOT_ENOUGH_VIRTUAL_BANK_ACCOUNTS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 9136,
-    "service": "빌링구매서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_PAYMENTMGMT_ALREADY_EXIST_FIXED_VIRTUAL_BANK_ACCOUNTS",
-    "message": "Description"
-  },
-  {
-    "systemCode": "Code",
-    "service": "주문체크아웃",
-    "message": "Description",
-    "cause": "Error"
-  },
-  {
-    "errorCode": 83000,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_PAUSE_FOR_SALE",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83001,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_NOT_BY_FORCE_SALE",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83002,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_TO_BE_SALE",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83003,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_UNABLE_GIFT_GOODS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 82986,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_INVALID_SENDER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 82987,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_INVALID_GIFT_RECEIVER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83007,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_UNABLED_SHOP_TYPE_GOODS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83008,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_UNABLE_PURCHASE_GOODS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83009,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_NOT_NCTAS_REGISTRATION",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83010,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_ALREADY_USE_NCTAS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83011,
-    "service": "주문체크아웃",
-    "systemCode": "Code",
-    "cause": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_NO_ORDER_PCBANG_POINT_LACK",
-    "message": "Description"
-  },
-  {
-    "systemCode": "Code",
-    "service": "결제 서버",
-    "message": "Description",
-    "cause": "Type"
-  },
-  {
-    "systemCode": "Code",
-    "service": "결제인증서버",
-    "message": "Description",
-    "cause": "Type"
-  },
-  {
-    "errorCode": 80700,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_SYSTEM_ERROR",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80701,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_BAD_REQUEST",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80703,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_UNSUPPORTED_AUTH_TYPE",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80704,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_ALREADY_WALLETPASS_REGISTER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80705,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_NOT_FOUND_WALLETPASS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80706,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_LOCKED_WALLETPASS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80707,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_INVALID_VERIFY_TOKEN",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80708,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_INVALID_SESSION_KEY",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80709,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_INVALID_SESSION_VERIFY",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80710,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_NOT_MATCHED_CONFIRM_PASS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80711,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_INCLUDE_REPEATABLE_NUMBER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80712,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_INCLUDE_BIRTH_DATE",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80713,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_USED_LASTEST_PASS",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80714,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NP_INVALID_CERT",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80715,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NP_INVALID_USER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80716,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_NOT_REGISTER_WALLET_FIDO",
-    "message": "Description"
-  },
-  {
-    "errorCode": 4,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_BAD_SERVER_DATA",
-    "message": "Description"
-  },
-  {
-    "errorCode": 10,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_INVALID_PARAMETER",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83560,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_INVALID_RP_USER_DATA",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83561,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "NET_ERR_FAILED_DELETE_FIDO2_RP_DATA",
-    "message": "Description"
-  },
-  {
-    "errorCode": 83658,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "INTERNAL_SERVER_ERROR",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80717,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_NOT_REGISTER_WALLET_FIDO",
-    "message": "Description"
-  },
-  {
-    "errorCode": 80718,
-    "service": "결제인증서버",
-    "systemCode": "Code",
-    "cause": "WP_CIPHER_DATA_DECRYPT_FAIL",
-    "message": "Description"
-  },
-  {
     "systemCode": "gwa1205",
     "service": "NCPAY",
     "message": "안전한 결제를 위해 결제비밀번호 등록이 필요합니다",
@@ -2692,12 +2347,6 @@
     "message": "[신청불가] 캐릭터가 존재하지 않습니다."
   },
   {
-    "errorCode": 833138313383142,
-    "service": "부가서비스",
-    "cause": "신청이력 있음",
-    "message": "[신청불가] 이미 신청 중인 캐릭터 입니다."
-  },
-  {
     "errorCode": 83125,
     "service": "부가서비스",
     "cause": "삭제 대기",
@@ -2890,64 +2539,51 @@
     "cause": "aaaa1111"
   },
   {
-    "systemCode": "Code",
-    "service": "노출타입",
-    "message": "에러 메세지",
-    "cause": "Description"
-  },
-  {
-    "errorCode": 1000100120007000,
-    "service": "노출타입",
-    "systemCode": "Code",
-    "cause": "서버 내부 오류, 로그인 필요,",
-    "message": "에러 메세지"
-  },
-  {
     "errorCode": 3303,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "인증 토큰 검증 실패",
-    "message": "에러 메세지"
+    "message": "인증번호가 일치하지 않습니다."
   },
   {
     "errorCode": 29506,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "이메일 형식 오입력",
-    "message": "에러 메세지"
+    "message": "유효하지 않은 이메일입니다."
   },
   {
     "errorCode": 7005,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "유료 결제 서비스 등의 중복 등록 요청",
-    "message": "에러 메세지"
+    "message": "이미 유료결제 동의를 완료한 상태입니다."
   },
   {
     "errorCode": 29500,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "동일 세션에서 여러 요청 발생",
-    "message": "에러 메세지"
+    "message": "이미 처리중인 요청이 있습니다. 완료 후, 다시 시도해 주세요."
+  },
+  {
+    "errorCode": 29501,
+    "service": "유료결제보호자동의",
+    "cause": "최대 이메일 전송횟수 초과",
+    "message": "보호자 인증 메일 발송횟수를 초과했습니다. 잠시 후, 다시 시도해 주세요."
+  },
+  {
+    "errorCode": 29502,
+    "service": "유료결제보호자동의",
+    "cause": "최대 이메일 전송횟수 초과",
+    "message": "보호자 인증 메일 발송횟수를 초과했습니다. 잠시 후, 다시 시도해 주세요."
   },
   {
     "errorCode": 29505,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "10분이내 5회 인증 오류 발생하여 10분동안 호출 제한.",
-    "message": "에러 메세지"
+    "message": "보호자 인증 확인 횟수를 초과했습니다. 잠시 후, 다시 시도해 주세요."
   },
   {
     "errorCode": 29507,
-    "service": "노출타입",
-    "systemCode": "Code",
+    "service": "유료결제보호자동의",
     "cause": "토큰 발급서비스와 인증을 요청한 서비스가 다른 경우.",
-    "message": "에러 메세지"
-  },
-  {
-    "systemCode": "성공 시",
-    "service": "팝업",
-    "message": "유료결제 보호자 동의가 완료되었습니다.",
-    "cause": "동의 완료"
+    "message": "계정 정보에 등록된 이메일은 보호자의 이메일로 사용할 수 없습니다."
   }
 ]
