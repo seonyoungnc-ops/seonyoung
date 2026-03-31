@@ -215,6 +215,18 @@
     ]
   },
   {
+    "systemCode": "GWA00",
+    "service": "공통",
+    "message": "요청된 작업을 수행하지 못했습니다.정책에 따른 제재 항목\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNNNN)",
+    "cause": "시스템 오류"
+  },
+  {
+    "systemCode": "GWA81",
+    "service": "공통",
+    "message": "네크워크 연결 상태를 확인해 주세요.",
+    "cause": "네크워크 오류"
+  },
+  {
     "errorCode": 100104,
     "service": "공통",
     "systemCode": "GWA81",
@@ -222,11 +234,33 @@
     "message": "네크워크 연결 상태를 확인해 주세요."
   },
   {
+    "systemCode": "GWA96",
+    "service": "공통",
+    "message": "PURPLE의 로그인 세션이 끊어졌습니다.\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다.",
+    "cause": "통합계정 제재 (세션 차단)"
+  },
+  {
     "errorCode": 3102,
     "service": "공통",
     "systemCode": "GWA96",
     "cause": "통합계정 제재 (세션 차단)",
     "message": "PURPLE의 로그인 세션이 끊어졌습니다.\n로그인을 다시 시도해 주시거나 고객센터로 문의해 주시기 바랍니다."
+  },
+  {
+    "systemCode": "GWA1011",
+    "service": "공통",
+    "message": "서비스 이용을 위해 본인확인이 필요합니다."
+  },
+  {
+    "systemCode": "GWA1012",
+    "service": "공통",
+    "message": "서비스 이용 안내"
+  },
+  {
+    "systemCode": "GSE014",
+    "service": "공통",
+    "message": "서비스 이용이 제한된 상태입니다.",
+    "cause": "시스템 오류"
   },
   {
     "errorCode": 82975,
@@ -261,6 +295,12 @@
     "message": "서비스 이용이 제한된 상태입니다."
   },
   {
+    "systemCode": "GSE002",
+    "service": "공통",
+    "message": "해당 상품은 판매하지 않는 상품입니다.",
+    "cause": "복합 결제 미존재 상품"
+  },
+  {
     "errorCode": 82999,
     "service": "공통",
     "systemCode": "GSE002",
@@ -277,6 +317,12 @@
     "message": "해당 상품은 판매하지 않는 상품입니다."
   },
   {
+    "systemCode": "GSE011",
+    "service": "공통",
+    "message": "구매할 수 없는 등급입니다.",
+    "cause": "구매할수없는등급"
+  },
+  {
     "errorCode": 83004,
     "service": "공통",
     "systemCode": "GSE011",
@@ -284,11 +330,23 @@
     "message": "구매할 수 없는 등급입니다."
   },
   {
+    "systemCode": "GSE012",
+    "service": "공통",
+    "message": "보유 포인트가 부족합니다.",
+    "cause": "보유 포인트 부족"
+  },
+  {
     "errorCode": 83005,
     "service": "공통",
     "systemCode": "GSE012",
     "cause": "하단 영역에서는 취소선처리되어있음",
     "message": "보유 포인트가 부족합니다."
+  },
+  {
+    "systemCode": "GSE003",
+    "service": "공통",
+    "message": "구매할 수 없는 상품입니다. 다른 상품을 구매해 주세요.",
+    "cause": "캐릭터 제한 아이템 구매 시도"
   },
   {
     "errorCode": 82985,
@@ -306,12 +364,24 @@
     "message": "구매할 수 없는 상품입니다. 다른 상품을 구매해 주세요."
   },
   {
+    "systemCode": "GSE004",
+    "service": "공통",
+    "message": "캐릭터 정보를 불러올 수 없습니다. 다시 시도해 주세요.",
+    "cause": "잘못된 캐릭터 정보"
+  },
+  {
     "errorCode": 82984,
     "service": "공통",
     "systemCode": "GSE004",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_INVALID_CHARACTER_INFO",
     "cause": "잘못된 캐릭터 정보(파라미터)",
     "message": "캐릭터 정보를 불러올 수 없습니다. 다시 시도해 주세요."
+  },
+  {
+    "systemCode": "GSE005",
+    "service": "공통",
+    "message": "한정 상품 판매가 마감되었습니다.",
+    "cause": "한정 상품 판매 종료"
   },
   {
     "errorCode": 82988,
@@ -322,12 +392,24 @@
     "message": "한정 상품 판매가 마감되었습니다."
   },
   {
+    "systemCode": "GSE006",
+    "service": "공통",
+    "message": "구매 수량이 제한된 상품입니다.",
+    "cause": "한도상품 구매수량 비유효"
+  },
+  {
     "errorCode": 82991,
     "service": "공통",
     "systemCode": "GSE006",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_SALE_LIMIT_COUNT",
     "cause": "한도상품 구매수량 비유효",
     "message": "구매 수량이 제한된 상품입니다."
+  },
+  {
+    "systemCode": "GSE007",
+    "service": "공통",
+    "message": "구매 가능한 횟수를 초과하여 구매할 수 없습니다.",
+    "cause": "구매 가능 횟수 초과"
   },
   {
     "errorCode": 82992,
@@ -338,12 +420,23 @@
     "message": "구매 가능한 횟수를 초과하여 구매할 수 없습니다."
   },
   {
+    "systemCode": "GSE013",
+    "service": "공통",
+    "message": "PC방 전용 상품은 PC방에서 접속한 경우에만 교환할 수 있습니다.",
+    "cause": "PC방 전용 상품"
+  },
+  {
     "errorCode": 82982,
     "service": "공통",
     "systemCode": "GSE013",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_NOT_PCBANG_IP",
     "cause": "(블소 PC방 포인트상품) ICafeIP가 아닌경우",
     "message": "PC방 전용 상품은 PC방에서 접속한 경우에만 교환할 수 있습니다."
+  },
+  {
+    "systemCode": "GSE015",
+    "service": "공통",
+    "message": "한도정보를 조회하는데 실패했습니다. 다시 시도해 주세요."
   },
   {
     "errorCode": 82995,
@@ -354,12 +447,23 @@
     "message": "한도정보를 조회하는데 실패했습니다. 다시 시도해 주세요."
   },
   {
+    "systemCode": "GSE008",
+    "service": "공통",
+    "message": "한도 초과로 구매할 수 없습니다."
+  },
+  {
     "errorCode": 82994,
     "service": "공통",
     "systemCode": "GSE008",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_LIMITCHECK_RETURN_PURCHASE_LIMIT_ERROR",
     "cause": "한도  오류",
     "message": "한도 초과로 구매할 수 없습니다."
+  },
+  {
+    "systemCode": "GSE009",
+    "service": "공통",
+    "message": "구매 수량이 제한된 상품입니다.",
+    "cause": "구매 가능 수량 초과"
   },
   {
     "errorCode": 82990,
@@ -370,12 +474,37 @@
     "message": "구매 수량이 제한된 상품입니다."
   },
   {
+    "systemCode": "GSE010",
+    "service": "공통",
+    "message": "해당 상품은 군단장만 구매할 수 있습니다."
+  },
+  {
     "errorCode": 82998,
     "service": "공통",
     "systemCode": "GSE010",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_LEGION_MASTER_CHECK_VALIDATOR_ERROR",
     "cause": "(부가서비스)",
     "message": "해당 상품은 군단장만 구매할 수 있습니다."
+  },
+  {
+    "systemCode": "SUA01",
+    "service": "공통",
+    "message": "결제가 완료되지 않았습니다."
+  },
+  {
+    "systemCode": "SUA02",
+    "service": "공통",
+    "message": "결제 요청 횟수를 초과했습니다."
+  },
+  {
+    "systemCode": "SUA03",
+    "service": "공통",
+    "message": "코드 요청 횟수를 초과했습니다."
+  },
+  {
+    "systemCode": "GSE016",
+    "service": "공통",
+    "message": "보유한 멤버십이 없어 구매할 수 없습니다."
   },
   {
     "errorCode": 82967,
@@ -386,10 +515,27 @@
     "message": "월렛은 PC게임 전용 서비스로, 이용을 위해 본인 확인이 필요합니다."
   },
   {
+    "systemCode": "GWA20",
+    "service": "공통",
+    "message": "지원하지 않는 결제 수단입니다."
+  },
+  {
     "errorCode": 80103,
     "service": "공통",
     "systemCode": "GWA20",
     "message": "지원하지 않는 결제 수단입니다."
+  },
+  {
+    "systemCode": "GWA2002",
+    "service": "공통",
+    "message": "결제 대기 중인 [가상계좌or은행지점/ATM or편의점 수납] 내역이 있습니다.",
+    "cause": "가상계좌/"
+  },
+  {
+    "systemCode": "sua04",
+    "service": "공통",
+    "message": "결제 요청 횟수를 초과했습니다. 다시 시도해 주세요.",
+    "cause": "퍼플 앱 알림 발송 횟수 초과"
   },
   {
     "errorCode": 83015,
@@ -399,6 +545,18 @@
     "message": "결제 요청 횟수를 초과했습니다. 다시 시도해 주세요."
   },
   {
+    "systemCode": "sua05",
+    "service": "통합샵",
+    "message": "최대 구매 수량을 초과했습니다.",
+    "cause": "한번에 50개 이상의 상품 구매/선물 시도 시"
+  },
+  {
+    "systemCode": "GAC01",
+    "service": "공통",
+    "message": "게임 계정이 없어 구매할 수 없습니다. 게임 실행 후 다시 시도해 주세요.",
+    "cause": "게임 계정 미보유상태에서 구매 시도 시"
+  },
+  {
     "errorCode": 83027,
     "service": "공통",
     "systemCode": "GAC01",
@@ -406,11 +564,35 @@
     "message": "게임 계정이 없어 구매할 수 없습니다. 게임 실행 후 다시 시도해 주세요."
   },
   {
+    "systemCode": "GSE021",
+    "service": "공통",
+    "message": "이미 정기결제 이용중인 상품은 구매가 불가합니다.",
+    "cause": "정기결제 이용 중에 동일한"
+  },
+  {
     "errorCode": 83028,
     "service": "공통",
     "systemCode": "GSE021",
     "cause": "이미 구독 중인 상품 구매 시도",
     "message": "이미 정기결제 이용중인 상품은 구매가 불가합니다."
+  },
+  {
+    "systemCode": "GSE017",
+    "service": "공통",
+    "message": "이미 정기 결제 이용중인 상품입니다.",
+    "cause": "결제 실패"
+  },
+  {
+    "systemCode": "GSE018",
+    "service": "공통",
+    "message": "이용중인 정기 결제 상품을 해지 후 구매 가능합니다.",
+    "cause": "정기결제 이용 중에 다른"
+  },
+  {
+    "systemCode": "GWA00",
+    "service": "송금",
+    "message": "요청된 작업을 수행하지 못했습니다.",
+    "cause": "시스템 오류"
   },
   {
     "errorCode": 82961,
@@ -429,12 +611,24 @@
     "message": "요청된 작업을 수행하지 못했습니다."
   },
   {
+    "systemCode": "GWA11",
+    "service": "송금",
+    "message": "미성년자는 보호자 동의 후 결제를 진행할 수 있습니다.",
+    "cause": "미성년자 보호자  동의 안내"
+  },
+  {
     "errorCode": 82978,
     "service": "송금",
     "systemCode": "GWA11",
     "type": "NEED_AGREEMENT_GUARDIAN",
     "cause": "유료결제 보호자 미동의",
     "message": "미성년자는 보호자 동의 후 결제를 진행할 수 있습니다."
+  },
+  {
+    "systemCode": "GWA82",
+    "service": "송금",
+    "message": "1일 최대 이용 한도를 초과했습니다.",
+    "cause": "1일 한도 초과"
   },
   {
     "errorCode": 9916,
@@ -445,6 +639,12 @@
     "message": "1일 최대 이용 한도를 초과했습니다."
   },
   {
+    "systemCode": "GWA05",
+    "service": "송금",
+    "message": "1회 최대 이용 한도를 초과했습니다.",
+    "cause": "1회 한도 초과"
+  },
+  {
     "errorCode": 9915,
     "service": "송금",
     "systemCode": "GWA05",
@@ -453,12 +653,24 @@
     "message": "1회 최대 이용 한도를 초과했습니다."
   },
   {
+    "systemCode": "GWA08",
+    "service": "송금",
+    "message": "코인 잔액이 부족합니다.",
+    "cause": "잔액 부족"
+  },
+  {
     "errorCode": 82977,
     "service": "송금",
     "systemCode": "GWA08",
     "type": "INVALID_CURRENCY_AMOUNT",
     "cause": "보유 화폐 이상 선물 요청한 경우",
     "message": "코인 잔액이 부족합니다."
+  },
+  {
+    "systemCode": "GWA1001",
+    "service": "송금",
+    "message": "선물이 불가능한 대상입니다.",
+    "cause": "발송인 제재된 계정"
   },
   {
     "errorCode": 82965,
@@ -476,11 +688,23 @@
     "message": "선물이 불가능한 대상입니다."
   },
   {
+    "systemCode": "GWA1008",
+    "service": "송금",
+    "message": "즐겨찾기는 최대 50명까지 설정할 수 있습니다.",
+    "cause": "즐겨찾기_최대 인원"
+  },
+  {
     "errorCode": 82526,
     "service": "송금",
     "systemCode": "GWA1008",
     "cause": "즐겨찾기_최대 인원",
     "message": "즐겨찾기는 최대 50명까지 설정할 수 있습니다."
+  },
+  {
+    "systemCode": "GWA1010",
+    "service": "송금",
+    "message": "선물 가능한 코인이 없습니다.",
+    "cause": "코인 미보유"
   },
   {
     "errorCode": 9126,
@@ -499,6 +723,60 @@
     "message": "선물 가능한 코인이 없습니다."
   },
   {
+    "systemCode": "GWA06",
+    "service": "송금",
+    "message": "선물할 금액을 입력해 주세요.",
+    "cause": "송금액 미입력"
+  },
+  {
+    "systemCode": "GWA07",
+    "service": "송금",
+    "message": "보내는 사람을 선택해 주세요.",
+    "cause": "보내는 사람 미선택"
+  },
+  {
+    "systemCode": "GWA1003",
+    "service": "송금",
+    "message": "선물이 가능한 인원을 초과했습니다.",
+    "cause": "대상자 초과"
+  },
+  {
+    "systemCode": "GWA1005",
+    "service": "송금",
+    "message": "선물 받을 대상을 선택해 주세요.",
+    "cause": "받는사람 미지정"
+  },
+  {
+    "systemCode": "GWA1006",
+    "service": "송금",
+    "message": "보내는 사람을 변경하시겠습니까?",
+    "cause": "보내는 사람 변경"
+  },
+  {
+    "systemCode": "GWA1007",
+    "service": "송금",
+    "message": "계정이 보유한 캐릭터가 없습니다.",
+    "cause": "캐릭터 미보유"
+  },
+  {
+    "systemCode": "GWA9000",
+    "service": "송금",
+    "message": "페이지를 닫으면 선택한 목록이 저장되지 않습니다.",
+    "cause": "미저장 상태에서 페이지 닫음 시도"
+  },
+  {
+    "systemCode": "GWA1002",
+    "service": "송금",
+    "message": "선물이 불가능한 캐릭터 입니다.",
+    "cause": "제재된 캐릭터"
+  },
+  {
+    "systemCode": "GWA80",
+    "service": "PUSH/QR",
+    "message": "요청하신 주문서를 찾을 수 없습니다.",
+    "cause": "세션만료"
+  },
+  {
     "errorCode": 69704,
     "service": "PUSH/QR",
     "systemCode": "GWA80",
@@ -507,11 +785,65 @@
     "message": "요청하신 주문서를 찾을 수 없습니다."
   },
   {
+    "systemCode": "GWA004",
+    "service": "QR",
+    "message": "주문 정보가 일치하지 않습니다.",
+    "cause": "계정 불일치"
+  },
+  {
+    "systemCode": "GWA001",
+    "service": "QR",
+    "message": "QR스캔을 위해 카메라",
+    "cause": "접근 권한 미설정"
+  },
+  {
+    "systemCode": "GWA002",
+    "service": "QR",
+    "message": "유효하지 않은 QR코드 입니다.",
+    "cause": "유효하지 않은 코드"
+  },
+  {
+    "systemCode": "gwa1203",
+    "service": "충전결제",
+    "message": "코인을 충전하시겠습니까?\\n\n충전이 완료되면 결제를 이어서 진행합니다.",
+    "cause": "충전여부 확인"
+  },
+  {
+    "systemCode": "gwa1204",
+    "service": "충전결제",
+    "message": "카이모을 충전하시겠습니까?\\n\n충전이 완료되면 결제를 이어서 진행합니다.",
+    "cause": "충전여부 확인"
+  },
+  {
+    "systemCode": "GWA9101",
+    "service": "충전결제",
+    "message": "코인 잠금이 설정된 게임입니다. \n잠금 상태를 확인해 주세요.",
+    "cause": "0원 결제 코인 잠금"
+  },
+  {
     "errorCode": 5173,
     "service": "충전결제",
     "systemCode": "GWA9101",
     "cause": "0원 결제 코인 잠금",
     "message": "코인 잠금이 설정된 게임입니다. \n잠금 상태를 확인해 주세요."
+  },
+  {
+    "systemCode": "GWA89",
+    "service": "충전결제",
+    "message": "구매 수량이 제한된 상품입니다.",
+    "cause": "구매 수량 제한"
+  },
+  {
+    "systemCode": "GWA90",
+    "service": "충전결제",
+    "message": "구매 횟수를 초과했습니다.",
+    "cause": "구매 횟수 제한"
+  },
+  {
+    "systemCode": "GWA91",
+    "service": "충전결제",
+    "message": "상품의 구매 한도를 초과했습니다.",
+    "cause": "상품 구매한도 초과"
   },
   {
     "errorCode": 6249,
@@ -550,6 +882,12 @@
     "message": "상품의 구매 한도를 초과했습니다."
   },
   {
+    "systemCode": "GWA11",
+    "service": "충전결제",
+    "message": "미성년자는 보호자 동의 후 결제를 진행할 수 있습니다.",
+    "cause": "유료 결제 보호자"
+  },
+  {
     "errorCode": 9145,
     "service": "충전결제",
     "systemCode": "GWA11",
@@ -563,6 +901,12 @@
     "type": "NET_ERR_GLOBALPAYMENT_NOT_AGREEMENT_PARENT",
     "cause": "유료 결제 보호자 미동의",
     "message": "미성년자는 보호자 동의 후 결제를 진행할 수 있습니다."
+  },
+  {
+    "systemCode": "GWA83",
+    "service": "충전결제",
+    "message": "결제가 완료된 상품입니다.\n주문 정보를 다시 확인해 주세요.",
+    "cause": "중복결제"
   },
   {
     "errorCode": 9103,
@@ -581,6 +925,12 @@
     "message": "결제가 완료된 상품입니다.\n주문 정보를 다시 확인해 주세요."
   },
   {
+    "systemCode": "GWA84",
+    "service": "충전결제",
+    "message": "채널링 계정은 이용할 수 없습니다.",
+    "cause": "채널링 제한"
+  },
+  {
     "errorCode": 82974,
     "service": "충전결제",
     "systemCode": "GWA84",
@@ -589,12 +939,24 @@
     "message": "채널링 계정은 이용할 수 없습니다."
   },
   {
+    "systemCode": "GWA19",
+    "service": "충전결제",
+    "message": "→ 제한된 결제 수단입니다. 다른 결제 수단을 이용해 주세요",
+    "cause": "ADMIN_예외한도"
+  },
+  {
     "errorCode": 9123,
     "service": "충전결제",
     "systemCode": "GWA19",
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_BLACKLIST_PAYMENT_TYPE",
     "cause": "블랙리스트에 의한 거부(해당 결제 수단에 대해서만)",
     "message": "→ 제한된 결제 수단입니다. 다른 결제 수단을 이용해 주세요"
+  },
+  {
+    "systemCode": "GWA7003",
+    "service": "충전결제",
+    "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요.",
+    "cause": "RM결제 제한"
   },
   {
     "errorCode": 9142,
@@ -619,6 +981,12 @@
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_NCPAY_DAILY_RM",
     "cause": "NCPay 일간 RM 초과",
     "message": "최근 결제 이력이 확인되지 않아 1개월간 (RM 제한 금액)원까지 결제 가능합니다. \nNCpay외 다른 결제 수단으로 결제를 시도해 주세요."
+  },
+  {
+    "systemCode": "GWA00",
+    "service": "충전, 결제",
+    "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)",
+    "cause": "시스템 오류"
   },
   {
     "errorCode": 69712,
@@ -748,6 +1116,24 @@
     "message": "요청된 작업을 수행하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n(오류코드: NNNN)"
   },
   {
+    "systemCode": "GWA11",
+    "service": "충전",
+    "message": "미성년자는 보호자 동의 후 결제를 진행할 수 있습니다.",
+    "cause": "미성년자 보호자 동의 여부"
+  },
+  {
+    "systemCode": "GWA1501",
+    "service": "충전",
+    "message": "최소 충전 금액은 1,000원 입니다.",
+    "cause": "10원이하 충전 시"
+  },
+  {
+    "systemCode": "GWA17",
+    "service": "충전",
+    "message": "자가 한도를 초과 했습니다. \n한도 변경 후 결제를 다시 시도해 주세요.",
+    "cause": "자가한도 초과"
+  },
+  {
     "errorCode": 9127,
     "service": "충전",
     "systemCode": "GWA17",
@@ -756,11 +1142,35 @@
     "message": "자가 한도를 초과 했습니다. \n한도 변경 후 결제를 다시 시도해 주세요."
   },
   {
+    "systemCode": "GWA1201",
+    "service": "결제",
+    "message": "개인정보 수집 및 이용에 동의해 주세요.",
+    "cause": "이용동의 체크 여부"
+  },
+  {
+    "systemCode": "GWA1202",
+    "service": "결제",
+    "message": "현금영수증 발급 정보를 등록해 주세요.",
+    "cause": "현금영수증 정보 미등록"
+  },
+  {
+    "systemCode": "GWA65",
+    "service": "결제",
+    "message": "코인 잔액이 부족합니다.",
+    "cause": "잔액부족"
+  },
+  {
     "errorCode": 4904,
     "service": "결제",
     "systemCode": "GWA65",
     "cause": "코인 잔액 부족",
     "message": "코인 잔액이 부족합니다."
+  },
+  {
+    "systemCode": "GWA71",
+    "service": "결제",
+    "message": "보유한 코인 내에서 결제 가능합니다.",
+    "cause": "코인부족"
   },
   {
     "errorCode": 82996,
@@ -771,6 +1181,30 @@
     "message": "보유한 코인 내에서 결제 가능합니다."
   },
   {
+    "systemCode": "GWA13",
+    "service": "결제, 충전",
+    "message": "결제 수단을 선택해 주세요.",
+    "cause": "결제 수단 선택 여부"
+  },
+  {
+    "systemCode": "GWA1301",
+    "service": "결제",
+    "message": "삭제된 결제 수단 입니다.",
+    "cause": "NCPAY 삭제"
+  },
+  {
+    "systemCode": "GWA12",
+    "service": "결제, 충전",
+    "message": "결제 정보를 수신할 이메일을 등록해 주세요.",
+    "cause": "결제 이메일 등록여부"
+  },
+  {
+    "systemCode": "GWA15",
+    "service": "결제, 충전",
+    "message": "비정상적인 결제 시도로 차단되었습니다. 잠시 후 다시 시도해 주세요.",
+    "cause": "RSD룰"
+  },
+  {
     "errorCode": 69713,
     "service": "결제, 충전",
     "systemCode": "GWA15",
@@ -779,12 +1213,24 @@
     "message": "비정상적인 결제 시도로 차단되었습니다. 잠시 후 다시 시도해 주세요."
   },
   {
+    "systemCode": "GWA16",
+    "service": "결제, 충전",
+    "message": "미성년자 월 이용 한도를 초과했습니다.",
+    "cause": "미성년자 한도 초과 여부"
+  },
+  {
     "errorCode": 58571,
     "service": "결제, 충전",
     "systemCode": "GWA16",
     "type": "NET_ERR_GLOBALPAYMENT_UNDERAGE_PAYMENT_OVER",
     "cause": "미성년자 월 한도 초과",
     "message": "미성년자 월 이용 한도를 초과했습니다."
+  },
+  {
+    "systemCode": "GWA18",
+    "service": "결제, 충전",
+    "message": "한도 초과로 결제가 불가능합니다.",
+    "cause": "ADMIN_결제 수단 한도"
   },
   {
     "errorCode": 9116,
@@ -843,6 +1289,18 @@
     "message": "한도 초과로 결제가 불가능합니다."
   },
   {
+    "systemCode": "GWA19",
+    "service": "결제, 충전",
+    "message": "제한된 결제 수단입니다.",
+    "cause": "ADMIN_예외한도"
+  },
+  {
+    "systemCode": "GWA2001",
+    "service": "결제, 충전",
+    "message": "결제가 제한된 대상입니다.",
+    "cause": "제재된 계정"
+  },
+  {
     "errorCode": 9113,
     "service": "결제, 충전",
     "systemCode": "GWA2001",
@@ -857,6 +1315,18 @@
     "type": "NET_ERR_PAYMENTMGMT_DENIED_BY_LIMIT_CUSTOMER_KEY",
     "cause": "고객번호 당 한도에 의한 거부",
     "message": "결제가 제한된 대상입니다."
+  },
+  {
+    "systemCode": "GWA20",
+    "service": "결제, 충전",
+    "message": "지원하지 않는 결제 수단입니다.",
+    "cause": "ADMIN_앱그룹 코드별"
+  },
+  {
+    "systemCode": "GWA1004",
+    "service": "결제",
+    "message": "#캐릭명01외 N명#은 선물이 불가능한 상태입니다.",
+    "cause": "받는사람 한도 초과/ 케릭터 유효성/제재된 계정, 캐릭터"
   },
   {
     "errorCode": 83012,
@@ -891,12 +1361,24 @@
     "message": "#캐릭명01외 N명#은 선물이 불가능한 상태입니다."
   },
   {
+    "systemCode": "GWA69",
+    "service": "결제",
+    "message": "게임을 이용할 수 없는 연령입니다.",
+    "cause": "IP별 구매 가능 연령"
+  },
+  {
     "errorCode": 82973,
     "service": "결제",
     "systemCode": "GWA69",
     "type": "NET_ERR_GLOBAL_UNIFIED_STORE_BIZ_UNDER_AGE_USER",
     "cause": "게임 나이제한",
     "message": "게임을 이용할 수 없는 연령입니다."
+  },
+  {
+    "systemCode": "GWA7001",
+    "service": "결제",
+    "message": "코인 잠금이 설정된 게임입니다.\n다른 수단으로 결제를 시도해 주세요.",
+    "cause": "코인잠금"
   },
   {
     "errorCode": 82997,
@@ -907,6 +1389,18 @@
     "message": "코인 잠금이 설정된 게임입니다.\n다른 수단으로 결제를 시도해 주세요."
   },
   {
+    "systemCode": "GWA7002",
+    "service": "결제",
+    "message": "#원천사명# 최소 결제 금액은 #100#원 이상입니다.",
+    "cause": "결제 최소 금액"
+  },
+  {
+    "systemCode": "GWA2004",
+    "service": "충전",
+    "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요.",
+    "cause": "가상계좌/편의점 수납으로 결제 시, 기존에 진행중인 충전이 있을 경우"
+  },
+  {
     "errorCode": 9137,
     "service": "충전",
     "systemCode": "GWA2004",
@@ -915,11 +1409,67 @@
     "message": "코인 충전을 위해 발급된 #계좌번호 or 수납번호#가 있습니다.\n계속 충전을 하시려면 \"충전 계속\" 버튼을 눌러주세요."
   },
   {
+    "systemCode": "GWA2008",
+    "service": "충전",
+    "message": "고객님의 ATM 결제 이력이 없어 {YY}년 {MM}월까지 (5만원/월) 결제 가능합니다.",
+    "cause": "가상계좌/ATM RM 정책에 의한 한도 제한"
+  },
+  {
+    "systemCode": "GWA2007",
+    "service": "충전",
+    "message": "결제 정보 수신을 위한 이메일 수집에 동의하십니까?"
+  },
+  {
+    "systemCode": "GWA2003",
+    "service": "충전",
+    "message": "신청하신 [가상계좌or은행지점/ATM or편의점 수납]을 취소하시겠습니까?"
+  },
+  {
+    "systemCode": "GWA2005",
+    "service": "충전",
+    "message": "신청하신 [가상계좌or은행지점/ATM or편의점 수납] 취소가 완료되었습니다."
+  },
+  {
+    "systemCode": "GWA2006",
+    "service": "충전",
+    "message": "#원천사명#의 결제가 제한된 상태입니다.\n다른 결제 수단을 이용해 주세요."
+  },
+  {
+    "systemCode": "GWA67",
+    "service": "결제",
+    "message": "결제에 실패했습니다.",
+    "cause": "선물실패"
+  },
+  {
+    "systemCode": "GWA70",
+    "service": "결제",
+    "message": "장기 미사용으로 등록된 결제 수단이 삭제되었습니다.\nNCPAY를 다시 등록해 주세요.",
+    "cause": "NCPAY 휴면"
+  },
+  {
+    "systemCode": "GWA7010",
+    "service": "결제",
+    "message": "유효하지 않은 주문서입니다.",
+    "cause": "유효하지 않은 주문서"
+  },
+  {
+    "systemCode": "GWA8402",
+    "service": "결제,충전",
+    "message": "코인 충전이 완료되었습니다.\n결제를 이어서 진행하시겠습니까?\n[이어서 결제하기]",
+    "cause": "시리얼카드 충전 성공"
+  },
+  {
     "errorCode": 0,
     "service": "결제,충전",
     "systemCode": "GWA8402",
     "cause": "처리 결과 정상 (string 일 경우 0000)",
     "message": "코인 충전이 완료되었습니다.\n결제를 이어서 진행하시겠습니까?\n[이어서 결제하기]"
+  },
+  {
+    "systemCode": "GWA8401",
+    "service": "결제,충전",
+    "message": "시리얼카드 충전에 실패하였습니다.",
+    "cause": "시리얼카드 충전 실패"
   },
   {
     "errorCode": 1000,
@@ -941,6 +1491,18 @@
     "systemCode": "GWA8401",
     "cause": "결제 실패",
     "message": "시리얼카드 충전에 실패하였습니다."
+  },
+  {
+    "systemCode": "GPW0307",
+    "service": "결제",
+    "message": "MyCard 선불카드(시리얼카드) 충전 금액이 부족하여 \n상품 결제에 실패했습니다.\n충전된 금액은 월렛 >코인 내역에서 확인 가능합니다.",
+    "cause": "시리얼카드 결제 실패"
+  },
+  {
+    "systemCode": "GPW0310",
+    "service": "충전결제",
+    "message": "충전이 불가능한 금액입니다.",
+    "cause": "마이카드 한도 오류(시리얼카드 규격 안맞음 포함)"
   },
   {
     "errorCode": 58317,
@@ -1335,11 +1897,29 @@
     "message": "Description"
   },
   {
+    "systemCode": "gwa1205",
+    "service": "NCPAY",
+    "message": "안전한 결제를 위해 결제비밀번호 등록이 필요합니다",
+    "cause": "결제 비밀번호 생성 여부 확인"
+  },
+  {
+    "systemCode": "GWA56",
+    "service": "NCPAY",
+    "message": "휴대폰 등록 가능 횟수를 초과했습니다.",
+    "cause": "모든 결제 수단(월)"
+  },
+  {
     "errorCode": 1007,
     "service": "NCPAY",
     "systemCode": "GWA56",
     "cause": "월 등록 건수 초과로 이용 제한 (다날 제공 코드 - 0178)",
     "message": "휴대폰 등록 가능 횟수를 초과했습니다."
+  },
+  {
+    "systemCode": "GWA57",
+    "service": "NCPAY",
+    "message": "결제 수단의 등록 횟수를 초과했습니다.",
+    "cause": "모든 결제 수단(일)"
   },
   {
     "errorCode": 1008,
@@ -1349,12 +1929,42 @@
     "message": "결제 수단의 등록 횟수를 초과했습니다."
   },
   {
+    "systemCode": "GWA58",
+    "service": "NCPAY",
+    "message": "카드 등록 가능 횟수를 초과했습니다.",
+    "cause": "신용카드"
+  },
+  {
+    "systemCode": "GWA59",
+    "service": "NCPAY",
+    "message": "계좌 등록 가능 횟수를 초과했습니다.",
+    "cause": "계좌"
+  },
+  {
+    "systemCode": "GWA56~59",
+    "service": "NCPAY",
+    "message": "비정상적인 결제 시도로 차단되었습니다. 잠시 후 다시 시도해 주세요.",
+    "cause": "RDS(등록 시도 횟수)"
+  },
+  {
     "errorCode": 80113,
     "service": "NCPAY",
     "systemCode": "GWA56~59",
     "type": "TRY_LIMIT_PAY_METHOD_TYPE",
     "cause": "결제 수단 유형별 등록 시도 갯수 초과",
     "message": "비정상적인 결제 시도로 차단되었습니다. 잠시 후 다시 시도해 주세요."
+  },
+  {
+    "systemCode": "GWA61",
+    "service": "NCPAY",
+    "message": "최대 3개의 계좌를 등록할 수 있습니다.",
+    "cause": "계좌"
+  },
+  {
+    "systemCode": "GWA62",
+    "service": "NCPAY",
+    "message": "최대 1 개의 통신사만 등록할 수 있습니다.",
+    "cause": "휴대폰"
   },
   {
     "errorCode": 106,
@@ -1370,6 +1980,24 @@
     "systemCode": "GWA62",
     "cause": "결제 수단 별 등록 가능 건수 제한 초과 오류 (다날 제공 코드 - 0206)",
     "message": "최대 1 개의 통신사만 등록할 수 있습니다."
+  },
+  {
+    "systemCode": "GWA63",
+    "service": "NCPAY",
+    "message": "NCPAY 서비스를 해지 하시겠습니까?",
+    "cause": "해지하기"
+  },
+  {
+    "systemCode": "GWA64",
+    "service": "NCPAY",
+    "message": "NCPAY 서비스를 해지했습니다.",
+    "cause": "해지완료"
+  },
+  {
+    "systemCode": "GWA85",
+    "service": "NCPAY",
+    "message": "NCPAY 서비스 해지에 실패하였습니다.",
+    "cause": "해지 실패"
   },
   {
     "errorCode": 80112,
@@ -1452,6 +2080,12 @@
     "message": "NCPAY 서비스 해지에 실패하였습니다."
   },
   {
+    "systemCode": "GWA86",
+    "service": "NCPAY",
+    "message": "이미 등록된 결제 수단 입니다.",
+    "cause": "이미 등록된 결제 수단"
+  },
+  {
     "errorCode": 1009,
     "service": "NCPAY",
     "systemCode": "GWA86",
@@ -1465,6 +2099,12 @@
     "type": "ALREADY_REGISTERED_PAY_METHOD",
     "cause": "이미 등록됨",
     "message": "이미 등록된 결제 수단 입니다."
+  },
+  {
+    "systemCode": "GWA70",
+    "service": "NCPAY",
+    "message": "장기 미사용으로 등록된 결제 수단이 삭제 되었습니다.\nNCPAY를 다시 등록해 주세요.",
+    "cause": "NCPAY 휴먼"
   },
   {
     "errorCode": 5116,
@@ -1515,12 +2155,36 @@
     "message": "요청된 작업을 수행하지 못했습니다."
   },
   {
+    "systemCode": "GWA29",
+    "service": "선물함",
+    "message": "#캐릭명01#에게 보낸 선물을 취소하시겠습니까?",
+    "cause": "선물취소"
+  },
+  {
+    "systemCode": "GWA30",
+    "service": "선물함",
+    "message": "#보낸 선물 취소#에 실패했습니다.",
+    "cause": "선물취소  실패(단일)"
+  },
+  {
+    "systemCode": "GWA30",
+    "service": "선물함|구매내역",
+    "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)",
+    "cause": "선물취소  실패(다중)"
+  },
+  {
     "errorCode": 6967,
     "service": "선물함|구매내역",
     "systemCode": "GWA30",
     "type": "NET_ERR_REFUND_NOT_EXIST_REFUNDABLE_GOODS",
     "cause": "환불 가능한 상품이",
     "message": "보낸 선물 취소에 실패했습니다.(실패건/전체건)"
+  },
+  {
+    "systemCode": "GWA87",
+    "service": "선물함",
+    "message": "유효하지 않은 상품입니다.",
+    "cause": "선물 수락  실패"
   },
   {
     "errorCode": 5102,
@@ -1531,6 +2195,24 @@
     "message": "유효하지 않은 상품입니다."
   },
   {
+    "systemCode": "GWA01",
+    "service": "선물함",
+    "message": "선물을 거절하시겠습니까?",
+    "cause": "선물 거절"
+  },
+  {
+    "systemCode": "GWA0101",
+    "service": "선물함",
+    "message": "선물을 거절하시겠습니까?",
+    "cause": "선물 거절"
+  },
+  {
+    "systemCode": "GWA88",
+    "service": "선물함",
+    "message": "받은 선물 거절에 실패했습니다.",
+    "cause": "선물 거절 실패"
+  },
+  {
     "errorCode": 5157,
     "service": "선물함",
     "systemCode": "GWA88",
@@ -1539,11 +2221,46 @@
     "message": "받은 선물 거절에 실패했습니다."
   },
   {
+    "systemCode": "GWA28",
+    "service": "결제내역",
+    "message": "#아이템명#의  결제를 취소하시겠습니까?",
+    "cause": "결제 취소"
+  },
+  {
+    "systemCode": "GW3001",
+    "service": "선물함|구매내역",
+    "message": "청약철회 기간이 만료된 상품은 결제를 취소할 수 없습니다.",
+    "cause": "결제 취소 불가"
+  },
+  {
+    "systemCode": "GW3002",
+    "service": "선물함|구매내역",
+    "message": "결제 취소에 실패했습니다.",
+    "cause": "결제 취소 실패"
+  },
+  {
+    "systemCode": "→ GWA00",
+    "service": "선물함|구매내역",
+    "message": "잠시 후 다시 시도해 주세요."
+  },
+  {
+    "systemCode": "GW3003",
+    "service": "결제내역",
+    "message": "서비스 이용 제한 안내",
+    "cause": "환불제재"
+  },
+  {
     "errorCode": 83022,
     "service": "결제내역",
     "systemCode": "GW3003",
     "cause": "게임 제재(ex. bot)",
     "message": "서비스 이용 제한 안내"
+  },
+  {
+    "systemCode": "GWA3004",
+    "service": "결제내역",
+    "message": "지급 받은 무료 코인 사용으로",
+    "cause": "무료코인"
   },
   {
     "errorCode": 83986,
@@ -1558,6 +2275,12 @@
     "systemCode": "GWA1011",
     "cause": "쿠폰 DB 에러",
     "message": "서비스 이용을 위해 본인확인이 필요합니다."
+  },
+  {
+    "systemCode": "GWA50",
+    "service": "공통",
+    "message": "게임을 이용할 수 없는 연령입니다,",
+    "cause": "게임별 연령 제한"
   },
   {
     "errorCode": 83992,
@@ -1595,11 +2318,23 @@
     "message": "게임을 이용할 수 없는 연령입니다,"
   },
   {
+    "systemCode": "GWA36",
+    "service": "공통",
+    "message": "탈퇴 대기 중에는 서비스를 이용할 수 없습니다.",
+    "cause": "회원 탈퇴 진행중"
+  },
+  {
     "errorCode": 83985,
     "service": "공통",
     "systemCode": "GWA36",
     "cause": "탈퇴 대기",
     "message": "탈퇴 대기 중에는 서비스를 이용할 수 없습니다."
+  },
+  {
+    "systemCode": "GWA48",
+    "service": "쿠폰등록",
+    "message": "사용 기간이 만료 되었습니다.",
+    "cause": "사용기간이 만료된 쿠폰"
   },
   {
     "errorCode": 5924,
@@ -1616,6 +2351,12 @@
     "type": "NET_ERR_COUPON_INVALID_EFFECTIVE_TO",
     "cause": "등록 유효기간 만료 오류",
     "message": "사용 기간이 만료 되었습니다."
+  },
+  {
+    "systemCode": "GWA42~3",
+    "service": "쿠폰선물",
+    "message": "선물할 수 없는 대상입니다.",
+    "cause": "제재된 계정/게임 내 제제된 캐릭터"
   },
   {
     "errorCode": 83995,
@@ -1660,10 +2401,21 @@
     "message": "선물할 수 없는 대상입니다."
   },
   {
+    "systemCode": "GWA31",
+    "service": "쿠폰 사용",
+    "message": "사용할 수 없는 쿠폰 입니다."
+  },
+  {
     "errorCode": 83996,
     "service": "쿠폰 사용",
     "systemCode": "GWA31",
     "message": "사용할 수 없는 쿠폰 입니다."
+  },
+  {
+    "systemCode": "GWA47",
+    "service": "쿠폰등록",
+    "message": "사용할 수 없는 쿠폰입니다.",
+    "cause": "유효하지 않은 쿠폰번호"
   },
   {
     "errorCode": 5908,
@@ -1759,6 +2511,12 @@
     "message": "사용할 수 없는 쿠폰입니다."
   },
   {
+    "systemCode": "GWA39",
+    "service": "쿠폰선물",
+    "message": "해당 서버에서는 쿠폰을 사용할 수 없습니다.",
+    "cause": "서버 제한"
+  },
+  {
     "errorCode": 83994,
     "service": "쿠폰선물",
     "systemCode": "GWA39",
@@ -1766,11 +2524,29 @@
     "message": "해당 서버에서는 쿠폰을 사용할 수 없습니다."
   },
   {
+    "systemCode": "GWA44",
+    "service": "쿠폰선물",
+    "message": "선물할 대상을 찾을 수 없습니다.",
+    "cause": "캐릭터 확인 불가"
+  },
+  {
     "errorCode": 84004,
     "service": "쿠폰선물",
     "systemCode": "GWA44",
     "cause": "받는 사람의 정보가 존재하지 않음",
     "message": "선물할 대상을 찾을 수 없습니다."
+  },
+  {
+    "systemCode": "GWA53",
+    "service": "쿠폰등록",
+    "message": "사용자의 등록한도를 초과하여 사용하실 수 없습니다.",
+    "cause": "사용자 별 등록 가능한  한도 초과"
+  },
+  {
+    "systemCode": "GWA32",
+    "service": "쿠폰사용",
+    "message": "아이템을 선택해 주세요.",
+    "cause": "아이템 미선택"
   },
   {
     "errorCode": 5911,
@@ -1787,11 +2563,23 @@
     "message": "아이템을 선택해 주세요."
   },
   {
+    "systemCode": "GWA92",
+    "service": "쿠폰",
+    "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다.",
+    "cause": "예약쿠폰"
+  },
+  {
     "errorCode": 5926,
     "service": "쿠폰",
     "systemCode": "GWA92",
     "cause": "유효기간 미도래 쿠폰",
     "message": "쿠폰에 표시된 사용 기간 내에만 등록 가능합니다."
+  },
+  {
+    "systemCode": "GWA93",
+    "service": "쿠폰선물",
+    "message": "본인의 다른 계정으로 선물할 수 없습니다.",
+    "cause": "동일 계정"
   },
   {
     "errorCode": 83999,
@@ -1815,6 +2603,152 @@
     "message": "본인의 다른 계정으로 선물할 수 없습니다."
   },
   {
+    "systemCode": "GWA94",
+    "service": "쿠폰등록",
+    "message": "쿠폰 등록이 불가능한 상태입니다.",
+    "cause": "쿠폰 등록이 불가"
+  },
+  {
+    "systemCode": "GWA95",
+    "service": "쿠폰등록",
+    "message": "시스템 오류로 쿠폰 등록에 실패했습니다."
+  },
+  {
+    "systemCode": "GWA33",
+    "service": "쿠폰사용",
+    "message": "아이템을 모두 선택해 주세요.",
+    "cause": "수량 미달"
+  },
+  {
+    "systemCode": "GWA35",
+    "service": "쿠폰사용",
+    "message": "할인 쿠폰은 상품 구매 페이지에서 사용하실 수 있습니다.",
+    "cause": "사용하기"
+  },
+  {
+    "systemCode": "GWA34",
+    "service": "쿠폰사용",
+    "message": "“쿠폰명01”을 사용하시겠습니까?",
+    "cause": "사용하기"
+  },
+  {
+    "systemCode": "GWA38",
+    "service": "쿠폰",
+    "message": "“쿠폰명01”을 삭제하시겠습니까?",
+    "cause": "쿠폰 삭제"
+  },
+  {
+    "systemCode": "GWA41",
+    "service": "쿠폰선물",
+    "message": "받는 사람을 선택해 주세요.",
+    "cause": "받는사람 미선택"
+  },
+  {
+    "systemCode": "GWA45",
+    "service": "쿠폰등록",
+    "message": "쿠폰 번호를 입력해 주세요.",
+    "cause": "미등록"
+  },
+  {
+    "systemCode": "pws_wps06",
+    "service": "생체인증 설정",
+    "message": "빠른 인증을 위해 생체인증을 설정하세요."
+  },
+  {
+    "systemCode": "pws_wps07",
+    "service": "생체인증 설정",
+    "message": "생체정보를 불러오는데 실패하였습니다.\\n"
+  },
+  {
+    "systemCode": "PWS-WPS08",
+    "service": "생체인증 설정",
+    "message": "생체인증 설정에 실패했습니다."
+  },
+  {
+    "systemCode": "PWS-MIN01",
+    "service": "설정 메인",
+    "message": "서비스 이용을 위해 본인확인이 필요합니다.",
+    "cause": "실명인증 여부"
+  },
+  {
+    "systemCode": "PWS-CMN06",
+    "service": "공통",
+    "message": "기존과 동일하게 변경할 수 없습니다.",
+    "cause": "변경사항 없이 저장"
+  },
+  {
+    "systemCode": "PWS-CMN05",
+    "service": "공통",
+    "message": "탈퇴 대기 중에는 서비스를 이용할 수 없습니다.",
+    "cause": "탈퇴 대기"
+  },
+  {
+    "systemCode": "PWS-CMN07",
+    "service": "공통",
+    "message": "이용할 수 없는 대상입니다. 계정 상태를 확인 후 다시 시도해 주세요.",
+    "cause": "채널링 계정, 게임 제재, 통합계정 제재, 휴면 계정"
+  },
+  {
+    "systemCode": "PWS-LPS01",
+    "service": "코인 잠금 설정",
+    "message": "코인 잠금 설정이 저장되었습니다.",
+    "cause": "설정 저장 완료"
+  },
+  {
+    "systemCode": "PWS-CMN01",
+    "service": "공통",
+    "message": "변경 중단",
+    "cause": "결제비밀번호 인증 후 저장 버튼 미입력"
+  },
+  {
+    "systemCode": "PWS-CLS01",
+    "service": "충전 한도 설정",
+    "message": "충전 한도 변경",
+    "cause": "충전 한도 변경 월 횟수 2회 미만"
+  },
+  {
+    "systemCode": "PWS-CLS02",
+    "service": "충전 한도 설정",
+    "message": "충전 한도 변경 횟수 초과",
+    "cause": "충전 한도 변경 월 횟수 2회 초과"
+  },
+  {
+    "systemCode": "PWS-CLS03",
+    "service": "충전 한도 설정",
+    "message": "설정 가능 한도 초과",
+    "cause": "충전 금액 한도 초과"
+  },
+  {
+    "systemCode": "PWS-CLS04",
+    "service": "충전 한도 설정",
+    "message": "최소 1만(10,000) 단위부터 한도 설정이 가능합니다.",
+    "cause": "충전 금액 최소 한도 미달"
+  },
+  {
+    "systemCode": "PWS-CLS05",
+    "service": "충전 한도 설정",
+    "message": "충전 한도가 저장되었습니다.",
+    "cause": "잠금 설정 변동사항 저장 완료 시 호출"
+  },
+  {
+    "systemCode": "PWS-WPE01",
+    "service": "결제비밀번호 설정",
+    "message": "생년월일 4자리를 포함할 수 없습니다.",
+    "cause": "비밀번호 유효성 체크-생년월일"
+  },
+  {
+    "systemCode": "PWS-WPE02",
+    "service": "결제비밀번호 설정",
+    "message": "동일한 숫자를 3개 연속으로 사용할 수 없습니다.",
+    "cause": "비밀번호 유효성 체크-동일숫자반복"
+  },
+  {
+    "systemCode": "PWS-WPE0201",
+    "service": "결제비밀번호 설정",
+    "message": "3자리 이상 연속된 숫자를 사용할 수 없습니다.",
+    "cause": "연속되는 숫자 입력"
+  },
+  {
     "errorCode": 80725,
     "service": "결제비밀번호 설정",
     "systemCode": "PWS-WPE0201",
@@ -1822,11 +2756,101 @@
     "message": "3자리 이상 연속된 숫자를 사용할 수 없습니다."
   },
   {
+    "systemCode": "PWS-WPE03",
+    "service": "결제비밀번호 설정",
+    "message": "이전과 동일하게 변경할 수 없습니다.",
+    "cause": "비밀번호 유효성 체크-이전 비밀번호와 동일"
+  },
+  {
+    "systemCode": "PWS-WPE04",
+    "service": "결제비밀번호 설정",
+    "message": "결제비밀번호와 일치하지 않습니다.",
+    "cause": "비밀번호 유효성 체크-사용중인 신)결제비밀번호와 다름"
+  },
+  {
+    "systemCode": "PWS-WPE05",
+    "service": "결제비밀번호 설정",
+    "message": "결제비밀번호와 일치하지 않습니다.",
+    "cause": "비밀번호 유효성 체크-앞에서 입력한 숫자와 다름"
+  },
+  {
+    "systemCode": "PWS-WPE06",
+    "service": "결제비밀번호 설정",
+    "message": "유효 시간이 만료되었습니다.",
+    "cause": "비밀번호 유효성 체크-유효시간 만료"
+  },
+  {
+    "systemCode": "PWS-WPE07",
+    "service": "결제비밀번호 설정",
+    "message": "알 수 없는 에러가 발생했습니다. (error code)",
+    "cause": "비밀번호 유효성 체크-그 외"
+  },
+  {
+    "systemCode": "PWS-WPS01",
+    "service": "결제비밀번호 설정",
+    "message": "결제비밀번호 초기화를 위해 본인인증을 진행합니다.",
+    "cause": "선택 초기화"
+  },
+  {
+    "systemCode": "PWS-WPS02",
+    "service": "결제비밀번호 설정",
+    "message": "결제비밀번호 입력을 5회 이상 실패하여 초기화를 위해 본인인증을 진행합니다.",
+    "cause": "입력 불일치 5회 달성으로 인한 초기화"
+  },
+  {
+    "systemCode": "PWS-WPS03",
+    "service": "결제비밀번호 설정",
+    "message": "서비스 이용이 제한된 상태입니다.",
+    "cause": "제재된 계정이 결제비밀번호 설정 접근 시"
+  },
+  {
+    "systemCode": "PWS-WPS04",
+    "service": "결제비밀번호 설정",
+    "message": "알 수 없는 에러가 발생했습니다. (error code)",
+    "cause": "정의되지않은 모든 에러케이스에 해당"
+  },
+  {
     "errorCode": 6501,
     "service": "결제비밀번호 설정",
     "systemCode": "PWS-WPS04",
     "cause": "등록된 보안카드가 없는 경우(IA팀 제공)",
     "message": "알 수 없는 에러가 발생했습니다. (error code)"
+  },
+  {
+    "systemCode": "PWS-WPS05",
+    "service": "결제비밀번호 설정",
+    "message": "유효시간이 만료되었습니다.",
+    "cause": "유효시간 만료"
+  },
+  {
+    "systemCode": "PWS-BPS01",
+    "service": "생체인증 설정",
+    "message": "결제비밀번호 등록 후 생체인증을 사용할 수 있습니다.",
+    "cause": "설정에서 생체인증 설정 진입 시도"
+  },
+  {
+    "systemCode": "PWS-BPS02",
+    "service": "생체인증 설정",
+    "message": "지문을 인증해 주세요.",
+    "cause": "지문 인증 시 호출"
+  },
+  {
+    "systemCode": "PWS-BPS03",
+    "service": "생체인증 설정",
+    "message": "시스템문구 호출",
+    "cause": "FACE ID 인증 시 호출"
+  },
+  {
+    "systemCode": "PWS-BPS04",
+    "service": "생체인증 설정",
+    "message": "얼굴이 인식되지 않습니다.",
+    "cause": "FACE ID 인식 실패 시 호출"
+  },
+  {
+    "systemCode": "PWS-BPS05",
+    "service": "생체인증 설정",
+    "message": "다시 시도해 주세요.",
+    "cause": "생체인증 인식 실패->다시 시도하기 버튼 클릭후 재실패"
   },
   {
     "systemCode": "정기결제 해지 실패",
@@ -2031,6 +3055,54 @@
     "service": "계정이전대상",
     "cause": "게임계정 없음",
     "message": "[신청불가] 이전할 계정을 확인하여 주시기 바랍니다."
+  },
+  {
+    "systemCode": "yunyun002@plaync.com",
+    "service": "캐릭터 서버이전 (56~79)",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "yunyun002@plaync.com",
+    "service": "캐릭터 성별전환",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "semo02@aa.com",
+    "service": "캐릭터메인-듀얼클래스분리",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "semo02@aa.com",
+    "service": "캐릭터 이름변경",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "semo02@aa.com",
+    "service": "캐릭터 성별전환",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "newbie001@tt.com",
+    "service": "캐릭터 계정이전",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "newbie001@tt.com",
+    "service": "캐릭터 서버이전",
+    "message": "112233",
+    "cause": "aaaa1111"
+  },
+  {
+    "systemCode": "newbie004@tt.com",
+    "service": "캐릭터 서버이전",
+    "message": "112233",
+    "cause": "aaaa1111"
   },
   {
     "systemCode": "Code",
