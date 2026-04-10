@@ -237,7 +237,6 @@ def fetch_google_news_rss(query: str, max_items: int = 10) -> list[dict]:
 
 
 
-
 # ──────────────────────────────────────────────
 # 1-C. 네이버 뉴스 API
 # ──────────────────────────────────────────────
@@ -602,18 +601,33 @@ JSON 배열만 출력 (다른 텍스트 없이):
 ]"""
 
 def parse_gemini_json(raw: str) -> list:
+    """
+    Gemini 응답에서 JSON 배열 파싱.
+    trailing comma, 마크다운 코드블록 등 흔한 오류를 전처리 후 파싱.
+    파싱 실패 시 빈 리스트 반환 (크래시 방지).
+    """
     raw = raw.strip()
+
+    # 마크다운 코드블록 제거
     if "```" in raw:
-        raw = re.sub(r"```(?:json)?", "", raw).replace("```","").strip()
+        raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
+
+    # JSON 배열 범위 추출
     start, end = raw.find("["), raw.rfind("]")
     if start != -1 and end != -1:
         raw = raw[start:end+1]
+
+    # trailing comma 제거: }, ] 또는 }, } 앞의 쉼표
+    raw = re.sub(r",\s*([}\]])", r"\1", raw)
+
     try:
         return json.loads(raw)
     except json.JSONDecodeError as e:
         print(f"    [ERROR] JSON 파싱 실패: {e}")
         print(f"    [DEBUG] 오류 위치: {raw[max(0,e.pos-80):e.pos+80]}")
-        raise
+        # 파싱 실패 시 빈 리스트 반환 — 전체 프로세스 중단 방지
+        print(f"    [WARN] JSON 파싱 실패로 해당 배치 건너뜀 — 원본 기사로 대체")
+        return []
 
 def analyze_all_categories(all_data: list[dict]) -> dict:
     """2배치 호출: [국내+글로벌] / [IT+AI]"""
@@ -627,7 +641,28 @@ def analyze_all_categories(all_data: list[dict]) -> dict:
         print(f"    [{i+1}/2] {labels} 분석 중 (총 {total}개)...")
         url_map = {a["link"]: a["link"] for e in batch for a in e["articles"]}
         raw = call_gemini(build_prompt(batch))
-        for r in parse_gemini_json(raw):
+        parsed = parse_gemini_json(raw)
+        if not parsed:
+            # Gemini 파싱 실패 시 원본 기사 그대로 사용
+            print(f"    [WARN] 배치 {i+1} 파싱 실패 — 원본 기사 5개로 대체")
+            for entry in batch:
+                cat_id = entry["cat"]["id"]
+                result_map[cat_id] = {
+                    "category_id": cat_id,
+                    "category_insight": "기사 분석 중 오류가 발생했습니다.",
+                    "articles": [
+                        {
+                            "title": a["title"],
+                            "link": a["link"],
+                            "summary": a.get("description", ""),
+                            "keywords": [],
+                            "insight": "",
+                        }
+                        for a in entry["articles"][:5]
+                    ],
+                }
+            continue
+        for r in parsed:
             for art in r.get("articles", []):
                 if art["link"] in url_map:
                     art["link"] = url_map[art["link"]]
