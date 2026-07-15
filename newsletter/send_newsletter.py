@@ -484,13 +484,28 @@ def load_yesterday_articles() -> set:
             return set()
         latest = artifacts[0]
         dl_url = latest["archive_download_url"]
+        # archive_download_url은 Azure Blob Storage로 302 리다이렉트되는데,
+        # Authorization 헤더가 리다이렉트에 그대로 전달되면 Azure가 403을 반환한다.
+        # 리다이렉트를 따라가지 않고 Location만 받아 헤더 없이 재요청한다.
+        class _NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                return None
         req2 = urllib.request.Request(dl_url, headers={
             "Authorization": f"token {token}",
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
         })
-        with urllib.request.urlopen(req2, timeout=15) as resp:
-            zdata = resp.read()
+        try:
+            with urllib.request.build_opener(_NoRedirect).open(req2, timeout=15) as resp:
+                zdata = resp.read()
+        except urllib.error.HTTPError as e:
+            if e.code in (301, 302, 303, 307, 308):
+                blob_url = e.headers["Location"]
+                req3 = urllib.request.Request(blob_url)  # Authorization 헤더 제외
+                with urllib.request.urlopen(req3, timeout=15) as resp:
+                    zdata = resp.read()
+            else:
+                raise
         with zipfile.ZipFile(io.BytesIO(zdata)) as z:
             with z.open("sent_articles.json") as f:
                 yesterday = json.loads(f.read())
